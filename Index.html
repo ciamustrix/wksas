@@ -1395,7 +1395,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div>
                                     <label class="block text-xs font-bold text-indigo-700 mb-1">Model Teacher (ผู้สอนหลัก)</label>
-                                    <select id="slc_model" onchange="handleSLCModelChange()" class="w-full rounded-lg border border-indigo-200 p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></select>
+                                    <input type="text" id="slc_model" readonly class="w-full rounded-lg border border-indigo-200 p-2 text-sm outline-none bg-indigo-50 text-indigo-900 font-bold cursor-not-allowed shadow-inner" placeholder="โหลดข้อมูล...">
                                 </div>
                                 <div>
                                     <div class="flex justify-between items-end mb-1">
@@ -3551,6 +3551,13 @@
             if(welImg) welImg.src = finalProfileImage;
 
             const tInput = document.getElementById('teacherName');
+            // 💡 จุดเติมใหม่: ดึงชื่อจริงยัดใส่ช่อง Model Teacher ทันทีที่เข้าระบบ
+            const slcModelInput = document.getElementById('slc_model');
+            if (slcModelInput) {
+                slcModelInput.value = currentUser.FullName;
+                // กระตุ้นให้โหลด Buddy และวิชาต่อเลยอัตโนมัติ ไม่ต้องรอคนกดคลิกเลือก
+                if (typeof handleSLCModelChange === 'function') handleSLCModelChange(); 
+            }
             if (tInput) tInput.value = currentUser.FullName;
             
             const dSelect = document.getElementById('learningArea');
@@ -10956,6 +10963,172 @@ window.saveStudentDetail = async function() {
                 if(lvlSel && !lvlSel.value) lvlSel.value = "ม.1";
                 updateRoomCheckboxes();
             }
+        };
+        // ====================================================
+        // 🛠️ MASTER OVERRIDE: แฮ็กระบบ SLC ให้ใช้ชื่อจริงได้สมบูรณ์แบบ
+        // ====================================================
+
+        window.initSLCSystem = function() {
+            switchSLCTab('tab-plc-group');
+            if(typeof toggleLayoutOptions === 'function') toggleLayoutOptions();
+
+            // 1. กวาดล้าง <select> เก่าที่ซ้ำซ้อนทั้งหมด แล้วแปลงเป็น <input> อัตโนมัติ
+            document.querySelectorAll('#slc_model').forEach(el => {
+                if (el.tagName === 'SELECT') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'slc_model';
+                    input.readOnly = true;
+                    input.className = "w-full rounded-lg border border-indigo-200 p-2 text-sm outline-none bg-indigo-50 text-indigo-900 font-bold cursor-not-allowed shadow-inner";
+                    el.parentNode.replaceChild(input, el);
+                }
+            });
+
+            // 2. ยัดชื่อจริงลงช่อง
+            const slcModel = document.getElementById('slc_model');
+            if(slcModel && currentUser) {
+                slcModel.value = currentUser.FullName;
+                handleSLCModelChange(); // สั่งให้สมองกลโหลดข้อมูลต่อทันที
+            }
+        };
+
+        window.handleSLCModelChange = function() {
+            if(typeof loadBuddiesFromPLC === 'function') loadBuddiesFromPLC(); 
+            
+            const modelVal = document.getElementById('slc_model').value;
+            // 💡 แก้บั๊กสมองกล: ค้นหาจาก FullName เพื่อหารหัส Username ไปใช้ต่อ
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const slcSubj = document.getElementById('slc_subject');
+            
+            if(slcSubj && subjectsDB_Global && modelInfo) {
+                const mySubs = subjectsDB_Global.filter(s => s.TeacherName === modelInfo.FullName);
+                slcSubj.innerHTML = '<option value="">-- เลือกรายวิชา --</option>' + 
+                    mySubs.map(s => `<option value="${s.SubjectCode}">${s.SubjectCode} ${s.SubjectName}</option>`).join('');
+            } else if (slcSubj) {
+                slcSubj.innerHTML = '<option value="">-- เลือกรายวิชา --</option>';
+            }
+            loadMediaForSLC(); 
+        };
+
+        window.loadMediaForSLC = function() {
+            const modelVal = document.getElementById('slc_model').value;
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const slcMedia = document.getElementById('slc_media');
+            
+            if(!slcMedia) return;
+            slcMedia.innerHTML = '<option value="">-- ไม่ใช้สื่อ / หรือสร้างใหม่ --</option>';
+            if (!modelInfo) return;
+
+            let filteredMedia = mediaDB_Global.filter(m => m.TeacherName === modelInfo.FullName);
+            const selectedSubject = document.getElementById('slc_subject').value;
+            if (selectedSubject) {
+                filteredMedia = filteredMedia.filter(m => m.SubjectCode === selectedSubject);
+            }
+            
+            filteredMedia.forEach(m => {
+                const mediaIcon = m.MediaType === 'Digital' ? '🌐' : '📦';
+                slcMedia.add(new Option(`${mediaIcon} ${m.MediaTitle}`, m.MediaID));
+            });
+        };
+
+        window.loadBuddiesFromPLC = function() {
+            const modelVal = document.getElementById('slc_model').value;
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const container = document.getElementById('slc_buddies_container');
+            const groupLabel = document.getElementById('plcGroupNameLabel');
+            
+            if (!modelInfo) {
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
+                groupLabel.classList.add('hidden');
+                return;
+            }
+
+            const modelUser = modelInfo.Username; // 💡 ดึง Username แท้ๆ ไปควานหาในกลุ่ม PLC
+            let targetGroup = null;
+            let membersArray = [];
+            
+            if (plcGroupsDB_Global && plcGroupsDB_Global.length > 0) {
+                for (let i = plcGroupsDB_Global.length - 1; i >= 0; i--) {
+                    const g = plcGroupsDB_Global[i];
+                    try {
+                        const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
+                        if (mems && mems.includes(modelUser)) {
+                            targetGroup = g;
+                            membersArray = mems;
+                            break;
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            if (targetGroup) {
+                groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
+                groupLabel.classList.remove('hidden');
+                
+                const buddies = membersArray.filter(m => m !== modelUser);
+                if (buddies.length > 0) {
+                    container.innerHTML = buddies.map(bUser => {
+                        const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                        const bName = uInfo ? uInfo.FullName : bUser;
+                        return `
+                        <label class="flex items-center gap-1 cursor-pointer bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-sm">
+                            <input type="checkbox" name="slc_buddy_cb" value="${bUser}" class="form-checkbox text-indigo-600 rounded h-3.5 w-3.5" checked>
+                            <span class="text-[11px] font-bold text-indigo-900">${bName}</span>
+                        </label>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นในกลุ่ม PLC นี้</span>';
+                }
+            } else {
+                groupLabel.classList.add('hidden');
+                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้ (กรุณาจัดตั้งกลุ่มในแท็บที่ 1 ก่อน)</span>';
+            }
+        };
+
+        window.finishSLCObservation = async function() {
+            if (Object.keys(observationData).length === 0) {
+                return customAlert("ยังไม่มีการบันทึกพฤติกรรมเด็กคนไหนเลยครับ", "info");
+            }
+
+            const modelVal = document.getElementById('slc_model').value;
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            if (!modelInfo) return customAlert("กรุณาตรวจสอบชื่อ Model Teacher ด้วยครับ");
+
+            customConfirm("ยืนยันการส่งผลการสังเกตการณ์ใช่หรือไม่?", async () => {
+                const btn = document.getElementById('btnFinishObserve');
+                const origTxt = btn.innerHTML;
+                btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังอัปโหลด...'; 
+                btn.disabled = true;
+
+                try {
+                    const payload = {
+                        action: 'submitSLCObservation',
+                        data: {
+                            ModelTeacher: modelInfo.FullName, // 💡 ส่งชื่อเต็มขึ้นไปให้ถูก
+                            Observer: currentUser.FullName,
+                            ObservationData: observationData
+                        }
+                    };
+
+                    const res = await fetch(SCRIPT_URL, {
+                        method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow"
+                    });
+                    const result = await res.json();
+
+                    if (result.status === 'success') {
+                        customAlert(result.message, "success");
+                        observationData = {}; 
+                        document.querySelectorAll('.evidence-badge').forEach(b => b.remove()); 
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch(e) {
+                    customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
+                } finally {
+                    btn.innerHTML = origTxt; 
+                    btn.disabled = false;
+                }
+            });
         };
     </script>
     <div class="fixed bottom-2 right-3 text-[10px] font-medium text-gray-400 z-[100] opacity-50 hover:opacity-100 transition-opacity pointer-events-none tracking-wide">
