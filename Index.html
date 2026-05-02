@@ -100,6 +100,22 @@
         /* ✨ ไฮไลท์ตัวหนาให้ดูหรูหราด้วยสีทอง Champagne Gold */
         .theme-imperial .font-bold, .theme-imperial .font-black {
             color: #d4af37 !important;
+            /* 🤝 บังคับประโยคต้อนรับ (คำว่าคุณ + ชื่อครู) ให้เป็นสีทองแชมเปญเดียวกันทั้งหมด */
+        .theme-imperial #view-welcome h1,
+        .theme-imperial #view-welcome h1 *,
+        .theme-imperial #view-welcome h2,
+        .theme-imperial #view-welcome h2 * {
+            color: #d4af37 !important; 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
+        }
+            /* ☀️ บังคับประโยคต้อนรับสำหรับ User ปกติ (ให้เป็นสีเทาเข้ม/ดำ) */
+        body:not(.theme-imperial) #view-welcome h1,
+        body:not(.theme-imperial) #view-welcome h1 *,
+        body:not(.theme-imperial) #view-welcome h2,
+        body:not(.theme-imperial) #view-welcome h2 * {
+            color: #1f2937 !important; /* สีเทาเข้ม text-gray-800 */
+            text-shadow: none !important; /* ปิดเอฟเฟกต์เรืองแสงของ User ธรรมดา */
+        }
         }
 
         /* 🚥 คงสี Badge สถานะเอาไว้ แต่ปรับให้สว่างเรืองแสงตัดกับพื้นหลังดำ */
@@ -11132,7 +11148,7 @@ window.saveStudentDetail = async function() {
         };
     </script>
     <div class="fixed bottom-2 right-3 text-[10px] font-medium text-gray-400 z-[100] opacity-50 hover:opacity-100 transition-opacity pointer-events-none tracking-wide">
-        Dev. by Thuntathorn C.
+        [V_1.01]_Dev_by_Thuntathorn
     </div>
 </body>
 </html>
