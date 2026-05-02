@@ -10914,6 +10914,73 @@ window.saveStudentDetail = async function() {
             };
             reader.readAsDataURL(file);
         });
+        // ==========================================
+        // 📍 ฟังก์ชันดึงพิกัดตำแหน่ง (GPS Location)
+        // ==========================================
+        window.getLocationGPS = function() {
+            const gpsInput = document.getElementById('gpsLocation');
+            if (!gpsInput) return;
+
+            // เช็คว่าเบราว์เซอร์รองรับ GPS หรือไม่
+            if (!navigator.geolocation) {
+                customAlert("เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง (GPS) ครับ", "error");
+                gpsInput.value = "ไม่รองรับ GPS";
+                return;
+            }
+
+            // เปลี่ยนสถานะปุ่มเป็น Loading
+            const btn = window.event ? window.event.currentTarget : null;
+            const origHtml = btn ? btn.innerHTML : "ดึงพิกัดปัจจุบัน";
+            if (btn) {
+                btn.innerHTML = `<div class="loader loader-white border-2 border-blue-500 border-t-transparent w-3 h-3 mr-2 inline-block align-middle"></div> ดึงข้อมูล...`;
+                btn.disabled = true;
+            }
+            
+            gpsInput.value = "กำลังค้นหาพิกัด... (โปรดกดยอมรับสิทธิ์)";
+
+            navigator.geolocation.getCurrentPosition(
+                // 🟢 กรณีสำเร็จ
+                function(position) {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lng = position.coords.longitude.toFixed(6);
+                    
+                    // นำพิกัดไปใส่ในช่อง Input
+                    gpsInput.value = `${lat}, ${lng}`;
+                    
+                    // เปลี่ยนสีกรอบเป็นสีเขียวเพื่อให้รู้ว่าสำเร็จ
+                    gpsInput.classList.remove('border-gray-300', 'bg-gray-200', 'text-gray-500');
+                    gpsInput.classList.add('border-emerald-400', 'bg-emerald-50', 'text-emerald-700', 'ring-2', 'ring-emerald-200');
+                    
+                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                },
+                // 🔴 กรณีเกิด Error
+                function(error) {
+                    console.warn("GPS Error:", error);
+                    let errorMsg = "เกิดข้อผิดพลาดในการดึงตำแหน่ง";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = "คุณไม่อนุญาตให้เข้าถึงตำแหน่ง (กรุณาเปิด GPS/Location ในมือถือ หรือ Allow ในเบราว์เซอร์)";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = "ข้อมูลตำแหน่งไม่พร้อมใช้งานในขณะนี้";
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = "หมดเวลาในการค้นหาตำแหน่ง (สัญญาณ GPS อาจจะอ่อน)";
+                            break;
+                    }
+                    customAlert(errorMsg, "error");
+                    gpsInput.value = ""; // เคลียร์ช่อง
+                    
+                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                },
+                // ⚙️ ออปชันการดึงข้อมูล
+                {
+                    enableHighAccuracy: true, // บังคับขอความแม่นยำสูง
+                    timeout: 10000,           // รอนานสุด 10 วินาที
+                    maximumAge: 0             // ไม่เอาของเก่าที่ Cache ไว้
+                }
+            );
+        };
         // ====================================================
         // 🛠️ MASTER OVERRIDE: แฮ็กระบบเพื่อทับโค้ดที่ซ้ำซ้อนทั้งหมด!
         // ====================================================
@@ -11145,73 +11212,6 @@ window.saveStudentDetail = async function() {
                     btn.disabled = false;
                 }
             });
-        };
-        // ==========================================
-        // 📍 ฟังก์ชันดึงพิกัดตำแหน่ง (GPS Location)
-        // ==========================================
-        window.getLocationGPS = function() {
-            const gpsInput = document.getElementById('gpsLocation');
-            if (!gpsInput) return;
-
-            // เช็คว่าเบราว์เซอร์รองรับ GPS หรือไม่
-            if (!navigator.geolocation) {
-                customAlert("เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง (GPS) ครับ", "error");
-                gpsInput.value = "ไม่รองรับ GPS";
-                return;
-            }
-
-            // เปลี่ยนสถานะปุ่มเป็น Loading
-            const btn = window.event ? window.event.currentTarget : null;
-            const origHtml = btn ? btn.innerHTML : "ดึงพิกัดปัจจุบัน";
-            if (btn) {
-                btn.innerHTML = `<div class="loader loader-white border-2 border-blue-500 border-t-transparent w-3 h-3 mr-2 inline-block align-middle"></div> ดึงข้อมูล...`;
-                btn.disabled = true;
-            }
-            
-            gpsInput.value = "กำลังค้นหาพิกัด... (โปรดกดยอมรับสิทธิ์)";
-
-            navigator.geolocation.getCurrentPosition(
-                // 🟢 กรณีสำเร็จ
-                function(position) {
-                    const lat = position.coords.latitude.toFixed(6);
-                    const lng = position.coords.longitude.toFixed(6);
-                    
-                    // นำพิกัดไปใส่ในช่อง Input
-                    gpsInput.value = `${lat}, ${lng}`;
-                    
-                    // เปลี่ยนสีกรอบเป็นสีเขียวเพื่อให้รู้ว่าสำเร็จ
-                    gpsInput.classList.remove('border-gray-300', 'bg-gray-200', 'text-gray-500');
-                    gpsInput.classList.add('border-emerald-400', 'bg-emerald-50', 'text-emerald-700', 'ring-2', 'ring-emerald-200');
-                    
-                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
-                },
-                // 🔴 กรณีเกิด Error
-                function(error) {
-                    console.warn("GPS Error:", error);
-                    let errorMsg = "เกิดข้อผิดพลาดในการดึงตำแหน่ง";
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMsg = "คุณไม่อนุญาตให้เข้าถึงตำแหน่ง (กรุณาเปิด GPS/Location ในมือถือ หรือ Allow ในเบราว์เซอร์)";
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMsg = "ข้อมูลตำแหน่งไม่พร้อมใช้งานในขณะนี้";
-                            break;
-                        case error.TIMEOUT:
-                            errorMsg = "หมดเวลาในการค้นหาตำแหน่ง (สัญญาณ GPS อาจจะอ่อน)";
-                            break;
-                    }
-                    customAlert(errorMsg, "error");
-                    gpsInput.value = ""; // เคลียร์ช่อง
-                    
-                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
-                },
-                // ⚙️ ออปชันการดึงข้อมูล
-                {
-                    enableHighAccuracy: true, // บังคับขอความแม่นยำสูง
-                    timeout: 10000,           // รอนานสุด 10 วินาที
-                    maximumAge: 0             // ไม่เอาของเก่าที่ Cache ไว้
-                }
-            );
         };
     </script>
     <div class="fixed bottom-2 right-3 text-[10px] font-medium text-gray-400 z-[100] opacity-50 hover:opacity-100 transition-opacity pointer-events-none tracking-wide">
