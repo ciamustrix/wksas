@@ -6886,12 +6886,14 @@ window.renderAdminLogsTable = function() {
             }
         };
 
-        // 🧠 The AI Engine (ประมวลผลการจัดสอนแทน)
+         // ตัวแปรส่วนกลางสำหรับเก็บข้อมูลรอการตรวจสอบ
+        window.tempAISubstitutions = [];
+
+        // 🧠 The AI Engine (ประมวลผลการจัดสอนแทน V3: Drag & Drop Matrix)
         window.runMasterAISubstitution = async function() {
             const dateVal = document.getElementById('masterSubDate').value;
             if(!dateVal) return customAlert("กรุณาเลือกวันที่ต้องการจัดสอนแทนครับ");
 
-            // ดึงวันในสัปดาห์ เช่น จันทร์ อังคาร
             const d = new Date(dateVal);
             const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
             const targetDayName = dayNames[d.getDay()];
@@ -6912,118 +6914,330 @@ window.renderAdminLogsTable = function() {
                 const status = statusEl.value;
                 if(status !== 'none') {
                     const dur = document.querySelector(`input[name="dur_${u.Username}"]:checked`).value;
-                    absentTeachers.push({ 
-                        fullName: u.FullName, 
-                        type: status, 
-                        duration: dur // full, am, pm
-                    });
+                    absentTeachers.push({ fullName: u.FullName, type: status, duration: dur });
                 }
                 
                 if(document.getElementById(`exAM_${u.Username}`).checked) excludedAM.push(u.FullName);
                 if(document.getElementById(`exPM_${u.Username}`).checked) excludedPM.push(u.FullName);
             });
 
-            if(absentTeachers.length === 0) {
-                return customAlert("กรุณาเลือกครูที่ลา หรือไปราชการ อย่างน้อย 1 ท่านครับ", "info");
-            }
+            if(absentTeachers.length === 0) return customAlert("กรุณาเลือกครูที่ลา หรือไปราชการ อย่างน้อย 1 ท่านครับ", "info");
 
-            customConfirm(`พบครูลา/ไปราชการ ${absentTeachers.length} ท่าน ระบบจะสุ่มจัดครูที่ว่างไปสอนแทน ยืนยันการรันระบบ AI หรือไม่?`, async () => {
-                const btn = document.getElementById('btnRunMasterAI');
-                const origTxt = btn.innerHTML;
-                btn.innerHTML = `<div class="loader loader-white mr-2 border-2"></div> กำลังประมวลผล...`;
-                btn.disabled = true;
+            const btn = document.getElementById('btnRunMasterAI');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2"></div> AI กำลังวิเคราะห์...`;
+            btn.disabled = true;
 
-                try {
-                    let totalAssigned = 0;
+            window.tempAISubstitutions = [];
 
-                    // 2. ลูปตามรายชื่อครูที่ลา
-                    for (let absent of absentTeachers) {
-                        // ดึงตารางสอนของคนลาในวันนั้น
-                        const tt = timetableDB_Global.find(t => t.TeacherName === absent.fullName && t.Day === targetDayName);
-                        if(!tt) continue; // ไม่มีสอนวันนั้น ก็ข้ามไป
+            try {
+                // 2. ลูปตามรายชื่อครูที่ลา
+                for (let absent of absentTeachers) {
+                    const tt = timetableDB_Global.find(t => t.TeacherName === absent.fullName && t.Day === targetDayName);
+                    if(!tt) continue; 
 
-                        // ลูปเช็คคาบ 1-9
-                        for(let i = 1; i <= 9; i++) {
-                            // ลอจิกครึ่งวัน (เช้า 1-4, บ่าย 5-9)
-                            if (absent.duration === 'am' && i >= 5) continue;
-                            if (absent.duration === 'pm' && i <= 4) continue;
+                    for(let i = 1; i <= 9; i++) {
+                        if (absent.duration === 'am' && i >= 5) continue;
+                        if (absent.duration === 'pm' && i <= 4) continue;
 
-                            const pData = tt[`Period${i}`];
-                            if(pData && pData.trim() !== '') {
-                                // พบว่าคาบนี้มีสอน! ต้องหาคนแทน
-                                const parts = pData.split(';');
-                                const subjectData = (parts[0]||'').trim() + " " + (parts[1]||'').trim(); // เช่น ว31221 ม.5/1
+                        const pData = tt[`Period${i}`];
+                        if(pData && pData.trim() !== '') {
+                            const parts = pData.split(';');
+                            const subjectData = (parts[0]||'').trim() + " " + (parts[1]||'').trim(); 
 
-                                // 3. กรองหา "ครูที่ว่าง" ในคาบนี้
-                                let availableTeachers = [];
-                                timetableDB_Global.forEach(sub_tt => {
-                                    if (sub_tt.Day !== targetDayName) return; // หาวันอื่นข้ามไป
-                                    if (sub_tt.TeacherName === absent.fullName) return; // ตัวเองสอนแทนตัวเองไม่ได้
-                                    
-                                    // ตัดคนที่ลาวันนี้ออกจากการเป็นผู้สอนแทน
-                                    if (absentTeachers.some(a => a.fullName === sub_tt.TeacherName)) return;
+                            // 3. กรองหา "ครูที่ว่าง" ในคาบนี้
+                            let availableTeachers = [];
+                            timetableDB_Global.forEach(sub_tt => {
+                                if (sub_tt.Day !== targetDayName) return; 
+                                if (sub_tt.TeacherName === absent.fullName) return; 
+                                if (absentTeachers.some(a => a.fullName === sub_tt.TeacherName)) return;
+                                if (i <= 4 && excludedAM.includes(sub_tt.TeacherName)) return;
+                                if (i >= 5 && excludedPM.includes(sub_tt.TeacherName)) return;
+                                if (typeof persistentExclusions !== 'undefined' && persistentExclusions.includes(sub_tt.TeacherName)) return;
 
-                                    // ตัดคนที่ถูกสั่ง "ละเว้น (Exclude)"
-                                    if (i <= 4 && excludedAM.includes(sub_tt.TeacherName)) return;
-                                    if (i >= 5 && excludedPM.includes(sub_tt.TeacherName)) return;
-
-                                    // 🚫 ตัดคนที่อยู่ใน "ละเว้นถาวร (Persistent Exclusion)" ของ EmpPngn 🚫
-                                    if (typeof persistentExclusions !== 'undefined' && persistentExclusions.includes(sub_tt.TeacherName)) return;
-
-                                    // เช็คว่าช่องตารางคาบ i ของเขาว่างหรือไม่
-                                    const sub_pData = sub_tt[`Period${i}`];
-                                    if(!sub_pData || sub_pData.trim() === '') {
-                                        availableTeachers.push(sub_tt.TeacherName);
-                                    }
-                                });
-
-                                // 4. ถ้ามีคนว่าง สุ่มเลือก 1 คนแล้วโยนขึ้น Database
-                                let chosenSub = "ไม่สามารถหาผู้สอนแทนได้";
-                                let statusLog = "Pending";
-                                
-                                if(availableTeachers.length > 0) {
-                                    chosenSub = availableTeachers[Math.floor(Math.random() * availableTeachers.length)];
-                                    statusLog = "Assigned";
+                                const sub_pData = sub_tt[`Period${i}`];
+                                if(!sub_pData || sub_pData.trim() === '') {
+                                    availableTeachers.push(sub_tt.TeacherName);
                                 }
+                            });
 
-                                // 5. ยิง API บันทึกลงใบสอนแทนแบบลอจิกฉุกเฉิน (แผน=ว่าง)
-                                const payload = {
-                                    action: 'submitHandover',
-                                    data: {
-                                        LogID: 'SUB-AI-' + Date.now() + '-' + i,
-                                        Date: dateVal,
-                                        AbsentTeacher: absent.fullName,
-                                        SubTeacher: chosenSub,
-                                        Period: i.toString(),
-                                        SubjectData: subjectData,
-                                        LeaveType: absent.type,
-                                        HandoverPlan: "", // ลาฉุกเฉินไม่มีแผน
-                                        HandoverMedia: "",
-                                        HandoverNote: "จัดสอนแทนโดยระบบอัตโนมัติ",
-                                        Status: statusLog
-                                    }
-                                };
-                                
-                                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
-                                totalAssigned++;
+                            // 4. สุ่มเลือก 1 คนแล้วโยนเข้ากระดานทดสอบ
+                            let chosenSub = ""; 
+                            if(availableTeachers.length > 0) {
+                                chosenSub = availableTeachers[Math.floor(Math.random() * availableTeachers.length)];
                             }
+
+                            window.tempAISubstitutions.push({
+                                LogID: 'SUB-AI-' + Date.now() + '-' + i + Math.floor(Math.random()*100),
+                                Date: dateVal,
+                                AbsentTeacher: absent.fullName,
+                                SubTeacher: chosenSub,
+                                Period: i.toString(),
+                                SubjectData: subjectData,
+                                LeaveType: absent.type,
+                                HandoverPlan: "",
+                                HandoverMedia: "",
+                                HandoverNote: "จัดสอนแทนโดยระบบอัตโนมัติ"
+                            });
                         }
                     }
+                }
 
-                    customAlert(`ระบบจัดสอนแทนเสร็จสิ้น! สร้างใบสั่งงานแล้ว ${totalAssigned} รายการ`, "success");
+                if (window.tempAISubstitutions.length === 0) {
+                    customAlert("ไม่มีคาบสอนที่ต้องจัดคนไปสอนแทนในวันนี้ครับ", "info");
+                } else {
+                    // 💡 โยนเข้ากระดาน The Matrix 
+                    renderDragDropReviewBoard(targetDayName, absentTeachers, excludedAM, excludedPM);
+                }
+
+            } catch (e) {
+                customAlert("เกิดข้อผิดพลาดในการประมวลผล: " + e.message);
+            } finally {
+                btn.innerHTML = `✨ รันระบบ AI จัดสอนแทน`;
+                btn.disabled = false;
+            }
+        };
+
+        // 🎛️ The Matrix Review Board (กระดานลากวาง)
+        window.renderDragDropReviewBoard = function(targetDayName, absentTeachers, excludedAM, excludedPM) {
+            const parent = document.getElementById('masterControlPanelContainer').parentElement;
+            let board = document.getElementById('aiDragDropBoard');
+            if(!board) {
+                board = document.createElement('div');
+                board.id = 'aiDragDropBoard';
+                board.className = "mt-6 border-t border-purple-200 pt-6 animate-in fade-in zoom-in duration-300";
+                parent.appendChild(board);
+            }
+
+            // ซ่อนแผงควบคุมเก่า
+            document.getElementById('masterControlPanelContainer').classList.add('hidden');
+            document.getElementById('btnRunMasterAI').classList.add('hidden');
+
+            // ดึงครูที่ไม่ได้ลาทั้งวัน มาวาดเป็นแถว Matrix
+            let validTeachers = usersDB_Global.filter(u => {
+                if(u.Role.includes('BirdSpy') && !u.Role.includes('User')) return false;
+                const isAbsentFull = absentTeachers.some(a => a.fullName === u.FullName && a.duration === 'full');
+                return !isAbsentFull;
+            });
+            
+            validTeachers.sort((a,b) => {
+                const indexA = LEARNING_AREAS.indexOf(a.Department) === -1 ? 99 : LEARNING_AREAS.indexOf(a.Department);
+                const indexB = LEARNING_AREAS.indexOf(b.Department) === -1 ? 99 : LEARNING_AREAS.indexOf(b.Department);
+                if (indexA !== indexB) return indexA - indexB;
+                return a.FullName.localeCompare(b.FullName, 'th');
+            });
+
+            let matrixHtml = '';
+            validTeachers.forEach(t => {
+                const isAbsentAM = absentTeachers.some(a => a.fullName === t.FullName && a.duration === 'am');
+                const isAbsentPM = absentTeachers.some(a => a.fullName === t.FullName && a.duration === 'pm');
+                
+                const tt = timetableDB_Global.find(x => x.TeacherName === t.FullName && x.Day === targetDayName);
+                
+                // 💡 จุดปรับปรุงที่ 1: ดึงห้องประจำชั้นมาต่อท้ายกลุ่มสาระฯ
+                const advisorText = (t.AdvisorRoom && t.AdvisorRoom !== '-' && t.AdvisorRoom.trim() !== '') ? ` | ประจำชั้น${t.AdvisorRoom}` : '';
+
+                let rowHtml = `<tr class="hover:bg-purple-50/30 transition-colors border-b border-gray-200">
+                    <td class="p-2 font-bold text-gray-700 text-left sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10 w-40 truncate border-r border-gray-200">
+                        <div class="text-xs truncate" title="${t.FullName}">${t.FullName}</div>
+                        <div class="text-[9px] text-gray-400 truncate" title="${t.Department||''}${advisorText}">${t.Department||''}${advisorText}</div>
+                    </td>`;
                     
-                    // รีเซ็ตแผงควบคุม
-                    loadSubAdminTable();
+                for(let i=1; i<=9; i++) {
+                    let state = 'empty'; 
+                    let pData = tt ? tt[`Period${i}`] : "";
                     
-                } catch (e) {
-                    customAlert("เกิดข้อผิดพลาดในการประมวลผล: " + e.message);
-                } finally {
-                    btn.innerHTML = `✨ รันระบบ AI จัดสอนแทน`;
-                    btn.disabled = false;
+                    if ((i<=4 && isAbsentAM) || (i>=5 && isAbsentPM)) state = 'absent';
+                    else if (persistentExclusions.includes(t.FullName) || (i<=4 && excludedAM.includes(t.FullName)) || (i>=5 && excludedPM.includes(t.FullName))) state = 'excluded';
+                    else if (pData && pData.trim() !== '') state = 'busy';
+
+                    if (state === 'absent') {
+                        rowHtml += `<td class="p-1 border-r border-gray-100 bg-amber-50/50"><div class="flex items-center justify-center h-14 text-[10px] text-amber-500 font-bold">ลา/ราชการ</div></td>`;
+                    } else if (state === 'excluded') {
+                        rowHtml += `<td class="p-1 border-r border-gray-100 bg-rose-50/50"><div class="flex items-center justify-center h-14 text-[10px] text-rose-400 font-bold">🚫 ละเว้น</div></td>`;
+                    } else if (state === 'busy') {
+                        const parts = pData.split(';');
+                        rowHtml += `<td class="p-1 border-r border-gray-100 bg-gray-50"><div class="w-full h-14 rounded flex flex-col items-center justify-center text-[9px] text-gray-500 border border-gray-200 bg-white shadow-sm overflow-hidden p-0.5"><span class="font-bold text-indigo-800 truncate w-full">${parts[0]}</span><span class="truncate w-full">${parts[1]||''}</span></div></td>`;
+                    } else {
+                        // Drop Zone!
+                        rowHtml += `<td class="p-1 border-r border-gray-100"><div id="zone_${t.Username}_${i}" data-teacher="${t.FullName}" data-period="${i}" class="drop-zone w-full h-14 rounded-lg border-2 border-dashed border-indigo-200 bg-indigo-50/30 flex items-center justify-center transition-colors relative" ondrop="dropSubCard(event)" ondragover="allowDropSubCard(event)" ondragleave="dragLeaveSubCard(event)"></div></td>`;
+                    }
+                }
+                rowHtml += `</tr>`;
+                matrixHtml += rowHtml;
+            });
+
+            board.innerHTML = `
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                    <div>
+                        <h3 class="text-xl font-black text-purple-800 flex items-center gap-2">🎛️ กระดานจัดสอนแทน (Drag & Drop)</h3>
+                        <p class="text-xs text-gray-500">ลากการ์ดสอนแทนในคาบนั้นๆ ไปวางในช่องว่างของครูที่ต้องการได้เลย</p>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="cancelAISub()" class="flex-1 sm:flex-none px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors shadow-sm">ยกเลิก</button>
+                        <button onclick="saveAISub()" class="flex-1 sm:flex-none px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-md hover:scale-105 transition-transform flex items-center justify-center gap-2">💾 ยืนยันและจัดเก็บ</button>
+                    </div>
+                </div>
+                
+                <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 mb-4 shadow-inner">
+                    <h4 class="font-bold text-rose-800 mb-2 flex items-center gap-2 text-sm">📌 คาบที่รอจัดคนสอน (ลากการ์ดกลับมาพักที่นี่ได้)</h4>
+                    <div id="unassignedZone" class="flex flex-wrap gap-2 min-h-[60px] p-2 bg-white rounded-lg border-2 border-dashed border-rose-300" ondrop="dropSubCard(event)" ondragover="allowDropSubCard(event)" ondragleave="dragLeaveSubCard(event)">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar border border-gray-300 rounded-xl shadow-inner bg-white max-h-[500px] relative">
+                    <table class="min-w-full divide-y divide-gray-300 text-sm text-center border-collapse">
+                        <thead class="bg-gradient-to-r from-slate-800 to-slate-700 sticky top-0 z-20 shadow-md">
+                            <tr>
+                                <th class="px-2 py-3 font-bold text-white w-40 sticky left-0 z-30 bg-slate-800 border-r border-slate-600 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">รายชื่อครูที่อยู่ในโรงเรียน</th>
+                                ${[1,2,3,4,5,6,7,8,9].map(i => `<th class="px-2 py-3 font-bold text-white border-r border-slate-600 min-w-[70px]">คาบ ${i}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            ${matrixHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // วาดการ์ดสอนแทน
+            window.tempAISubstitutions.forEach(sub => {
+                const shortName = sub.AbsentTeacher.split(' ')[0].replace(/นาย|นางสาว|นาง|ว่าที่ร้อยตรีหญิง|ว่าที่ร้อยตรี|ว่าที่ ร\.ต\. หญิง|ว่าที่ ร\.ต\.|Mr\.|Mrs\.|Ms\./gi, '');
+                
+                // 💡 จุดปรับปรุงที่ 2: ดึงระดับชั้นมาแสดงแทนคำว่า "คาบ X" (ถ้าไม่มีชั้นถึงจะโชว์คาบแทน)
+                const partsData = sub.SubjectData.split(' ');
+                const shortSubj = partsData[0];
+                const classLevel = (partsData.length > 1 && partsData[1].trim() !== '') ? partsData.slice(1).join(' ').trim() : `คาบ ${sub.Period}`;
+                
+                const cardHtml = `
+                    <div id="${sub.LogID}" draggable="true" ondragstart="dragSubCard(event)" class="sub-card cursor-grab active:cursor-grabbing w-full h-full min-w-[65px] bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded shadow-md p-1 flex flex-col justify-center items-center border border-purple-300 z-10 transition-transform hover:scale-105">
+                        <span class="text-[9px] text-purple-100 font-bold leading-tight truncate w-full text-center">แทน: ${shortName}</span>
+                        <span class="text-[10px] font-black leading-tight truncate w-full text-center">${shortSubj}</span>
+                        <span class="text-[8px] bg-white text-purple-700 px-1 rounded-sm mt-0.5 font-bold truncate max-w-[90%]">${classLevel}</span>
+                    </div>
+                `;
+
+                if (sub.SubTeacher) {
+                    const tInfo = usersDB_Global.find(u => u.FullName === sub.SubTeacher);
+                    const zone = tInfo ? document.getElementById(`zone_${tInfo.Username}_${sub.Period}`) : null;
+                    if(zone) {
+                        zone.innerHTML = cardHtml;
+                    } else {
+                        document.getElementById('unassignedZone').innerHTML += `<div class="relative w-[75px] h-14">${cardHtml}</div>`;
+                    }
+                } else {
+                    document.getElementById('unassignedZone').innerHTML += `<div class="relative w-[75px] h-14">${cardHtml}</div>`;
                 }
             });
+            
+            board.classList.remove('hidden');
         };
-                // ==========================================
+
+        // 🧲 ระบบฟิสิกส์ลากวางการ์ด (Physics Engine)
+        window.allowDropSubCard = function(ev) {
+            ev.preventDefault();
+            const zone = ev.currentTarget;
+            if(zone.classList.contains('drop-zone') || zone.id === 'unassignedZone') {
+                zone.classList.add('bg-indigo-200', 'border-indigo-500');
+            }
+        };
+
+        window.dragLeaveSubCard = function(ev) {
+            const zone = ev.currentTarget;
+            if(zone.classList.contains('drop-zone') || zone.id === 'unassignedZone') {
+                zone.classList.remove('bg-indigo-200', 'border-indigo-500');
+            }
+        };
+
+        window.dragSubCard = function(ev) {
+            ev.dataTransfer.setData("text", ev.currentTarget.id);
+        };
+
+        window.dropSubCard = function(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const card = document.getElementById(data);
+            if(!card) return;
+            
+            let dropZone = ev.currentTarget;
+            dropZone.classList.remove('bg-indigo-200', 'border-indigo-500');
+
+            const subObj = window.tempAISubstitutions.find(s => s.LogID === data);
+
+            // ถ้าลากกลับไปกล่องพัก (Unassigned)
+            if(dropZone.id === 'unassignedZone') {
+                subObj.SubTeacher = "";
+                if(card.parentElement && card.parentElement.classList.contains('w-[75px]')) {
+                    card.parentElement.remove();
+                }
+                const wrapper = document.createElement('div');
+                wrapper.className = "relative w-[75px] h-14";
+                wrapper.appendChild(card);
+                dropZone.appendChild(wrapper);
+                return;
+            }
+
+            // ถ้าลากลงตาราง Matrix
+            if(dropZone.classList.contains('drop-zone')) {
+                const targetPeriod = dropZone.dataset.period;
+                
+                if(targetPeriod !== subObj.Period) {
+                    return customAlert(`⚠️ คาบไม่ตรงกัน! วิชานี้ต้องสอนแทนในคาบที่ ${subObj.Period} เท่านั้นครับ`, "error");
+                }
+                if(dropZone.querySelector('.sub-card')) {
+                    return customAlert("ช่องนี้มีคนสอนแทนอยู่แล้วครับ!", "warning");
+                }
+                
+                // ถือว่าผ่านเกณฑ์
+                subObj.SubTeacher = dropZone.dataset.teacher;
+                if(card.parentElement && card.parentElement.classList.contains('w-[75px]')) {
+                    card.parentElement.remove();
+                }
+                dropZone.appendChild(card);
+            }
+        };
+
+        window.cancelAISub = function() {
+            document.getElementById('aiDragDropBoard').classList.add('hidden');
+            document.getElementById('masterControlPanelContainer').classList.remove('hidden');
+            document.getElementById('btnRunMasterAI').classList.remove('hidden');
+        };
+
+        window.saveAISub = function() {
+            const finalData = window.tempAISubstitutions.filter(s => s.SubTeacher !== "");
+            if (finalData.length === 0) return customAlert("ไม่มีรายการถูกบันทึก เนื่องจากคุณดึงการ์ดออกทั้งหมดครับ", "info");
+
+            Swal.fire({
+                title: 'กำลังส่งคำสั่งขึ้นสู่ระบบ...',
+                html: '<div class="loader loader-white mx-auto border-4 border-purple-500 border-t-transparent mt-4 mb-2"></div>',
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+
+            try {
+                let successCount = 0;
+                finalData.forEach(async (item) => {
+                    item.Status = "Assigned";
+                    const payload = { action: 'submitHandover', data: item };
+                    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                    successCount++;
+                });
+                
+                setTimeout(() => {
+                    Swal.close();
+                    customAlert(`บันทึกการจัดสอนแทนลงระบบเรียบร้อย ${successCount} รายการ!`, "success");
+                    cancelAISub();
+                    loadSubAdminTable(); // เคลียร์หน้าจอแผงควบคุม
+                    fetchAllDatabasesFromGAS(); // รีเฟรชข้อมูลเงียบๆ
+                }, 2000);
+                
+            } catch(e) {
+                Swal.close();
+                customAlert("เกิดข้อผิดพลาดในการบันทึก: " + e.message, "error");
+            }
+        };
+        
+        // ==========================================
         // 👁️ ระบบนิเทศการสอน (Supervision System)
         // ==========================================
         
@@ -9093,25 +9307,38 @@ window.renderAdminLogsTable = function() {
         // ==========================================
         
         // 1. ฟังก์ชันสร้าง Dropdown วิชาอัจฉริยะ (ป้องกัน undefined ด้วย Fuzzy Match)
-        // 1. ฟังก์ชันสร้าง Dropdown วิชาอัจฉริยะ (พร้อมลอจิก Auto-select Department)
+        // ====================================================
+        // 🧠 SMART SUBJECT MAPPER (ระบบดึงรายวิชาแบบทะลวงช่องว่าง)
+        // ====================================================
         window.setupSubjectDropdowns = function(teacherName, selectId, nameInpId, codeInpId) {
             const sel = document.getElementById(selectId);
             if(!sel) return;
             sel.innerHTML = '<option value="">-- กรุณาเลือกรายวิชา --</option>';
             if(!teacherName) return;
 
+            // ฟังก์ชันช่วยหาค่าจาก Key ที่พิมพ์ผิดหรือเคาะวรรคเกิน
             const getFuzzyVal = (obj, searchStr) => {
                 const key = Object.keys(obj).find(k => k.trim().toLowerCase() === searchStr.toLowerCase());
                 return key ? obj[key] : undefined;
             };
 
+            // 💡 ลอจิกขยี้ช่องว่าง: แปลง "นาย  ก  วรรคเยอะ" ให้เป็น "นาย ก วรรคเยอะ" (เพื่อใช้เทียบ)
+            const normalizeName = (name) => {
+                if (!name) return "";
+                return String(name).trim().replace(/\s+/g, ' '); 
+            };
+
+            const targetNameClean = normalizeName(teacherName);
+
+            // 💡 กรองวิชา: ใช้ชื่อที่ถูกทำความสะอาดแล้วมาเทียบกัน
             const mySubs = subjectsDB_Global.filter(s => {
-                const tName = getFuzzyVal(s, 'teachername') || getFuzzyVal(s, 'ชื่อผู้สอน');
-                return tName === teacherName;
+                const rawNameFromDB = getFuzzyVal(s, 'teachername') || getFuzzyVal(s, 'ชื่อผู้สอน');
+                return normalizeName(rawNameFromDB) === targetNameClean;
             });
 
             if(mySubs.length === 0) {
-                sel.innerHTML = '<option value="">-- ไม่พบวิชาที่ลงทะเบียนไว้ --</option>';
+                sel.innerHTML = '<option value="">-- ไม่พบวิชาที่คุณลงทะเบียนไว้ --</option>';
+                console.warn(`[Subject Mapping] หาไม่เจอ: ${targetNameClean}`);
                 return;
             }
 
@@ -9120,35 +9347,31 @@ window.renderAdminLogsTable = function() {
                 let name = getFuzzyVal(s, 'subjectname') || getFuzzyVal(s, 'ชื่อวิชา');
                 let level = getFuzzyVal(s, 'level') || getFuzzyVal(s, 'ระดับชั้น') || "";
                 
+                // กันเหนียวฆ่า undefined
                 code = (code === undefined || String(code).toLowerCase() === 'undefined' || code === null) ? "" : String(code).trim();
                 name = (name === undefined || String(name).toLowerCase() === 'undefined' || name === null) ? "ไม่มีชื่อวิชา" : String(name).trim();
                 
                 const display = `${code} ${name}` + (level ? ` (${level})` : "");
                 const val = `${code}|${name}`;
-                
                 sel.add(new Option(display, val));
             });
 
             sel.onchange = function() {
                 const parts = this.value.split('|');
                 const code = parts[0];
-                const name = parts.slice(1).join('|'); // เผื่อชื่อมี |
+                const name = parts.slice(1).join('|');
                 const nInp = document.getElementById(nameInpId);
                 const cInp = document.getElementById(codeInpId);
                 if(nInp) nInp.value = name || "";
                 if(cInp) cInp.value = code || "";
 
-                // 💡 ตรรกะใหม่: เลือกวิชาปุ๊บ ดึงกลุ่มสาระฯ ให้ปั๊บ (Sprint 3.5)
                 if (selectId === 'logSubjectSelector') {
                     const isSubEl = document.getElementById('isSubstitute');
                     const targetDeptId = (isSubEl && isSubEl.checked) ? 'originalLearningArea' : 'learningArea';
                     const targetDeptEl = document.getElementById(targetDeptId);
-                    
                     if (targetDeptEl && code) {
-                        const subjInfo = subjectsDB_Global.find(s => (s.SubjectCode || s.subjectcode || s['รหัสวิชา']) === code);
-                        if (subjInfo && subjInfo.Department) {
-                            targetDeptEl.value = subjInfo.Department;
-                        }
+                        const subjInfo = subjectsDB_Global.find(s => normalizeName(getFuzzyVal(s, 'subjectcode') || getFuzzyVal(s, 'รหัสวิชา')) === normalizeName(code));
+                        if (subjInfo && subjInfo.Department) targetDeptEl.value = subjInfo.Department;
                     }
                 }
             };
@@ -9570,22 +9793,30 @@ window.renderAdminLogsTable = function() {
 
         window.openUserMatrixSlotModal = function(day, period, currentValue) {
             const teacher = currentUser.FullName;
-            const mySubs = subjectsDB_Global.filter(s => s.TeacherName === teacher);
-            let subOptions = `<option value="">-- ว่าง (ลบคาบนี้ทิ้ง) --</option>`;
             
-            // 💡 ดึงวิชาที่มีมาโชว์ (สกัด undefined ให้เรียบร้อย)
+            // 💡 อัปเกรด: ใส่สมองกล Fuzzy Match ให้มันรู้จักหัวตารางภาษาไทยเหมือนหน้าอื่น
+            const getFuzzyVal = (obj, searchStr) => {
+                const key = Object.keys(obj).find(k => k.trim().toLowerCase() === searchStr.toLowerCase());
+                return key ? obj[key] : undefined;
+            };
+            const normalizeName = (name) => name ? String(name).trim().replace(/\s+/g, ' ') : "";
+            const targetNameClean = normalizeName(teacher);
+
+            const mySubs = subjectsDB_Global.filter(s => {
+                const tName = getFuzzyVal(s, 'teachername') || getFuzzyVal(s, 'ชื่อผู้สอน');
+                return normalizeName(tName) === targetNameClean;
+            });
+            
+            let subOptions = `<option value="">-- ว่าง (ลบคาบนี้ทิ้ง) --</option>`;
             mySubs.forEach(s => {
-                const code = s.SubjectCode || s.subjectcode || s['รหัสวิชา'] || "";
-                const name = s.SubjectName || s.subjectname || s['ชื่อวิชา'] || "";
-                if(code || name) {
-                    subOptions += `<option value="${code}">${code} ${name}</option>`;
-                }
+                let code = getFuzzyVal(s, 'subjectcode') || getFuzzyVal(s, 'รหัสวิชา') || "";
+                let name = getFuzzyVal(s, 'subjectname') || getFuzzyVal(s, 'ชื่อวิชา') || "";
+                if(code || name) subOptions += `<option value="${code}">${code} ${name}</option>`;
             });
             
             let roomOptions = `<option value="">-- ไม่ระบุห้อง --</option>`;
             CLASSROOMS_LIST.forEach(c => roomOptions += `<option value="${c}">${c}</option>`);
 
-            // ตัดค่าเก่ามาโชว์ (ถ้าเคยกรอกไว้)
             let oldCode = '', oldRoom = '';
             if(currentValue) {
                 const parts = currentValue.split(';');
@@ -9618,23 +9849,21 @@ window.renderAdminLogsTable = function() {
                 preConfirm: () => {
                     const code = document.getElementById('userSwalSub').value;
                     const room = document.getElementById('userSwalRoom').value;
-                    return code ? `${code} ; ${room}` : ""; // ถ้าไม่เลือกวิชา แปลว่าสั่งลบคาบนั้นทิ้งให้ว่าง
+                    return code ? `${code} ; ${room}` : ""; 
                 }
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     const payload = {
-                        action: 'saveTimetableSlot', // 💡 ยิงเข้า API เดียวกับแอดมินเป๊ะๆ!
+                        action: 'saveTimetableSlot',
                         data: { TeacherName: teacher, Day: day, Period: period, Value: result.value }
                     };
                     try {
                         Swal.showLoading();
                         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
                         
-                        // อัปเดต Global Array ให้จอหน้าเว็บรีเฟรชได้เลยไม่ต้องรอโหลดใหม่
                         let ttRow = timetableDB_Global.find(t => t.TeacherName === teacher && t.Day === day);
-                        if(ttRow) {
-                            ttRow[`Period${period}`] = result.value;
-                        } else {
+                        if(ttRow) ttRow[`Period${period}`] = result.value;
+                        else {
                             ttRow = { TeacherName: teacher, Day: day };
                             ttRow[`Period${period}`] = result.value;
                             timetableDB_Global.push(ttRow);
@@ -9642,7 +9871,7 @@ window.renderAdminLogsTable = function() {
                         
                         Swal.close();
                         customAlert("อัปเดตตารางสอนเรียบร้อย!", "success");
-                        renderUserTimetableMatrix(); // วาดตารางใหม่
+                        renderUserTimetableMatrix(); 
                     } catch(e) {
                         Swal.close();
                         customAlert("ข้อผิดพลาด: " + e.message, "error");
@@ -9722,14 +9951,30 @@ window.renderAdminLogsTable = function() {
 
         // Modal โคตรล้ำของตารางสอน (ใช้วิธีสร้างสดผ่าน Swal.fire เพื่อความไว)
         window.openMatrixSlotModal = function(teacher, day, period, currentValue) {
-            const mySubs = subjectsDB_Global.filter(s => s.TeacherName === teacher);
+            
+            // 💡 อัปเกรด: ใส่สมองกล Fuzzy Match ให้ฝั่งแอดมินด้วย
+            const getFuzzyVal = (obj, searchStr) => {
+                const key = Object.keys(obj).find(k => k.trim().toLowerCase() === searchStr.toLowerCase());
+                return key ? obj[key] : undefined;
+            };
+            const normalizeName = (name) => name ? String(name).trim().replace(/\s+/g, ' ') : "";
+            const targetNameClean = normalizeName(teacher);
+
+            const mySubs = subjectsDB_Global.filter(s => {
+                const tName = getFuzzyVal(s, 'teachername') || getFuzzyVal(s, 'ชื่อผู้สอน');
+                return normalizeName(tName) === targetNameClean;
+            });
+            
             let subOptions = `<option value="">-- ว่าง (ลบคาบนี้ทิ้ง) --</option>`;
-            mySubs.forEach(s => subOptions += `<option value="${s.SubjectCode}">${s.SubjectCode} ${s.SubjectName}</option>`);
+            mySubs.forEach(s => {
+                let code = getFuzzyVal(s, 'subjectcode') || getFuzzyVal(s, 'รหัสวิชา') || "";
+                let name = getFuzzyVal(s, 'subjectname') || getFuzzyVal(s, 'ชื่อวิชา') || "";
+                if(code || name) subOptions += `<option value="${code}">${code} ${name}</option>`;
+            });
             
             let roomOptions = `<option value="">-- ไม่ระบุห้อง --</option>`;
             CLASSROOMS_LIST.forEach(c => roomOptions += `<option value="${c}">${c}</option>`);
 
-            // ตัดค่าเก่ามาโชว์
             let oldCode = '', oldRoom = '';
             if(currentValue) {
                 const parts = currentValue.split(';');
@@ -9761,7 +10006,7 @@ window.renderAdminLogsTable = function() {
                 preConfirm: () => {
                     const code = document.getElementById('swalSub').value;
                     const room = document.getElementById('swalRoom').value;
-                    return code ? `${code} ; ${room}` : ""; // ถ้าไม่เลือกวิชา แปลว่าลบ
+                    return code ? `${code} ; ${room}` : ""; 
                 }
             }).then(async (result) => {
                 if (result.isConfirmed) {
@@ -9773,11 +10018,9 @@ window.renderAdminLogsTable = function() {
                         Swal.showLoading();
                         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
                         
-                        // อัปเดต Global Array ให้จอหน้าเว็บรีเฟรชได้เลยไม่ต้องรอโหลดใหม่
                         let ttRow = timetableDB_Global.find(t => t.TeacherName === teacher && t.Day === day);
-                        if(ttRow) {
-                            ttRow[`Period${period}`] = result.value;
-                        } else {
+                        if(ttRow) ttRow[`Period${period}`] = result.value;
+                        else {
                             ttRow = { TeacherName: teacher, Day: day };
                             ttRow[`Period${period}`] = result.value;
                             timetableDB_Global.push(ttRow);
@@ -10143,7 +10386,7 @@ window.renderAdminLogsTable = function() {
                 sortedTeachers.forEach((t, idx) => {
                     // ดึงรูปมาโชว์ด้วย
                     const uInfo = usersDB_Global.find(u => u.FullName === t.name) || {};
-                    const shortName = t.name.split(' ')[0].replace('นาย','').replace('นางสาว','').replace('นาง','');
+                    const shortName = t.name.split(' ')[0].replace(/นาย|นางสาว|นาง|ว่าที่ร้อยตรีหญิง|ว่าที่ร้อยตรี|ว่าที่ ร\.ต\. หญิง|ว่าที่ ร\.ต\.|Mr\.|Mrs\.|Ms\./gi, '');
                     const imgUrl = uInfo.ProfileImage ? getEmbeddableUrl(uInfo.ProfileImage) : `https://ui-avatars.com/api/?name=${encodeURIComponent(shortName)}&background=0ea5e9&color=fff`;
 
                     topList.innerHTML += `
@@ -11638,7 +11881,7 @@ window.saveStudentDetail = async function() {
         };
         
         // ====================================================
-        // 🚀 TRW TIMETABLE EXTRACTOR (V5.2: DBF Native + Schema & Time Shift Fix)
+        // 🚀 TRW TIMETABLE EXTRACTOR (V5.4: The Clean Format - Room Info Removed)
         // ====================================================
         window.uploadTimetableFromTRW = async function() {
             const fileInput = document.getElementById('adminTimetableTRW');
@@ -11650,7 +11893,7 @@ window.saveStudentDetail = async function() {
 
             const btn = window.event.currentTarget;
             const origTxt = btn.innerHTML;
-            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> วิศวกรรมย้อนกลับ...`;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังทำความสะอาดข้อมูล...`;
             btn.disabled = true;
 
             try {
@@ -11662,7 +11905,6 @@ window.saveStudentDetail = async function() {
                     reader.readAsArrayBuffer(file);
                 });
 
-                // --- 💡 สร้างเครื่องยนต์อ่านไฟล์ DBF โดยตรง (DBF Parser) ---
                 const dataView = new DataView(buffer);
                 const numRecords = dataView.getUint32(4, true); 
                 const headerLen = dataView.getUint16(8, true); 
@@ -11670,11 +11912,9 @@ window.saveStudentDetail = async function() {
 
                 let offset = 32;
                 const fields = [];
-                // 1. อ่านโครงสร้างคอลัมน์
                 while (offset < headerLen - 1) {
                     const firstByte = dataView.getUint8(offset);
                     if (firstByte === 0x0D) break; 
-                    
                     let fieldName = '';
                     for (let j = 0; j < 11; j++) {
                         const code = dataView.getUint8(offset + j);
@@ -11686,7 +11926,6 @@ window.saveStudentDetail = async function() {
                     offset += 32;
                 }
 
-                // ฟังก์ชันถอดรหัส TIS-620
                 const decodeTIS620Native = function(uint8Arr) {
                     const tis620Map = {
                         161:'ก',162:'ข',163:'ฃ',164:'ค',165:'ฅ',166:'ฆ',167:'ง',168:'จ',169:'ฉ',170:'ช',171:'ซ',172:'ฌ',173:'ญ',174:'ฎ',175:'ฏ',176:'ฐ',
@@ -11706,15 +11945,12 @@ window.saveStudentDetail = async function() {
                     return result.trim();
                 };
 
-                // 2. ดึงข้อมูลทีละคน 
                 const trwRecords = [];
                 let recordOffset = headerLen;
                 for (let i = 0; i < numRecords; i++) {
                     if (recordOffset + recordLen > buffer.byteLength) break;
-                    
                     const isDeleted = dataView.getUint8(recordOffset) === 0x2A; 
                     let currentOffset = recordOffset + 1; 
-                    
                     if (!isDeleted) {
                         const record = {};
                         for (let f of fields) {
@@ -11729,22 +11965,17 @@ window.saveStudentDetail = async function() {
                 
                 let extractedData = [];
                 let matchCount = 0;
-                let notFoundCount = 0;
-
                 const dbTeachers = usersDB_Global.map(u => {
                     const tCode = u.TeacherCode || u.teachercode || u['รหัสครู'] || u['รหัสตารางสอน'] || null;
                     return { fullName: u.FullName, code: String(tCode).trim() };
                 });
 
-                // 💡 แก้บั๊กที่ 1: ขยับมิติเวลาวัน (โปรแกรมเก่ามองว่า T1 = วันจันทร์)
                 const daysMap = { 'T1': 'จันทร์', 'T2': 'อังคาร', 'T3': 'พุธ', 'T4': 'พฤหัสบดี', 'T5': 'ศุกร์' };
 
-                // 3. จับคู่รหัสและประกอบตารางสอน
                 for (let t of dbTeachers) {
                     if (!t.code || t.code === 'null') continue; 
-
                     const teacherRecord = trwRecords.find(r => (r.NO_TEACH === t.code || r.ID === t.code));
-                    if (!teacherRecord) { notFoundCount++; continue; }
+                    if (!teacherRecord) continue;
 
                     Object.keys(daysMap).forEach(dayPrefix => {
                         let rowObj = { 
@@ -11755,56 +11986,49 @@ window.saveStudentDetail = async function() {
                         };
                         let hasClass = false;
 
-                        // 💡 แก้บั๊กที่ 2: ขยับมิติเวลาคาบเรียน (ปัดโฮมรูม T101 ทิ้งไป เริ่มที่ T102)
                         for (let p = 1; p <= 9; p++) {
-                            const dbfPeriodIndex = p + 1; // คาบ 1 ของระบบเว็บ = ช่อง 02 ของไฟล์ TRW
-                            const pCode = dbfPeriodIndex.toString().padStart(2, '0');
-                            const colName = `${dayPrefix}${pCode}`; // เช่น T102, T103...
-                            
+                            const pCode = (p + 1).toString().padStart(2, '0');
+                            const colName = `${dayPrefix}${pCode}`; 
                             const cellData = teacherRecord[colName];
+
                             if (cellData && cellData.length > 1) {
                                 const cleanData = cellData.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim();
                                 
+                                // 💡 ลอจิก V5.4: ตัดเลขห้องทิ้งเด็ดขาด เหลือแค่ "รหัสวิชา ; ระดับชั้น"
                                 if (cleanData.match(/^[ก-ฮ][0-9]{5}/)) {
                                     const parts = cleanData.split(/\s+/);
                                     const subCode = parts[0] || '';
-                                    let room = parts[1] || '';
-                                    if (room.match(/^[1-6]\//)) room = "ม." + room; 
-                                    rowObj[`Period${p}`] = `${subCode} ; ${room}`;
+                                    let level = parts[1] || '';
+                                    if (level.match(/^[1-6]\//)) level = "ม." + level; 
+                                    
+                                    // 🗑️ ลบส่วนพ่วงท้าย [ห้องเรียน] ออกไปเพื่อให้ระบบจำระดับชั้นได้
+                                    rowObj[`Period${p}`] = `${subCode} ; ${level}`;
                                 } else {
-                                    rowObj[`Period${p}`] = `${cleanData} ;`;
+                                    // เคสกิจกรรม ลบขยะชื่อครูทิ้งเหมือนเดิม
+                                    let activityName = cleanData.split(/\s\s+/)[0]; 
+                                    activityName = activityName.replace(/[0-9].*$/, '').trim(); 
+                                    rowObj[`Period${p}`] = `${activityName} ;`;
                                 }
                                 hasClass = true;
                             }
                         }
                         if (hasClass) extractedData.push(rowObj);
                     });
-                    
                     if(extractedData.filter(d => d.TeacherName === t.fullName).length > 0) matchCount++;
                 }
 
-                if (extractedData.length === 0) {
-                    throw new Error("ไม่พบข้อมูลตารางสอนเลยครับ! ลองเช็คความถูกต้องของรหัสครู (TeacherCode) อีกครั้ง");
-                }
+                if (extractedData.length === 0) throw new Error("ไม่พบข้อมูลที่ตรงกับรายชื่อครูครับ");
 
-                btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังเซฟตารางสอน (${matchCount} ท่าน)...`;
-
-                const payload = {
-                    action: "uploadMasterData", type: "timetable", term: currentTerm, year: currentYear, data: extractedData 
-                };
-
+                btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังบันทึก...`;
+                const payload = { action: "uploadMasterData", type: "timetable", term: currentTerm, year: currentYear, data: extractedData };
                 const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
-                const textResult = await response.text();
-                const result = JSON.parse(textResult);
+                const result = await response.json();
 
                 if (result.status === 'success') {
-                    customAlert(`🔥 นำเข้าข้อมูลตารางสอนสำเร็จ! จัดตารางให้ครู ${matchCount} ท่าน (รวม ${extractedData.length} วันที่มีสอน)`, 'success');
+                    customAlert(`🔥 นำเข้าสำเร็จ! กรุณาตรวจสอบอีกครั้งนะครับ เผื่อระบบเอ๋อครับ 🙂`, 'success');
                     fileInput.value = '';
-                    if (notFoundCount > 0) console.warn(`หารหัสไม่พบ ${notFoundCount} ท่าน`);
                     fetchAllDatabasesFromGAS(); 
-                } else {
-                    throw new Error(result.message);
-                }
+                } else throw new Error(result.message);
 
             } catch (error) {
                 customAlert("ข้อผิดพลาด: " + error.message, "error");
