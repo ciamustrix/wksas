@@ -1040,9 +1040,9 @@
                                     <button onclick="toggleTab('approve', 'plans')" id="tab-approve-plans" class="tab-btn px-4 py-2 text-sm font-medium text-gray-500 rounded-md w-1/2 sm:w-auto text-center">แผนการสอน</button>
                                 </div>
                                 <div id="batchApproveContainer" class="hidden w-full sm:w-auto">
-                                    <button onclick="batchApproveItems()" class="w-full px-6 py-2 bg-gradient-to-r from-gray-700 to-gray-900 text-white font-bold rounded-lg shadow-md hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                                    <button onclick="batchApproveItems()" class="w-full px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                                        รับทราบที่เลือกทั้งหมด
+                                        อนุมัติ / รับทราบ ที่เลือกทั้งหมด
                                     </button>
                                 </div>
                             </div>
@@ -1834,15 +1834,32 @@
                                     <input type="file" id="adminStudentExcel" accept=".xlsx, .xls" class="block w-full text-xs text-gray-500 mb-3">
                                     <button onclick="uploadMasterData('student')" class="w-full bg-sky-600 text-white py-2.5 rounded-lg font-bold shadow-md hover:bg-sky-700">เริ่มนำเข้าข้อมูลนักเรียน</button>
                                 </div>
-                                <div class="p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
-                                    <h4 class="font-bold text-indigo-800 mb-3 text-sm">ข้อมูลตารางาสอน (TimetableDB)</h4>
-                                    <input type="file" id="adminTimetableExcel" accept=".xlsx, .xls" class="block w-full text-xs text-gray-500 mb-3">
-                                    <button onclick="uploadMasterData('timetable')" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-bold shadow-md hover:bg-indigo-700">เริ่มนำเข้าตารางสอน</button>
+                                <div class="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 relative overflow-hidden">
+                                    <div class="absolute -right-6 -top-6 text-6xl opacity-10">🗓️</div>
+                                    <h4 class="font-bold text-indigo-800 mb-3 text-sm relative z-10">ข้อมูลตารางาสอน (TimetableDB)</h4>
+                                    
+                                    <!-- ตัวเลือกแบบ Excel แบบเดิม -->
+                                    <div class="mb-4 bg-white p-3 rounded-xl border border-indigo-200 shadow-sm relative z-10">
+                                        <p class="text-xs font-bold text-gray-500 mb-2 border-b pb-1">นำเข้าจากไฟล์ Excel (.xlsx)</p>
+                                        <input type="file" id="adminTimetableExcel" accept=".xlsx, .xls" class="block w-full text-xs text-gray-500 mb-2">
+                                        <button onclick="uploadMasterData('timetable')" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-xs font-bold shadow hover:bg-indigo-700 transition-colors">เริ่มนำเข้าจาก Excel</button>
+                                    </div>
+
+                                    <!-- 💡 ของใหม่: ตัวเลือกนำเข้าจากไฟล์ TRW -->
+                                    <div class="bg-indigo-100 p-3 rounded-xl border border-indigo-300 shadow-sm relative z-10">
+                                        <div class="flex justify-between items-end mb-2 border-b border-indigo-200 pb-1">
+                                            <p class="text-xs font-black text-indigo-800">นำเข้าจากไฟล์ .TRW (ออโต้)</p>
+                                            <span class="bg-indigo-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">✨ แนะนำ</span>
+                                        </div>
+                                        <input type="file" id="adminTimetableTRW" accept=".trw" class="block w-full text-xs text-indigo-700 mb-2 file:bg-indigo-200 file:border-0 file:rounded-md file:px-2 file:py-1 file:text-indigo-800 file:font-bold">
+                                        <button onclick="uploadTimetableFromTRW()" class="w-full bg-gradient-to-r from-indigo-700 to-purple-700 text-white py-2.5 rounded-lg text-xs font-black tracking-wide shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-1">
+                                            <span>🚀</span> ดูดตารางสอนจากไฟล์ TRW
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <!-- [3] SECTION: ACADEMIC (PLC + GLOBAL DATABASE) -->
                     <div id="admin-sec-academic" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <!-- 📜 ฐานข้อมูลบันทึก & แผน (คืนชีพที่หายไป!) -->
@@ -1868,8 +1885,18 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-3xl p-8 shadow-xl border border-purple-100">
-                            <h3 class="text-xl font-bold text-purple-800 mb-6 flex items-center gap-2">🎓 แผงบริหารกลุ่ม PLC (PLC Master Control)</h3>
+                       <!-- 💡 ติดป้าย id="plcAdminSection" ตรงนี้แหละ! สมองกลจะได้หาเจอ -->
+                        <div id="plcAdminSection" class="bg-white rounded-3xl p-8 shadow-xl border border-purple-100">
+                            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b border-purple-100 pb-4">
+                                <h3 class="text-xl font-bold text-purple-800 flex items-center gap-2">🎓 แผงบริหารกลุ่ม PLC</h3>
+                                <div class="flex items-center gap-3 bg-purple-50 px-4 py-2 rounded-xl border border-purple-200 shadow-sm mt-3 sm:mt-0">
+                                    <span class="text-xs font-bold text-purple-700">บังคับจัดกลุ่มตามสาระฯ (Auto):</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="autoPlcToggle" class="sr-only peer" onchange="toggleAutoPLC(this.checked)">
+                                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600 shadow-inner"></div>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                                 <div class="md:col-span-1"><label class="block text-xs font-bold text-gray-500 mb-1">เลือกกลุ่ม PLC</label><select id="adminPLCSelect" onchange="loadAdminPLCDetails()" class="w-full rounded-xl border border-purple-200 p-3 text-sm outline-none bg-purple-50/30"></select></div>
                                 <div id="adminPLCDetailsPanel" class="md:col-span-2 hidden space-y-4 p-6 bg-purple-50 rounded-2xl border border-purple-100 animate-in fade-in zoom-in duration-300">
@@ -4424,7 +4451,7 @@
 
             document.getElementById('planMemoModal').classList.remove('hidden');
         };
-
+        // 💡 กู้ชีพฟังก์ชันวาดตารางอนุมัติฝั่ง "บันทึกกิจกรรม" กลับมา!
         window.renderApproveTable = function() {
             const tbody = document.getElementById('approveLogTableBody');
             if(!tbody) return;
@@ -4452,31 +4479,34 @@
                 });
             });
 
-            const isDirector = userRoles.includes('Director');
-            const sAll = document.getElementById('selectAllLogCb'); if(sAll) sAll.classList.toggle('hidden', !isDirector);
-
+            // 💡 ปลดล็อก: แสดง Checkbox หัวตาราง และกล่องปุ่มอนุมัติหมู่ ให้ทุก Role
+            const sAll = document.getElementById('selectAllLogCb'); 
+            const batchContainer = document.getElementById('batchApproveContainer');
+            
             if(logsToApprove.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="${isDirector ? 5 : 4}" class="p-16 text-center text-gray-400 font-bold italic">-- ไม่มีบันทึกกิจกรรมรออนุมัติ --</td></tr>`; 
+                if(sAll) sAll.classList.add('hidden');
+                if(batchContainer) batchContainer.classList.add('hidden');
+                tbody.innerHTML = `<tr><td colspan="5" class="p-16 text-center text-gray-400 font-bold italic">-- ไม่มีบันทึกกิจกรรมรอพิจารณา --</td></tr>`; 
                 return; 
             }
 
+            if(sAll) sAll.classList.remove('hidden');
+            if(batchContainer) batchContainer.classList.remove('hidden');
+
             logsToApprove.forEach((item, i) => {
                 const l = item.log;
-                
-                let checkboxHtml = '';
-                if (isDirector && l.status === 'Pending_Director') {
-                    checkboxHtml = `<input type="checkbox" value="${l.id}" class="batch-approve-cb form-checkbox text-emerald-500 rounded h-4 w-4 mt-1">`;
-                }
+                // 💡 ปลดล็อก: ฝัง data-role เพื่อให้รู้ว่าคนติ๊กอนุมัติในฐานะอะไร
+                const checkboxHtml = `<input type="checkbox" value="${l.id}" data-role="${item.role}" class="batch-approve-cb form-checkbox text-emerald-500 rounded h-4 w-4 mt-1 cursor-pointer">`;
 
                 tbody.innerHTML += `
                 <tr class="hover:bg-emerald-50 transition-colors">
-                    <td class="px-4 py-3 text-center align-middle">${checkboxHtml || i+1}</td>
+                    <td class="px-4 py-3 text-center align-middle">${checkboxHtml}</td>
                     <td class="px-6 py-4 text-xs font-medium text-gray-600">${l.teachDate}</td>
                     <td class="px-6 py-4 text-sm font-bold text-gray-800">${l.teacherMain}</td>
                     <td class="px-6 py-4 text-xs font-bold text-gray-700">${l.subjectName} <br> <span class="font-normal text-emerald-600">${l.classroom}</span></td>
                     <td class="px-6 py-4 text-center space-x-1 whitespace-nowrap">
-                        <button onclick="viewPastReceipt(${item.originalIndex})" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold py-1 px-3 rounded-full text-xs shadow-sm transition-colors border border-emerald-200 mb-1">ดูข้อมูล</button>
-                        ${(!isDirector || true) ? `<button onclick="openApprovalModal('${l.id}', '${item.role}', 'log')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-3 rounded-full text-xs shadow-sm transition-colors border border-gray-200">พิจารณา</button>` : ''}
+                        <button onclick="viewPastReceipt(${item.originalIndex})" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold py-1 px-3 rounded-full text-[10px] shadow-sm transition-colors border border-emerald-200 mb-1">ดูข้อมูล</button>
+                        <button onclick="openApprovalModal('${l.id}', '${item.role}', 'log')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1 px-3 rounded-full text-[10px] shadow-sm transition-colors border border-gray-200">✍️ พิจารณา</button>
                     </td>
                 </tr>`;
             });
@@ -4509,24 +4539,27 @@
                 });
             });
 
-            const isDirector = userRoles.includes('Director');
-            const sAll = document.getElementById('selectAllPlanCb'); if(sAll) sAll.classList.toggle('hidden', !isDirector);
+            // 💡 ปลดล็อก: แสดง Checkbox หัวตาราง และกล่องปุ่มอนุมัติหมู่ ให้ทุก Role
+            const sAll = document.getElementById('selectAllPlanCb'); 
+            const batchContainer = document.getElementById('batchApproveContainer');
 
             if(plansToApprove.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="${isDirector ? 5 : 4}" class="p-16 text-center text-gray-400 font-bold italic">-- ไม่มีแผนการสอนรออนุมัติ --</td></tr>`; 
+                if(sAll) sAll.classList.add('hidden');
+                if(batchContainer) batchContainer.classList.add('hidden');
+                tbody.innerHTML = `<tr><td colspan="5" class="p-16 text-center text-gray-400 font-bold italic">-- ไม่มีแผนการสอนรอพิจารณา --</td></tr>`; 
                 return; 
             }
+
+            if(sAll) sAll.classList.remove('hidden');
+            if(batchContainer) batchContainer.classList.remove('hidden');
 
             plansToApprove.forEach((item, i) => {
                 const p = item.plan;
                 const dDate = new Date(p.timestamp); 
                 
-                let checkboxHtml = '';
-                if (isDirector && p.status === 'Pending_Director') {
-                    checkboxHtml = `<input type="checkbox" value="${p.id}" class="batch-approve-plan-cb form-checkbox text-indigo-500 rounded h-4 w-4 mt-1">`;
-                }
+                // 💡 ปลดล็อก: ฝัง data-role เพื่อให้รู้ว่าคนติ๊กอนุมัติในฐานะอะไร
+                const checkboxHtml = `<input type="checkbox" value="${p.id}" data-role="${item.role}" class="batch-approve-plan-cb form-checkbox text-indigo-500 rounded h-4 w-4 mt-1 cursor-pointer">`;
 
-                // 💡 ลอจิกแยกปุ่ม (หน้าพิจารณาอนุมัติ) ให้รองรับลิงก์
                 let attachmentBtns = '';
                 if(p.files && p.files.length > 0) {
                     attachmentBtns += `<button onclick="viewPlanFiles('${p.id}')" class="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-1.5 px-3 rounded-full text-[10px] shadow-sm transition-colors border border-indigo-200 mb-1">📄 ดูไฟล์</button>`;
@@ -4534,20 +4567,18 @@
                 if(p.cloudLink && p.cloudLink.trim() !== '') {
                     attachmentBtns += `<a href="${p.cloudLink}" target="_blank" class="block text-center w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-bold py-1.5 px-3 rounded-full text-[10px] shadow-sm transition-colors border border-sky-200 mb-1">🌐 เปิดลิงก์</a>`;
                 }
-                if(attachmentBtns === '') {
-                    attachmentBtns = `<span class="text-[10px] text-gray-400 font-medium">ไม่มีเอกสาร</span>`;
-                }
+                if(attachmentBtns === '') attachmentBtns = `<span class="text-[10px] text-gray-400 font-medium">ไม่มีเอกสาร</span>`;
 
                 tbody.innerHTML += `
                 <tr class="hover:bg-indigo-50 transition-colors">
-                    <td class="px-4 py-3 text-center align-middle">${checkboxHtml || i+1}</td>
+                    <td class="px-4 py-3 text-center align-middle">${checkboxHtml}</td>
                     <td class="px-6 py-4 text-xs font-medium text-gray-600">${dDate.toLocaleDateString('th-TH')} <br> <span class="text-gray-400">${dDate.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} น.</span></td>
                     <td class="px-6 py-4 text-sm font-bold text-gray-800">${p.teacherName}</td>
                     <td class="px-6 py-4 text-xs font-bold text-gray-700">${p.subjectName} <br> <span class="font-normal text-indigo-600">${p.level}</span></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex flex-col items-center justify-center gap-1 w-24 mx-auto">
                             ${attachmentBtns}
-                            ${(!isDirector || true) ? `<button onclick="openApprovalModal('${p.id}', '${item.role}', 'plan')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold py-1.5 px-3 rounded-full text-[10px] shadow-sm transition-colors border border-amber-200">✍️ พิจารณา</button>` : ''}
+                            <button onclick="openApprovalModal('${p.id}', '${item.role}', 'plan')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold py-1.5 px-3 rounded-full text-[10px] shadow-sm transition-colors border border-amber-200">✍️ พิจารณา</button>
                         </div>
                     </td>
                 </tr>`;
@@ -4706,68 +4737,73 @@
             const cbSelector = activeTabLogs ? '.batch-approve-cb:checked' : '.batch-approve-plan-cb:checked';
             const cbs = document.querySelectorAll(cbSelector);
             
-            if (cbs.length === 0) return customAlert('กรุณาเลือกรายการที่ต้องการรับทราบครับ');
-            if (!currentUser.SavedSignature) return customAlert('กรุณาตั้งค่าลายเซ็นในโปรไฟล์ก่อนดำเนินการครับ');
+            if (cbs.length === 0) return customAlert('กรุณาติ๊กเลือกรายการที่ต้องการอนุมัติก่อนครับ', 'info');
+            if (!currentUser.SavedSignature) return customAlert('⚠️ คุณยังไม่ได้ตั้งค่าลายเซ็นในโปรไฟล์ (เมนูตั้งค่าขวาบน) ไม่สามารถอนุมัติได้ครับ', 'error');
 
-            const ids = Array.from(cbs).map(cb => cb.value);
             const btn = document.querySelector('#batchApproveContainer button');
             const originalText = btn.innerHTML;
-            btn.innerHTML = "กำลังบันทึก..."; btn.disabled = true;
+            btn.innerHTML = '<div class="loader loader-white mr-2 inline-block align-middle"></div> กำลังดำเนินการ...'; 
+            btn.disabled = true;
 
             try {
                 const targetArray = targetType === 'plan' ? sessionPlans : sessionLogs;
-                const payload = { action: "batchApprove", ids: ids, type: targetType, approverName: currentUser.FullName, signature: currentUser.SavedSignature };
-                
-                let response;
-                let textResult;
-                let fetchSuccess = false;
-                
-                for (let attempt = 1; attempt <= 3; attempt++) {
-                    try {
-                        response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
-                        if (response.ok) {
-                            textResult = await response.text();
-                            fetchSuccess = true;
-                            break;
-                        }
-                    } catch (networkError) {
-                        if (attempt === 3) throw new Error("ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ (CORS Error)");
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-                }
+                let successCount = 0;
 
-                if (!fetchSuccess) throw new Error(`เซิร์ฟเวอร์ปฏิเสธการประมวลผล`);
+                // 💡 ลูปส่งข้อมูลเข้า API อนุมัติทีละตัว (เพื่อความชัวร์และข้อมูลไม่ตีกัน)
+                for (let cb of cbs) {
+                    const itemId = cb.value;
+                    const activeRole = cb.getAttribute('data-role'); // ดึงว่าติ๊กอนุมัติในฐานะอะไร
+                    const nextStatus = NEXT_STATUS_MAP[activeRole] || 'Approved'; // คำนวณก้าวต่อไป
+                    
+                    // 💡 ออโต้คอมเมนต์: ผอ. ใช้ "รับทราบ" คนอื่นใช้ "เห็นควรอนุมัติ"
+                    const commentText = activeRole === 'Director' ? 'รับทราบ' : 'เห็นควรอนุมัติ';
 
-                let result;
-                try { result = JSON.parse(textResult); } 
-                catch (err) { throw new Error("เซิร์ฟเวอร์ตอบกลับผิดพลาด"); }
-                
-                if (result.status === 'success') {
-                    ids.forEach(id => {
-                        const idx = targetArray.findIndex(item => item.id.toString() === id.toString());
+                    const payload = {
+                        action: "approveItem", 
+                        id: itemId,
+                        type: targetType,
+                        role: activeRole,
+                        approverName: currentUser.FullName,
+                        comment: commentText,
+                        signature: currentUser.SavedSignature,
+                        nextStatus: nextStatus
+                    };
+                    
+                    // ยิงข้อมูล
+                    let response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                    let result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        // อัปเดตข้อมูลบนหน้าจอทันที ไม่ต้องรอรีเฟรช!
+                        const idx = targetArray.findIndex(item => item.id.toString() === itemId.toString());
                         if (idx > -1) {
-                            targetArray[idx].status = 'Approved';
+                            targetArray[idx].status = nextStatus;
                             if (!targetArray[idx].approvalTrail) targetArray[idx].approvalTrail = [];
                             targetArray[idx].approvalTrail.push({
-                                role: 'Director',
+                                role: activeRole,
                                 approverName: currentUser.FullName,
-                                comment: 'รับทราบ',
+                                comment: commentText,
                                 signature: currentUser.SavedSignature,
                                 timestamp: new Date().getTime(),
                                 status: 'Approved'
                             });
                         }
-                    });
-                    
-                    customAlert(result.message || `รับทราบข้อมูลจำนวน ${ids.length} รายการเรียบร้อยแล้วครับ`, 'success');
-                    if (targetType === 'plan') {
-                        const sa = document.getElementById('selectAllPlanCb'); if(sa) sa.checked = false;
-                        renderApprovePlanTable();
-                    } else {
-                        const sa = document.getElementById('selectAllLogCb'); if(sa) sa.checked = false;
-                        renderApproveTable();
+                        successCount++;
                     }
-                } else { throw new Error(result.message); }
+                }
+
+                customAlert(`ดำเนินการอนุมัติสำเร็จ ${successCount} รายการ`, 'success');
+                
+                // รีเฟรชตารางให้คิวงานหายไป
+                if (targetType === 'plan') {
+                    const sa = document.getElementById('selectAllPlanCb'); if(sa) sa.checked = false;
+                    renderApprovePlanTable();
+                    if(!document.getElementById('view-public').classList.contains('hidden')) renderPublicPlans();
+                } else {
+                    const sa = document.getElementById('selectAllLogCb'); if(sa) sa.checked = false;
+                    renderApproveTable();
+                    if(!document.getElementById('view-public').classList.contains('hidden')) renderPublicLogs();
+                }
             } catch(e) {
                 console.error(e); customAlert("ข้อผิดพลาด: " + e.message, 'error');
             } finally {
@@ -5924,33 +5960,37 @@ window.renderAdminLogsTable = function() {
             
             switchView('view-public');
         };
-        // 🕹️ ฟังก์ชันควบคุมแผงบริหาร (Admin Tab Controller - Smart Theming)
+        // 1. ผูกตะขอ: ให้ตารางโหลดรายชื่อและระบบต่างๆ "ตอนกดเปลี่ยนแท็บ"
         window.switchAdminTab = function(secId) {
-            // 1. ซ่อนไส้ในทุกอันก่อน
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
-            
-            // 2. ปลดไฮไลท์ปุ่มการ์ดเดิม (เคลียร์คลาสตกค้างให้หมด)
             document.querySelectorAll('.admin-card-btn').forEach(btn => {
-                btn.classList.remove('ring-4', 'ring-indigo-400', 'scale-105', 'bg-indigo-50/50', 'ring-white', 'bg-slate-800/60', 'bg-slate-900/40');
+                btn.classList.remove('ring-4', 'ring-white', 'scale-105', 'bg-slate-800/60', 'ring-indigo-400', 'bg-indigo-50/50');
+                btn.classList.add('bg-slate-900/40');
             });
 
-            // 3. เปิดแท็บที่เลือก
             const target = document.getElementById(secId);
             if(target) {
                 target.classList.remove('hidden');
-                
-                // ไฮไลท์ปุ่มที่โดนกด
                 const activeBtn = Array.from(document.querySelectorAll('.admin-card-btn')).find(b => b.onclick.toString().includes(secId));
                 if(activeBtn) {
-                   activeBtn.classList.add('ring-4', 'ring-indigo-400', 'scale-105', 'bg-indigo-50/50');
+                   activeBtn.classList.add('ring-4', 'ring-white', 'scale-105', 'bg-slate-800/60');
+                   activeBtn.classList.remove('bg-slate-900/40');
                 }
-                
-                // เลื่อนจอลงไปที่เนื้อหา
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // 💡 จุดสกัดที่ 1: พอเข้าแท็บ "ศูนย์บัญชาการสูงสุด" บังคับให้โหลดแผงสวิตช์ทันที
+                if (secId === 'admin-sec-godmode' && typeof renderMasterSwitchPanel === 'function') {
+                    renderMasterSwitchPanel();
+                }
 
-                // 💡 จุดสกัด: ถ้ากดเปิดการ์ด "ฐานข้อมูล & ทะเบียน" ให้กระตุ้นการดึงข้อมูลรายชื่อครูและกลุ่มสาระฯ ใหม่ทันที!
+                // 💡 จุดสกัดที่ 2: พอเข้าแท็บ "ฐานข้อมูล" บังคับให้โหลดชื่อครูใหม่ทันที
                 if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') {
                     initRegistrarPanel();
+                }
+
+                // 💡 จุดสกัดที่ 3 (ที่หายไป!): พอเข้าแท็บ "คลังเอกสารรวม" บังคับให้โหลดกลุ่ม PLC ทันที
+                if (secId === 'admin-sec-academic' && typeof populateAdminPLCList === 'function') {
+                    populateAdminPLCList();
                 }
             }
         };
@@ -10300,6 +10340,17 @@ window.renderAdminLogsTable = function() {
                 }
                 // เลื่อนจอไปที่เนื้อหา
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // 💡 จุดสกัด: พอเข้าแท็บต่างๆ บังคับให้โหลดข้อมูลทันที!
+                if (secId === 'admin-sec-godmode' && typeof renderMasterSwitchPanel === 'function') {
+                    renderMasterSwitchPanel(); // โหลดสวิตช์
+                }
+                if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') {
+                    initRegistrarPanel(); // โหลดรายชื่อครูหน้าตาราง
+                }
+                if (secId === 'admin-sec-academic' && typeof populateAdminPLCList === 'function') {
+                    populateAdminPLCList(); // 💡 กู้ชีพ PLC! โหลดข้อมูลกลุ่มทันที
+                }
             }
         };
 
@@ -10573,12 +10624,13 @@ window.renderAdminLogsTable = function() {
                 // กลุ่ม 3: ระบบขั้นสูง
                 { key: 'Feature_Media', name: 'คลังสื่อการเรียนรู้', icon: '🧪' },
                 { key: 'Feature_SLC', name: 'ระบบ PLC & SLC', icon: '🤝' },
+                { key: 'Feature_FreeSLC', name: 'SLC อิสระ (ข้ามกลุ่ม)', icon: '🌍' }, // 💡 สวิตช์ใหม่มาแล้ว!
                 { key: 'Feature_Supervision', name: 'ระบบนิเทศการสอน', icon: '👁️' },
                 // กลุ่ม 4: บริหารจัดการ
                 { key: 'Feature_Approve', name: 'เมนูอนุมัติ', icon: '✍️' },
                 { key: 'Feature_Handover', name: 'แจ้งลา/มอบงาน', icon: '📤' },
                 { key: 'Feature_SubAdmin', name: 'ศูนย์จัดสอนแทน', icon: '🎯' },
-                // กลุ่ม 5: ข้อมูล & AI & แอดมิน (เพิ่ม LttPngn ตรงนี้!)
+                // กลุ่ม 5: ข้อมูล & AI & แอดมิน 
                 { key: 'Feature_Analytics', name: 'สถิติ Analytics', icon: '📈' },
                 { key: 'Feature_Tracking', name: 'ติดตาม/สรุปผล', icon: '📊' },
                 { key: 'Feature_AI_Helper', name: 'ผู้ช่วย AI (Gemini)', icon: '✨' },
@@ -10589,9 +10641,9 @@ window.renderAdminLogsTable = function() {
 
             let html = '';
             switches.forEach(sw => {
-                const isActive = masterSwitches_Global[sw.key] !== false;
+                // 💡 ตั้งค่าให้ SLC อิสระ ปิด (false) เป็นค่าเริ่มต้น
+                const isActive = (sw.key === 'Feature_FreeSLC') ? masterSwitches_Global[sw.key] === true : masterSwitches_Global[sw.key] !== false;
                 
-                // 💡 ปรับแต่งลักษณะปุ่มตามสถานะ (เปิด = เขียวสว่าง / ปิด = เทาเข้ม)
                 const containerClass = isActive 
                     ? 'bg-emerald-950/40 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
                     : 'bg-slate-900/60 border-slate-700 opacity-80';
@@ -10610,7 +10662,6 @@ window.renderAdminLogsTable = function() {
                         <div class="text-[9px] font-black tracking-widest ${statusTextColor}">${statusText}</div>
                     </div>
 
-                    <!-- 🔘 Custom Toggle Switch (ใหญ่ขึ้น) -->
                     <div class="relative w-16 h-8 flex items-center rounded-full p-1 cursor-pointer transition-all duration-500 ${toggleBg}" 
                          onclick="toggleMasterSwitch('${sw.key}', ${!isActive})">
                         <div class="w-6 h-6 rounded-full shadow-lg transform transition-transform duration-300 flex items-center justify-center ${knobClass}">
@@ -10976,31 +11027,36 @@ window.saveStudentDetail = async function() {
         // 🛠️ MASTER OVERRIDE: แฮ็กระบบเพื่อทับโค้ดที่ซ้ำซ้อนทั้งหมด!
         // ====================================================
         
-        // 1. ผูกตะขอ: ให้ตารางโหลดรายชื่อ "ตอนกดเปลี่ยนแท็บ"
+        // 🕹️ ฟังก์ชันควบคุมแผงบริหาร (Admin Tab Controller - Ultimate Version)
         window.switchAdminTab = function(secId) {
+            // 1. ซ่อนไส้ในทุกอันก่อน
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // 2. ปลดไฮไลท์ปุ่มการ์ดเดิม (เคลียร์คลาสตกค้างให้หมด)
             document.querySelectorAll('.admin-card-btn').forEach(btn => {
-                btn.classList.remove('ring-4', 'ring-white', 'scale-105', 'bg-slate-800/60', 'ring-indigo-400', 'bg-indigo-50/50');
-                btn.classList.add('bg-slate-900/40');
+                btn.classList.remove('ring-4', 'ring-indigo-400', 'scale-105', 'bg-indigo-50/50', 'ring-white', 'bg-slate-800/60', 'bg-slate-900/40');
             });
 
+            // 3. เปิดแท็บที่เลือก
             const target = document.getElementById(secId);
             if(target) {
                 target.classList.remove('hidden');
+                
+                // ไฮไลท์ปุ่มที่โดนกด
                 const activeBtn = Array.from(document.querySelectorAll('.admin-card-btn')).find(b => b.onclick.toString().includes(secId));
                 if(activeBtn) {
-                   activeBtn.classList.add('ring-4', 'ring-white', 'scale-105', 'bg-slate-800/60');
-                   activeBtn.classList.remove('bg-slate-900/40');
+                   activeBtn.classList.add('ring-4', 'ring-indigo-400', 'scale-105', 'bg-indigo-50/50');
                 }
+                
+                // เลื่อนจอลงไปที่เนื้อหา
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                 // 💡 จุดสกัด: พอเข้าแท็บ "ความปลอดภัย" ปุ๊บ บังคับให้โหลดแผงสวิตช์ทันที
-                if (secId === 'admin-sec-godmode') {
-                renderMasterSwitchPanel();
-            }
 
-                // 💡 จุดสกัด: พอเข้าแท็บ "ฐานข้อมูล" ปุ๊บ บังคับให้โหลดชื่อครูใหม่ทันที
-                if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') {
-                    initRegistrarPanel();
+                // 💡 จุดสกัด: บังคับโหลดข้อมูลตามแท็บที่กดแบบครบวงจร (รวมทุกสายพันธุ์ไว้ที่นี่หมดแล้ว!)
+                if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') initRegistrarPanel();
+                if (secId === 'admin-sec-godmode' && typeof renderMasterSwitchPanel === 'function') renderMasterSwitchPanel();
+                if (secId === 'admin-sec-academic') {
+                    if (typeof populateAdminPLCList === 'function') populateAdminPLCList(); // 👈 ตัวกู้ชีพ PLC อยู่นี่!
+                    if (typeof renderAdminLogsTable === 'function') renderAdminLogsTable();
                 }
             }
         };
@@ -11208,6 +11264,554 @@ window.saveStudentDetail = async function() {
                 }
             });
         };
+        // ====================================================
+        // 🛠️ MASTER OVERRIDE: อัปเกรดเครื่องยนต์ดึงข้อมูลและ PLC (กันหลุด 100%)
+        // ====================================================
+        
+        // 1. ดักจับชื่อ Sheet ทุกรูปแบบที่อาจจะเพี้ยน
+        window.fetchAllDatabasesFromGAS = async function() {
+            try {
+                const res = await fetch(SCRIPT_URL + "?action=getDatabase", { redirect: "follow" });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    const d = result.data;
+                    usersDB_Global = d.users || d.Users || d.USER || [];
+                    studentsDB_Global = d.students || d.Students || d.STUDENT || [];
+                    timetableDB_Global = d.timetable || d.Timetable || d.TIMETABLE || [];
+                    subjectsDB_Global = d.subjects || d.Subjects || d.SUBJECT || [];
+                    substitutionsDB_Global = d.substitutions || d.Substitutions || [];
+                    
+                    // 💡 ลอจิกแหกตาทิพย์: กวาดหาชื่อ Sheet "PLC" ทุกรูปแบบ!
+                    plcGroupsDB_Global = d.plcGroups || d.PLC || d.PLCGroups || d.plc_groups || d.plc || [];
+                    
+                    mediaDB_Global = d.media || d.Media || d.MEDIA || [];
+                    supervisionDB_Global = d.supervisions || d.Supervisions || d.supervision || [];
+                    slcSessionsDB_Global = d.slcSessions || d.SLCSessions || d.slc || [];
+                    
+                    // กระตุ้นให้วาด Dropdown ใหม่ทันที
+                    if (typeof populateAdminPLCList === 'function') populateAdminPLCList();
+                    return true;
+                }
+            } catch(e) { console.warn("Fetch DBs Error:", e); }
+        };
+        // บังคับให้ฟังก์ชันทั้งระบบชี้มาที่ตัวแฮ็กนี้!
+        fetchAllDatabasesFromGAS = window.fetchAllDatabasesFromGAS;
+
+        // 2. ดักจับชื่อหัวคอลัมน์ (Headers) ใน Sheet ทุกรูปแบบ
+        window.populateAdminPLCList = function() {
+            const select = document.getElementById('adminPLCSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- เลือกกลุ่ม PLC --</option>';
+            
+            if (plcGroupsDB_Global && plcGroupsDB_Global.length > 0) {
+                const sorted = [...plcGroupsDB_Global].sort((a,b) => {
+                    const aStatus = a.Status || a.status || 'Active';
+                    const bStatus = b.Status || b.status || 'Active';
+                    if (aStatus === 'Active' && bStatus !== 'Active') return -1;
+                    if (aStatus !== 'Active' && bStatus === 'Active') return 1;
+                    
+                    // กวาดหาชื่อหัวคอลัมน์ GroupName
+                    const aName = a.GroupName || a.groupname || a.Name || '';
+                    const bName = b.GroupName || b.groupname || b.Name || '';
+                    return aName.localeCompare(bName, 'th');
+                });
+                
+                sorted.forEach(g => {
+                    const statusVal = g.Status || g.status || 'Active';
+                    const nameVal = g.GroupName || g.groupname || g.Name || 'ไม่มีชื่อกลุ่ม';
+                    const idVal = g.GroupID || g.groupid || g.id || '';
+                    
+                    const statusEmoji = statusVal === 'Active' ? '🟢' : '📦';
+                    select.add(new Option(`${statusEmoji} ${nameVal}`, idVal));
+                });
+            }
+            const panel = document.getElementById('adminPLCDetailsPanel');
+            if(panel) panel.classList.add('hidden');
+        };
+
+        // 3. ดักจับตอนกดเลือกกลุ่มมาแก้ไข
+        window.loadAdminPLCDetails = function() {
+            const groupId = document.getElementById('adminPLCSelect').value;
+            const panel = document.getElementById('adminPLCDetailsPanel');
+            if (!groupId) { panel.classList.add('hidden'); return; }
+            
+            // รองรับ GroupID ทุกแบบ
+            const group = plcGroupsDB_Global.find(g => (g.GroupID || g.groupid || g.id) === groupId);
+            if (group) {
+                document.getElementById('adminPLCName').value = group.GroupName || group.groupname || group.Name || '';
+                document.getElementById('adminPLCStatus').value = group.Status || group.status || 'Active';
+                
+                let membersStr = '';
+                const rawMembers = group.Members || group.members || '';
+                try {
+                    const m = typeof rawMembers === 'string' ? JSON.parse(rawMembers) : rawMembers;
+                    membersStr = Array.isArray(m) ? m.join(', ') : rawMembers;
+                } catch(e) { membersStr = rawMembers; }
+                
+                document.getElementById('adminPLCMembers').value = membersStr;
+                adminRenderMemberTags();
+                panel.classList.remove('hidden');
+            }
+        };
+        // ====================================================
+        // 🛠️ MEGA OVERRIDE: อัปเกรดระบบจัดกลุ่ม PLC อัตโนมัติ + SLC อิสระ
+        // ====================================================
+
+        // 1. ฟังก์ชันสับสวิตช์ Auto PLC
+        window.toggleAutoPLC = async function(isAuto) {
+            masterSwitches_Global['Feature_AutoPLC'] = isAuto;
+            populateAdminPLCList(); // รีเฟรชตาราง
+            try {
+                const payload = { action: 'updateMasterSwitch', switches: masterSwitches_Global };
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+            } catch(e) {}
+            customAlert(isAuto ? "เปิดโหมดจัดกลุ่มตามกลุ่มสาระอัตโนมัติ" : "กลับสู่โหมดจัดการกลุ่มแบบกำหนดเอง", "success");
+        };
+
+        // 2. ฟังก์ชันจำลองตาราง PLC ชั่วคราว (Virtual PLC)
+        window.getEffectivePLCGroups = function() {
+            if (masterSwitches_Global['Feature_AutoPLC'] === true) {
+                const depts = {};
+                usersDB_Global.forEach(u => {
+                    if(u.Role.includes('BirdSpy') && !u.Role.includes('User')) return; // ตัดแอดมินเพียวๆทิ้ง
+                    const d = u.Department || 'อื่นๆ';
+                    if (!depts[d]) depts[d] = [];
+                    depts[d].push(u.Username);
+                });
+                return Object.keys(depts).map((d, i) => ({
+                    GroupID: 'AUTO_DEPT_' + i,
+                    GroupName: 'กลุ่มสาระฯ ' + d,
+                    Status: 'Active',
+                    Members: JSON.stringify(depts[d])
+                }));
+            }
+            return plcGroupsDB_Global || [];
+        };
+
+        // 3. ทับฟังก์ชันวาด Dropdown แผงบริหาร (Admin)
+        window.populateAdminPLCList = function() {
+            const select = document.getElementById('adminPLCSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- เลือกกลุ่ม PLC --</option>';
+            
+            const isAutoPLC = masterSwitches_Global['Feature_AutoPLC'] === true;
+            const toggleEl = document.getElementById('autoPlcToggle');
+            if (toggleEl) toggleEl.checked = isAutoPLC; // Sync UI สวิตช์
+            
+            const effectiveGroups = getEffectivePLCGroups();
+            if (effectiveGroups && effectiveGroups.length > 0) {
+                const sorted = [...effectiveGroups].sort((a,b) => {
+                    const aStatus = a.Status || 'Active';
+                    const bStatus = b.Status || 'Active';
+                    if (aStatus === 'Active' && bStatus !== 'Active') return -1;
+                    if (aStatus !== 'Active' && bStatus === 'Active') return 1;
+                    return (a.GroupName||'').localeCompare((b.GroupName||''), 'th');
+                });
+                
+                sorted.forEach(g => {
+                    const statusEmoji = g.Status === 'Active' ? (isAutoPLC ? '🤖' : '🟢') : '📦';
+                    select.add(new Option(`${statusEmoji} ${g.GroupName}`, g.GroupID));
+                });
+            }
+            const panel = document.getElementById('adminPLCDetailsPanel');
+            if(panel) panel.classList.add('hidden');
+        };
+
+        // 4. ทับฟังก์ชันดึงรายละเอียดกลุ่ม (Admin)
+        window.loadAdminPLCDetails = function() {
+            const groupId = document.getElementById('adminPLCSelect').value;
+            const panel = document.getElementById('adminPLCDetailsPanel');
+            if (!groupId) { panel.classList.add('hidden'); return; }
+            
+            const isAutoPLC = masterSwitches_Global['Feature_AutoPLC'] === true;
+            const effectiveGroups = getEffectivePLCGroups();
+            const group = effectiveGroups.find(g => (g.GroupID || g.groupid || g.id) === groupId);
+            
+            if (group) {
+                document.getElementById('adminPLCName').value = group.GroupName || '';
+                document.getElementById('adminPLCStatus').value = group.Status || 'Active';
+                
+                let membersStr = '';
+                try {
+                    const m = typeof group.Members === 'string' ? JSON.parse(group.Members) : group.Members;
+                    membersStr = Array.isArray(m) ? m.join(', ') : '';
+                } catch(e) { membersStr = group.Members || ''; }
+                
+                document.getElementById('adminPLCMembers').value = membersStr;
+                adminRenderMemberTags();
+                panel.classList.remove('hidden');
+                
+                // 💡 ล็อกการแก้ไขถ้าอยู่ในโหมดออโต้
+                const inputs = panel.querySelectorAll('input, select');
+                const btns = panel.querySelectorAll('button');
+                if (isAutoPLC) {
+                    inputs.forEach(i => i.disabled = true);
+                    btns.forEach(b => b.classList.add('hidden'));
+                    document.getElementById('admin_plc_search').placeholder = 'โหมดจัดกลุ่มอัตโนมัติ (อ่านได้อย่างเดียว)...';
+                } else {
+                    inputs.forEach(i => i.disabled = false);
+                    btns.forEach(b => b.classList.remove('hidden'));
+                    document.getElementById('admin_plc_search').placeholder = 'พิมพ์ชื่อค้นหา...';
+                }
+            }
+        };
+
+        // 5. ทับฟังก์ชันสร้างกลุ่มของครู (บล็อกถ้าโหมด Auto เปิดอยู่)
+        window.handlePLCSubmit = async function(e) {
+            e.preventDefault();
+            if (masterSwitches_Global['Feature_AutoPLC'] === true) {
+                return customAlert("ระบบถูกล็อกให้จัดกลุ่มตามกลุ่มสาระการเรียนรู้อัตโนมัติ ไม่สามารถตั้งกลุ่มเองได้ครับ", "info");
+            }
+            
+            const btn = document.getElementById('btnSavePLC');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังสร้าง...'; 
+            btn.disabled = true;
+
+            const membersArr = document.getElementById('plc_members').value.split(',').map(s => s.trim()).filter(s=>s);
+            if(membersArr.length < 2) {
+                btn.innerHTML = origTxt; btn.disabled = false;
+                return customAlert("กลุ่ม PLC ควรมีสมาชิกอย่างน้อย 2 คน");
+            }
+
+            let alreadyInGroup = [];
+            membersArr.forEach(m => {
+                const activeGroup = plcGroupsDB_Global.find(g => {
+                    if(g.Status !== 'Active') return false;
+                    let mems = [];
+                    try { mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members; } catch(e){}
+                    return Array.isArray(mems) && mems.includes(m);
+                });
+                if(activeGroup) alreadyInGroup.push(m);
+            });
+
+            if(alreadyInGroup.length > 0) {
+                btn.innerHTML = origTxt; btn.disabled = false;
+                return customAlert(`บันทึกไม่ได้! รหัส ${alreadyInGroup.join(', ')} สังกัดกลุ่ม PLC ที่กำลัง Active อื่นอยู่แล้วครับ`);
+            }
+
+            const data = { GroupID: 'PLC-' + Date.now(), GroupName: document.getElementById('plc_name').value, Members: membersArr };
+
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'savePLCGroup', data: data }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    customAlert("สร้างกลุ่มชุมชนแห่งการเรียนรู้ (PLC) สำเร็จ!", "success");
+                    plcGroupsDB_Global.push({ GroupID: data.GroupID, GroupName: data.GroupName, Members: JSON.stringify(data.Members) });
+                    if(typeof loadBuddiesFromPLC === 'function') loadBuddiesFromPLC();
+                    document.getElementById('plcGroupForm').reset();
+                    switchSLCTab('tab-slc-seating');
+                } else throw new Error(result.message);
+            } catch(err) { 
+                customAlert("ข้อผิดพลาด: " + err.message, "error");
+            } finally { 
+                btn.innerHTML = origTxt; btn.disabled = false; 
+            }
+        };
+
+        // 6. ทับฟังก์ชันดึงรายชื่อ Buddy (ยัดสมองกล Free SLC + Auto PLC)
+        window.loadBuddiesFromPLC = function() {
+            const modelVal = document.getElementById('slc_model').value;
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const container = document.getElementById('slc_buddies_container');
+            const groupLabel = document.getElementById('plcGroupNameLabel');
+            
+            if (!modelInfo) {
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
+                groupLabel.classList.add('hidden');
+                return;
+            }
+
+            const modelUser = modelInfo.Username;
+            let targetGroup = null;
+            let membersArray = [];
+            
+            const isFreeSLC = masterSwitches_Global['Feature_FreeSLC'] === true; 
+
+            if (isFreeSLC) {
+                // 💡 โหมด SLC อิสระ: ดึงครูทุกคนในโรงเรียนมาให้เลือกเลย!
+                targetGroup = { GroupName: 'SLC อิสระ (เปิดให้เลือกข้ามกลุ่มได้)' };
+                membersArray = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User')).map(u => u.Username);
+            } else {
+                // โหมดจำกัดวง: ต้องอยู่ในกลุ่มเดียวกัน
+                const effectiveGroups = getEffectivePLCGroups();
+                if (effectiveGroups && effectiveGroups.length > 0) {
+                    for (let i = effectiveGroups.length - 1; i >= 0; i--) {
+                        const g = effectiveGroups[i];
+                        try {
+                            const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
+                            if (mems && mems.includes(modelUser)) {
+                                targetGroup = g;
+                                membersArray = mems;
+                                break;
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+
+            if (targetGroup) {
+                groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
+                groupLabel.classList.remove('hidden');
+                
+                const buddies = membersArray.filter(m => m !== modelUser);
+                if (buddies.length > 0) {
+                    // จัดเรียงชื่อคนอื่นให้หาง่ายขึ้น
+                    buddies.sort((a,b) => {
+                       const ua = usersDB_Global.find(x => x.Username === a);
+                       const ub = usersDB_Global.find(x => x.Username === b);
+                       return (ua?.FullName || a).localeCompare((ub?.FullName || b), 'th');
+                    });
+
+                    // 💡 เปลี่ยนจาก checked อัตโนมัติ เป็น ให้ติ๊กเลือกเอง (กันรกหน้าจอถ้าคนเยอะ)
+                    container.innerHTML = buddies.map(bUser => {
+                        const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                        const bName = uInfo ? uInfo.FullName : bUser;
+                        return `
+                        <label class="flex items-center gap-1 cursor-pointer bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-sm">
+                            <input type="checkbox" name="slc_buddy_cb" value="${bUser}" class="form-checkbox text-indigo-600 rounded h-3.5 w-3.5">
+                            <span class="text-[11px] font-bold text-indigo-900">${bName}</span>
+                        </label>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นให้เลือก</span>';
+                }
+            } else {
+                groupLabel.classList.add('hidden');
+                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
+            }
+        };
+
+        // 7. ทับระบบเช็คคนซ้ำเวลาสร้าง/แก้กลุ่ม (ให้รองรับ Auto PLC)
+        window.searchPLCMembers = function() {
+            const term = document.getElementById('plc_search_member').value.toLowerCase();
+            const resUl = document.getElementById('plc_search_results');
+            if (!term) { resUl.classList.add('hidden'); return; }
+            
+            const matches = usersDB_Global.filter(u => u.FullName.toLowerCase().includes(term) || u.Username.toLowerCase().includes(term));
+            resUl.innerHTML = '';
+            if (matches.length === 0) {
+                resUl.innerHTML = '<li class="p-2 text-xs text-gray-500 text-center font-bold">ไม่พบรายชื่อครูที่ค้นหาครับ</li>';
+            } else {
+                matches.forEach(u => {
+                    let activeGroup = null;
+                    const effectiveGroups = getEffectivePLCGroups();
+                    if(effectiveGroups) {
+                        activeGroup = effectiveGroups.find(g => {
+                            if(g.Status !== 'Active') return false;
+                            let mems = [];
+                            try { mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members; } catch(e){}
+                            return Array.isArray(mems) && mems.includes(u.Username);
+                        });
+                    }
+
+                    if(activeGroup) {
+                        resUl.innerHTML += `<li class="p-2 text-sm text-gray-400 cursor-not-allowed border-b border-gray-100 last:border-0 opacity-70 flex justify-between">${u.FullName} <span class="text-[10px] text-rose-500 font-bold bg-rose-50 px-2 py-0.5 rounded">(อยู่กลุ่ม: ${activeGroup.GroupName})</span></li>`;
+                    } else {
+                        resUl.innerHTML += `<li class="p-2 text-sm hover:bg-indigo-50 cursor-pointer font-bold text-gray-700 border-b border-gray-100 last:border-0" onclick="addMemberToPLC('${u.Username}', '${u.FullName}')">${u.FullName} <span class="text-gray-400 text-xs font-normal">(${u.Username})</span></li>`;
+                    }
+                });
+            }
+            resUl.classList.remove('hidden');
+        };
+        // ====================================================
+        // 🧬 TIS-620 DECODER ENGINE (เครื่องยนต์ถอดรหัสภาษาไทย 8-bit)
+        // ====================================================
+        window.decodeTIS620 = function(buffer) {
+            const dataView = new Uint8Array(buffer);
+            const tis620Map = {
+                161:'ก',162:'ข',163:'ฃ',164:'ค',165:'ฅ',166:'ฆ',167:'ง',168:'จ',169:'ฉ',170:'ช',171:'ซ',172:'ฌ',173:'ญ',174:'ฎ',175:'ฏ',176:'ฐ',
+                177:'ฑ',178:'ฒ',179:'ณ',180:'ด',181:'ต',182:'ถ',183:'ท',184:'ธ',185:'น',186:'บ',187:'ป',188:'ผ',189:'ฝ',190:'พ',191:'ฟ',192:'ภ',
+                193:'ม',194:'ย',195:'ร',196:'ฤ',197:'ล',198:'ฦ',199:'ว',200:'ศ',201:'ษ',202:'ส',203:'ห',204:'ฬ',205:'อ',206:'ฮ',207:'ฯ',
+                208:'ะ',209:'ั',210:'า',211:'ำ',212:'ิ',213:'ี',214:'ึ',215:'ื',216:'ุ',217:'ู',218:'ฺ',223:'฿',
+                224:'เ',225:'แ',226:'โ',227:'ใ',228:'ไ',229:'ๅ',230:'ๆ',231:'็',232:'่',233:'้',234:'๊',235:'๋',236:'์',237:'ํ',238:'™',
+                239:'๕',240:'๐',241:'๑',242:'๒',243:'๓',244:'๔',245:'๕',246:'๖',247:'๗',248:'๘',249:'๙',250:'๚',251:'๛'
+            };
+            let result = '';
+            for (let i = 0; i < dataView.length; i++) {
+                const code = dataView[i];
+                if (code === 0) continue; // ข้าม Null byte
+                if (code >= 161 && code <= 251 && tis620Map[code]) result += tis620Map[code];
+                else result += String.fromCharCode(code);
+            }
+            return result;
+        };
+        
+        // ====================================================
+        // 🚀 TRW TIMETABLE EXTRACTOR (V5: DBF Native Parser - 100% Accuracy)
+        // ====================================================
+        window.uploadTimetableFromTRW = async function() {
+            const fileInput = document.getElementById('adminTimetableTRW');
+            if (!fileInput || fileInput.files.length === 0) return customAlert('กรุณาเลือกไฟล์ .trw ก่อนครับ');
+
+            if (!usersDB_Global || usersDB_Global.length === 0) {
+                return customAlert('⚠️ ฐานข้อมูลครูว่างเปล่า! กรุณาไปอัปโหลด Excel ข้อมูลบุคลากร เข้าระบบก่อนครับ', 'error');
+            }
+
+            const btn = window.event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> วิศวกรรมย้อนกลับ...`;
+            btn.disabled = true;
+
+            try {
+                const file = fileInput.files[0];
+                const buffer = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.onerror = e => reject(e);
+                    reader.readAsArrayBuffer(file);
+                });
+
+                // --- 💡 สร้างเครื่องยนต์อ่านไฟล์ DBF โดยตรง (DBF Parser) ---
+                const dataView = new DataView(buffer);
+                const numRecords = dataView.getUint32(4, true); // จำนวนข้อมูลทั้งหมด
+                const headerLen = dataView.getUint16(8, true); // ความยาวส่วนหัว
+                const recordLen = dataView.getUint16(10, true); // ความยาวข้อมูลต่อ 1 คน
+
+                let offset = 32;
+                const fields = [];
+                // 1. อ่านโครงสร้างคอลัมน์ (Field Descriptors)
+                while (offset < headerLen - 1) {
+                    const firstByte = dataView.getUint8(offset);
+                    if (firstByte === 0x0D) break; // สิ้นสุดส่วนหัว
+                    
+                    let fieldName = '';
+                    for (let j = 0; j < 11; j++) {
+                        const code = dataView.getUint8(offset + j);
+                        if (code === 0) break;
+                        fieldName += String.fromCharCode(code);
+                    }
+                    const fieldLen = dataView.getUint8(offset + 16);
+                    fields.push({ name: fieldName.trim(), len: fieldLen });
+                    offset += 32;
+                }
+
+                // ฟังก์ชันถอดรหัส TIS-620 โดยเฉพาะ
+                const decodeTIS620Native = function(uint8Arr) {
+                    const tis620Map = {
+                        161:'ก',162:'ข',163:'ฃ',164:'ค',165:'ฅ',166:'ฆ',167:'ง',168:'จ',169:'ฉ',170:'ช',171:'ซ',172:'ฌ',173:'ญ',174:'ฎ',175:'ฏ',176:'ฐ',
+                        177:'ฑ',178:'ฒ',179:'ณ',180:'ด',181:'ต',182:'ถ',183:'ท',184:'ธ',185:'น',186:'บ',187:'ป',188:'ผ',189:'ฝ',190:'พ',191:'ฟ',192:'ภ',
+                        193:'ม',194:'ย',195:'ร',196:'ฤ',197:'ล',198:'ฦ',199:'ว',200:'ศ',201:'ษ',202:'ส',203:'ห',204:'ฬ',205:'อ',206:'ฮ',207:'ฯ',
+                        208:'ะ',209:'ั',210:'า',211:'ำ',212:'ิ',213:'ี',214:'ึ',215:'ื',216:'ุ',217:'ู',218:'ฺ',223:'฿',
+                        224:'เ',225:'แ',226:'โ',227:'ใ',228:'ไ',229:'ๅ',230:'ๆ',231:'็',232:'่',233:'้',234:'๊',235:'๋',236:'์',237:'ํ',238:'™',
+                        239:'๕',240:'๐',241:'๑',242:'๒',243:'๓',244:'๔',245:'๕',246:'๖',247:'๗',248:'๘',249:'๙',250:'๚',251:'๛'
+                    };
+                    let result = '';
+                    for (let i = 0; i < uint8Arr.length; i++) {
+                        const code = uint8Arr[i];
+                        if (code === 0) continue;
+                        if (code >= 161 && code <= 251 && tis620Map[code]) result += tis620Map[code];
+                        else result += String.fromCharCode(code);
+                    }
+                    return result.trim();
+                };
+
+                // 2. ดึงข้อมูลทีละคน (Records Extraction)
+                const trwRecords = [];
+                let recordOffset = headerLen;
+                for (let i = 0; i < numRecords; i++) {
+                    if (recordOffset + recordLen > buffer.byteLength) break;
+                    
+                    const isDeleted = dataView.getUint8(recordOffset) === 0x2A; // '*' หมายถึงข้อมูลโดนลบไปแล้ว
+                    let currentOffset = recordOffset + 1; // ข้าม 1 byte แรกที่เป็น Status Flag
+                    
+                    if (!isDeleted) {
+                        const record = {};
+                        for (let f of fields) {
+                            const bytes = new Uint8Array(buffer, currentOffset, f.len);
+                            record[f.name] = decodeTIS620Native(bytes);
+                            currentOffset += f.len;
+                        }
+                        trwRecords.push(record);
+                    }
+                    recordOffset += recordLen;
+                }
+
+                // --- 💡 จบกระบวนการอ่าน DBF ตอนนี้ได้ Array Object สวยๆ 100% แล้ว ---
+                
+                let extractedData = [];
+                let matchCount = 0;
+                let notFoundCount = 0;
+
+                // เตรียมรายชื่อครูและรหัส TeacherCode จากฐานข้อมูลในระบบแก
+                const dbTeachers = usersDB_Global.map(u => {
+                    const tCode = u.TeacherCode || u.teachercode || u['รหัสครู'] || u['รหัสตารางสอน'] || null;
+                    return { fullName: u.FullName, code: String(tCode).trim() };
+                });
+
+                const daysMap = { 'T2': 'จันทร์', 'T3': 'อังคาร', 'T4': 'พุธ', 'T5': 'พฤหัสบดี', 'T6': 'ศุกร์' };
+
+                // 3. จับคู่รหัสและประกอบตารางสอน (ไม่ต้องพึ่ง Regex แล้ว!)
+                for (let t of dbTeachers) {
+                    if (!t.code || t.code === 'null') continue; 
+
+                    // ค้นหาใน trwRecords ด้วยฟิลด์ NO_TEACH ตรงๆ
+                    const teacherRecord = trwRecords.find(r => (r.NO_TEACH === t.code || r.ID === t.code));
+                    
+                    if (!teacherRecord) { notFoundCount++; continue; }
+
+                    Object.keys(daysMap).forEach(dayPrefix => {
+                        let rowObj = { "TeacherName": t.fullName, "Day": daysMap[dayPrefix] };
+                        let hasClass = false;
+
+                        for (let p = 1; p <= 9; p++) {
+                            const pCode = p.toString().padStart(2, '0');
+                            const colName = `${dayPrefix}${pCode}`; // สร้างหัวคอลัมน์ เช่น T201, T202
+                            
+                            const cellData = teacherRecord[colName];
+                            if (cellData && cellData.length > 1) {
+                                // ล้างอักขระขยะ
+                                const cleanData = cellData.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim();
+                                
+                                if (cleanData.match(/^[ก-ฮ][0-9]{5}/)) {
+                                    const parts = cleanData.split(/\s+/);
+                                    const subCode = parts[0] || '';
+                                    let room = parts[1] || '';
+                                    if (room.match(/^[1-6]\//)) room = "ม." + room; // เติม ม. ให้เหมือนในระบบ
+                                    rowObj[`Period${p}`] = `${subCode} ; ${room}`;
+                                } else {
+                                    rowObj[`Period${p}`] = `${cleanData} ;`;
+                                }
+                                hasClass = true;
+                            }
+                        }
+                        if (hasClass) extractedData.push(rowObj);
+                    });
+                    
+                    // นับจำนวนครูที่จัดตารางให้สำเร็จ
+                    if(extractedData.filter(d => d.TeacherName === t.fullName).length > 0) matchCount++;
+                }
+
+                if (extractedData.length === 0) {
+                    throw new Error("ไม่พบข้อมูลตารางสอนเลยครับ! ลองเช็คความถูกต้องของรหัสครู (TeacherCode) อีกครั้ง");
+                }
+
+                btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังเซฟตารางสอน (${matchCount} ท่าน)...`;
+
+                const payload = {
+                    action: "uploadMasterData", type: "timetable", term: currentTerm, year: currentYear, data: extractedData 
+                };
+
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                const textResult = await response.text();
+                const result = JSON.parse(textResult);
+
+                if (result.status === 'success') {
+                    customAlert(`🔥 นำเข้าข้อมูลตารางสอนสำเร็จ! จัดตารางให้ครู ${matchCount} ท่าน (รวม ${extractedData.length} คาบ)`, 'success');
+                    fileInput.value = '';
+                    if (notFoundCount > 0) console.warn(`หารหัสไม่พบ ${notFoundCount} ท่าน`);
+                    fetchAllDatabasesFromGAS(); 
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (error) {
+                customAlert("ข้อผิดพลาด: " + error.message, "error");
+            } finally {
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
+
     </script>
     <div class="fixed bottom-2 right-3 text-[10px] font-medium text-gray-400 z-[100] opacity-50 hover:opacity-100 transition-opacity pointer-events-none tracking-wide">
         [V_1.01]_Dev_by_Thuntathorn
