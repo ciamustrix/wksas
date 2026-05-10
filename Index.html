@@ -11638,7 +11638,7 @@ window.saveStudentDetail = async function() {
         };
         
         // ====================================================
-        // 🚀 TRW TIMETABLE EXTRACTOR (V5: DBF Native Parser - 100% Accuracy)
+        // 🚀 TRW TIMETABLE EXTRACTOR (V5.2: DBF Native + Schema & Time Shift Fix)
         // ====================================================
         window.uploadTimetableFromTRW = async function() {
             const fileInput = document.getElementById('adminTimetableTRW');
@@ -11664,16 +11664,16 @@ window.saveStudentDetail = async function() {
 
                 // --- 💡 สร้างเครื่องยนต์อ่านไฟล์ DBF โดยตรง (DBF Parser) ---
                 const dataView = new DataView(buffer);
-                const numRecords = dataView.getUint32(4, true); // จำนวนข้อมูลทั้งหมด
-                const headerLen = dataView.getUint16(8, true); // ความยาวส่วนหัว
-                const recordLen = dataView.getUint16(10, true); // ความยาวข้อมูลต่อ 1 คน
+                const numRecords = dataView.getUint32(4, true); 
+                const headerLen = dataView.getUint16(8, true); 
+                const recordLen = dataView.getUint16(10, true); 
 
                 let offset = 32;
                 const fields = [];
-                // 1. อ่านโครงสร้างคอลัมน์ (Field Descriptors)
+                // 1. อ่านโครงสร้างคอลัมน์
                 while (offset < headerLen - 1) {
                     const firstByte = dataView.getUint8(offset);
-                    if (firstByte === 0x0D) break; // สิ้นสุดส่วนหัว
+                    if (firstByte === 0x0D) break; 
                     
                     let fieldName = '';
                     for (let j = 0; j < 11; j++) {
@@ -11686,7 +11686,7 @@ window.saveStudentDetail = async function() {
                     offset += 32;
                 }
 
-                // ฟังก์ชันถอดรหัส TIS-620 โดยเฉพาะ
+                // ฟังก์ชันถอดรหัส TIS-620
                 const decodeTIS620Native = function(uint8Arr) {
                     const tis620Map = {
                         161:'ก',162:'ข',163:'ฃ',164:'ค',165:'ฅ',166:'ฆ',167:'ง',168:'จ',169:'ฉ',170:'ช',171:'ซ',172:'ฌ',173:'ญ',174:'ฎ',175:'ฏ',176:'ฐ',
@@ -11706,14 +11706,14 @@ window.saveStudentDetail = async function() {
                     return result.trim();
                 };
 
-                // 2. ดึงข้อมูลทีละคน (Records Extraction)
+                // 2. ดึงข้อมูลทีละคน 
                 const trwRecords = [];
                 let recordOffset = headerLen;
                 for (let i = 0; i < numRecords; i++) {
                     if (recordOffset + recordLen > buffer.byteLength) break;
                     
-                    const isDeleted = dataView.getUint8(recordOffset) === 0x2A; // '*' หมายถึงข้อมูลโดนลบไปแล้ว
-                    let currentOffset = recordOffset + 1; // ข้าม 1 byte แรกที่เป็น Status Flag
+                    const isDeleted = dataView.getUint8(recordOffset) === 0x2A; 
+                    let currentOffset = recordOffset + 1; 
                     
                     if (!isDeleted) {
                         const record = {};
@@ -11726,48 +11726,50 @@ window.saveStudentDetail = async function() {
                     }
                     recordOffset += recordLen;
                 }
-
-                // --- 💡 จบกระบวนการอ่าน DBF ตอนนี้ได้ Array Object สวยๆ 100% แล้ว ---
                 
                 let extractedData = [];
                 let matchCount = 0;
                 let notFoundCount = 0;
 
-                // เตรียมรายชื่อครูและรหัส TeacherCode จากฐานข้อมูลในระบบแก
                 const dbTeachers = usersDB_Global.map(u => {
                     const tCode = u.TeacherCode || u.teachercode || u['รหัสครู'] || u['รหัสตารางสอน'] || null;
                     return { fullName: u.FullName, code: String(tCode).trim() };
                 });
 
-                const daysMap = { 'T2': 'จันทร์', 'T3': 'อังคาร', 'T4': 'พุธ', 'T5': 'พฤหัสบดี', 'T6': 'ศุกร์' };
+                // 💡 แก้บั๊กที่ 1: ขยับมิติเวลาวัน (โปรแกรมเก่ามองว่า T1 = วันจันทร์)
+                const daysMap = { 'T1': 'จันทร์', 'T2': 'อังคาร', 'T3': 'พุธ', 'T4': 'พฤหัสบดี', 'T5': 'ศุกร์' };
 
-                // 3. จับคู่รหัสและประกอบตารางสอน (ไม่ต้องพึ่ง Regex แล้ว!)
+                // 3. จับคู่รหัสและประกอบตารางสอน
                 for (let t of dbTeachers) {
                     if (!t.code || t.code === 'null') continue; 
 
-                    // ค้นหาใน trwRecords ด้วยฟิลด์ NO_TEACH ตรงๆ
                     const teacherRecord = trwRecords.find(r => (r.NO_TEACH === t.code || r.ID === t.code));
-                    
                     if (!teacherRecord) { notFoundCount++; continue; }
 
                     Object.keys(daysMap).forEach(dayPrefix => {
-                        let rowObj = { "TeacherName": t.fullName, "Day": daysMap[dayPrefix] };
+                        let rowObj = { 
+                            "TeacherName": t.fullName, 
+                            "Day": daysMap[dayPrefix],
+                            "Period1": "", "Period2": "", "Period3": "", "Period4": "", "Period5": "",
+                            "Period6": "", "Period7": "", "Period8": "", "Period9": ""
+                        };
                         let hasClass = false;
 
+                        // 💡 แก้บั๊กที่ 2: ขยับมิติเวลาคาบเรียน (ปัดโฮมรูม T101 ทิ้งไป เริ่มที่ T102)
                         for (let p = 1; p <= 9; p++) {
-                            const pCode = p.toString().padStart(2, '0');
-                            const colName = `${dayPrefix}${pCode}`; // สร้างหัวคอลัมน์ เช่น T201, T202
+                            const dbfPeriodIndex = p + 1; // คาบ 1 ของระบบเว็บ = ช่อง 02 ของไฟล์ TRW
+                            const pCode = dbfPeriodIndex.toString().padStart(2, '0');
+                            const colName = `${dayPrefix}${pCode}`; // เช่น T102, T103...
                             
                             const cellData = teacherRecord[colName];
                             if (cellData && cellData.length > 1) {
-                                // ล้างอักขระขยะ
                                 const cleanData = cellData.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim();
                                 
                                 if (cleanData.match(/^[ก-ฮ][0-9]{5}/)) {
                                     const parts = cleanData.split(/\s+/);
                                     const subCode = parts[0] || '';
                                     let room = parts[1] || '';
-                                    if (room.match(/^[1-6]\//)) room = "ม." + room; // เติม ม. ให้เหมือนในระบบ
+                                    if (room.match(/^[1-6]\//)) room = "ม." + room; 
                                     rowObj[`Period${p}`] = `${subCode} ; ${room}`;
                                 } else {
                                     rowObj[`Period${p}`] = `${cleanData} ;`;
@@ -11778,7 +11780,6 @@ window.saveStudentDetail = async function() {
                         if (hasClass) extractedData.push(rowObj);
                     });
                     
-                    // นับจำนวนครูที่จัดตารางให้สำเร็จ
                     if(extractedData.filter(d => d.TeacherName === t.fullName).length > 0) matchCount++;
                 }
 
@@ -11797,7 +11798,7 @@ window.saveStudentDetail = async function() {
                 const result = JSON.parse(textResult);
 
                 if (result.status === 'success') {
-                    customAlert(`🔥 นำเข้าข้อมูลตารางสอนสำเร็จ! จัดตารางให้ครู ${matchCount} ท่าน (รวม ${extractedData.length} คาบ)`, 'success');
+                    customAlert(`🔥 นำเข้าข้อมูลตารางสอนสำเร็จ! จัดตารางให้ครู ${matchCount} ท่าน (รวม ${extractedData.length} วันที่มีสอน)`, 'success');
                     fileInput.value = '';
                     if (notFoundCount > 0) console.warn(`หารหัสไม่พบ ${notFoundCount} ท่าน`);
                     fetchAllDatabasesFromGAS(); 
