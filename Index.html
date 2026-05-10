@@ -797,9 +797,9 @@
                             </div>
 
                             <!-- Section 9: พิกัด GPS -->
-                            <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
+                            <div id="gpsSectionContainer" class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-sm font-bold text-gray-800">📍 พิกัดสถานที่จัดกิจกรรม (GPS)</label>
+                                    <label class="block text-sm font-bold text-gray-800">9. พิกัดสถานที่จัดกิจกรรม (GPS)</label>
                                     <button type="button" onclick="getLocationGPS()" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-1.5 px-3 rounded-full shadow-sm transition-colors flex items-center gap-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                         ดึงพิกัดปัจจุบัน
@@ -1897,10 +1897,6 @@
                                 <button onclick="adminSaveExclusions(event)" class="w-full mt-4 py-2.5 bg-gray-800 text-white font-bold rounded-xl">💾 บันทึกบัญชีดำถาวร</button>
                             </div>
                         </div>
-                        <div class="bg-rose-900 text-white rounded-3xl p-8 shadow-2xl border-4 border-rose-500/50">
-                            <h3 class="text-xl font-black mb-6 flex items-center gap-2">🛑 MASTER SYSTEM SWITCH (แผงสับคัตเอาท์ระบบ)</h3>
-                            <div id="masterSwitchGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
-                        </div>
                     </div>
                     <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
                     <div id="admin-sec-godmode" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1947,6 +1943,10 @@
                                 </div>
                             </div>
 
+                        </div>
+                        <div class="bg-rose-900 text-white rounded-3xl p-8 shadow-2xl border-4 border-rose-500/50">
+                            <h3 class="text-xl font-black mb-6 flex items-center gap-2">🛑 MASTER SYSTEM SWITCH (แผงสับคัตเอาท์ระบบ)</h3>
+                            <div id="masterSwitchGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
                         </div>
                     </div>
                 </div> <!-- [END VIEW 7] -->
@@ -3114,157 +3114,74 @@
             
             const roleStr = currentUser.Role || "User";
             const userRoles = roleStr.split(',').map(r => r.trim());
-            
             const isAdminOrAbove = userRoles.some(r => ['HOD', 'HOA', 'AsstDir', 'DepDir', 'Director', 'LttPngn', 'EmpPngn', 'BirdSpy'].includes(r));
             const isExecutive = userRoles.some(r => ['Director', 'DepDir'].includes(r));
-            
-            // 👑 EmpPngn (ไอซ์) ทะลวงผ่านทุกการล็อกของสวิตช์!
             const bypassLock = userRoles.includes('EmpPngn'); 
 
-            // 💡 โหลดสถานะ Master Switches
             const swPlan = bypassLock || masterSwitches_Global['Feature_Plan'] !== false;
             const swLog = bypassLock || masterSwitches_Global['Feature_Log'] !== false;
+            const swPortfolio = bypassLock || masterSwitches_Global['Feature_Portfolio'] !== false;
+            const swAdvisor = bypassLock || masterSwitches_Global['Feature_Advisor'] !== false;
+            const swRegSubject = bypassLock || masterSwitches_Global['Feature_RegSubject'] !== false;
+            const swTimetable = bypassLock || masterSwitches_Global['Feature_Timetable'] !== false;
             const swMedia = bypassLock || masterSwitches_Global['Feature_Media'] !== false;
             const swSLC = bypassLock || masterSwitches_Global['Feature_SLC'] !== false;
             const swSup = bypassLock || masterSwitches_Global['Feature_Supervision'] !== false;
             const swApprove = bypassLock || masterSwitches_Global['Feature_Approve'] !== false;
+            const swHandover = bypassLock || masterSwitches_Global['Feature_Handover'] !== false;
             const swSubAdmin = bypassLock || masterSwitches_Global['Feature_SubAdmin'] !== false;
             const swAnalytics = bypassLock || masterSwitches_Global['Feature_Analytics'] !== false;
+            const swTracking = bypassLock || masterSwitches_Global['Feature_Tracking'] !== false;
+            const swGPS = bypassLock || masterSwitches_Global['Feature_GPS'] !== false;
+            const swAI = bypassLock || masterSwitches_Global['Feature_AI_Helper'] !== false;
+            const swLttPngn = bypassLock || masterSwitches_Global['Feature_LttPngn'] !== false;
+
+            // คุม GPS & AI 
+            const gpsSec = document.getElementById('gpsSectionContainer');
+            if (gpsSec) gpsSec.classList.toggle('hidden', !swGPS);
+            document.querySelectorAll('button[onclick*="WithAI"]').forEach(btn => btn.classList.toggle('hidden', !swAI));
+
+            // 💡 ตั้งค่าความใหญ่ของปุ่ม (Shared Classes)
+            const btnClass = "bg-white border-2 border-gray-100 p-8 rounded-[2rem] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-center gap-5 group min-h-[180px]";
+            const iconClass = "w-20 h-20 rounded-3xl flex items-center justify-center text-5xl shadow-inner group-hover:scale-110 transition-transform";
+            const textClass = "font-black text-lg tracking-tight";
 
             let html = '';
-
-            // เมนูพื้นฐาน (ยกเว้นผู้บริหารสูงสุด)
             if (!isExecutive) {
-                if(swPlan) {
-                    html += `
-                        <button onclick="switchView('view-plan')" class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📂</div>
-                            <span class="font-bold text-indigo-900 text-sm">ส่งแผนการสอน</span>
-                        </button>`;
-                }
-                if(swLog) {
-                    html += `
-                        <button onclick="switchView('view-form')" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                            <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📝</div>
-                            <span class="font-bold text-gray-800 text-sm">กรอกแบบบันทึก</span>
-                        </button>`;
-                }
-                // 💡 ปุ่มขึ้นทะเบียนวิชาสำหรับ User ทุกคน
-                html += `
-                    <button onclick="switchView('view-reg-subject'); initUserRegSubject();" class="bg-white border border-emerald-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📘</div>
-                        <span class="font-bold text-emerald-800 text-sm">ขึ้นทะเบียนวิชา</span>
-                    </button>
-                    <button onclick="switchView('view-user-timetable'); renderUserTimetableMatrix();" class="bg-white border border-emerald-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-sm">🗓️</div>
-                        <span class="font-bold text-emerald-800 text-sm">จัดตารางสอนของฉัน</span>
-                    </button>`;
-                
-                html += `
-                    <button onclick="switchView('view-public')" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📋</div>
-                        <span class="font-bold text-gray-800 text-sm">แฟ้มสะสมงาน</span>
-                    </button>
-                `;
+                if(swPlan) html += `<button onclick="switchView('view-plan')" class="${btnClass} bg-gradient-to-br from-indigo-50/50 to-white"> <div class="${iconClass} bg-indigo-100">📂</div> <span class="${textClass} text-indigo-900">ส่งแผนการสอน</span> </button>`;
+                if(swLog) html += `<button onclick="switchView('view-form')" class="${btnClass}"> <div class="${iconClass} bg-emerald-100">📝</div> <span class="${textClass} text-emerald-800">กรอกแบบบันทึก</span> </button>`;
+                if(swRegSubject) html += `<button onclick="switchView('view-reg-subject'); initUserRegSubject();" class="${btnClass}"> <div class="${iconClass} bg-teal-100">📘</div> <span class="${textClass} text-teal-800">ขึ้นทะเบียนวิชา</span> </button>`;
+                if(swTimetable) html += `<button onclick="switchView('view-user-timetable'); renderUserTimetableMatrix();" class="${btnClass}"> <div class="${iconClass} bg-sky-100">🗓️</div> <span class="${textClass} text-sky-800">จัดตารางสอน</span> </button>`;
+                if(swPortfolio) html += `<button onclick="switchView('view-public')" class="${btnClass}"> <div class="${iconClass} bg-gray-100">📋</div> <span class="${textClass} text-gray-800">แฟ้มสะสมงาน</span> </button>`;
             }
 
-            // เมนูพิเศษ (ถ้าสวิตช์เปิด)
-            if(swMedia) {
-                html += `
-                    <button onclick="switchView('view-media'); loadMediaGallery();" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🧪</div>
-                        <span class="font-bold text-gray-800 text-sm">คลังสื่อการเรียนรู้</span>
-                    </button>`;
-            }
-            if(swSLC) {
-                html += `
-                    <button onclick="switchView('view-slc'); initSLCSystem();" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🤝</div>
-                        <span class="font-bold text-gray-800 text-sm">ระบบ PLC & Open Class</span>
-                    </button>`;
-            }
-            if(swSup) {
-                html += `
-                    <button onclick="switchView('view-supervision'); initSupervisionSystem();" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">👁️</div>
-                        <span class="font-bold text-gray-800 text-sm">ระบบนิเทศการสอน</span>
-                    </button>`;
-            }
-
-            // แสดงแฟ้มประจำชั้นถ้ามี AdvisorRoom
-            if (!isExecutive && currentUser.AdvisorRoom && currentUser.AdvisorRoom !== '-') {
-                html += `
-                    <button onclick="switchView('view-advisor'); loadAdvisorStudents();" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">👨‍👩‍👧‍👦</div>
-                        <span class="font-bold text-sky-800 text-sm">แฟ้มประจำชั้น</span>
-                    </button>
-                `;
-            }
-
-            // ปุ่มมอบงานสอนแทน
-            if (!isExecutive) {
-                html += `
-                    <button onclick="switchView('view-handover')" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📤</div>
-                        <span class="font-bold text-orange-800 text-sm">มอบหมายงานสอนแทน</span>
-                    </button>
-                `;
-            }
-
-            // 💡 เมนูพิจารณาอนุมัติ (โดน Master Switch คุมแล้ว)
+            if(swMedia) html += `<button onclick="switchView('view-media'); loadMediaGallery();" class="${btnClass}"> <div class="${iconClass} bg-amber-100">🧪</div> <span class="${textClass} text-amber-800">คลังสื่อ</span> </button>`;
+            if(swSLC) html += `<button onclick="switchView('view-slc'); initSLCSystem();" class="${btnClass}"> <div class="${iconClass} bg-purple-100">🤝</div> <span class="${textClass} text-purple-800">ระบบ PLC</span> </button>`;
+            if(swSup) html += `<button onclick="switchView('view-supervision'); initSupervisionSystem();" class="${btnClass}"> <div class="${iconClass} bg-rose-100">👁️</div> <span class="${textClass} text-rose-800">นิเทศการสอน</span> </button>`;
+            
+            if (!isExecutive && currentUser.AdvisorRoom && currentUser.AdvisorRoom !== '-' && swAdvisor) 
+                html += `<button onclick="switchView('view-advisor'); loadAdvisorStudents();" class="${btnClass}"> <div class="${iconClass} bg-indigo-100">👨‍👩‍👧‍👦</div> <span class="${textClass} text-indigo-800">แฟ้มประจำชั้น</span> </button>`;
+            
+            if (!isExecutive && swHandover) 
+                html += `<button onclick="switchView('view-handover')" class="${btnClass}"> <div class="${iconClass} bg-orange-100">📤</div> <span class="${textClass} text-orange-800">แจ้งลา/มอบงาน</span> </button>`;
+            
             if (swApprove) {
-                const approveRolesMap = { 'HOD': 'อนุมัติ (หน.กลุ่มสาระฯ)', 'HOA': 'อนุมัติ (หน.วิชาการ)', 'AsstDir': 'อนุมัติ (ผู้ช่วย ผอ.)', 'DepDir': 'อนุมัติ (รอง ผอ.)', 'Director': 'รับทราบ (ผอ.)' };
-                userRoles.forEach(r => {
-                    if (approveRolesMap[r]) {
-                        html += `
-                            <button onclick="switchView('view-approve')" class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-sm">✍️</div>
-                                <span class="font-bold text-amber-900 text-sm">${approveRolesMap[r]}</span>
-                            </button>
-                        `;
-                    }
-                });
+                const map = { 'HOD': 'อนุมัติ (หมวด)', 'HOA': 'อนุมัติ (วิชาการ)', 'AsstDir': 'อนุมัติ (บริหาร)', 'DepDir': 'อนุมัติ (รอง ผอ.)', 'Director': 'รับทราบ (ผอ.)' };
+                userRoles.forEach(r => { if (map[r]) html += `<button onclick="switchView('view-approve')" class="${btnClass} bg-amber-50/50 border-amber-200"> <div class="${iconClass} bg-white shadow-sm">✍️</div> <span class="${textClass} text-amber-900">${map[r]}</span> </button>`; });
             }
 
-            // 💡 เมนูบริหารระดับสูง (โดน Master Switch คุมแล้ว)
             if (isAdminOrAbove) {
-                if(swAnalytics) {
-                    html += `
-                        <button onclick="switchView('view-analytics'); renderAnalyticsDashboard();" class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-sm">📈</div>
-                            <span class="font-bold text-indigo-900 text-sm">สถิติ Analytics</span>
-                        </button>
-                        <button onclick="switchView('view-daily')" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📊</div>
-                            <span class="font-bold text-gray-800 text-sm">สรุปรายวัน</span>
-                        </button>
-                        <button onclick="switchView('view-weekly')" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📅</div>
-                            <span class="font-bold text-gray-800 text-sm">ติดตามรายสัปดาห์</span>
-                        </button>
-                    `;
-                }
-            }           
-
-            // ศูนย์บัญชาการจัดสอนแทน
-            if (swSubAdmin && userRoles.some(r => ['LttPngn', 'EmpPngn', 'HOA'].includes(r))) {
-                html += `
-                    <button onclick="switchView('view-sub-admin'); loadSubAdminTable();" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🎯</div>
-                        <span class="font-bold text-purple-800 text-sm">จัดสอนแทน</span>
-                    </button>
-                `;
+                if(swAnalytics) html += `<button onclick="switchView('view-analytics'); renderAnalyticsDashboard();" class="${btnClass} bg-slate-50"> <div class="${iconClass} bg-white shadow-sm">📈</div> <span class="${textClass} text-slate-800">Analytics</span> </button>`;
+                if(swTracking) html += `
+                    <button onclick="switchView('view-daily')" class="${btnClass}"> <div class="${iconClass} bg-gray-100">📊</div> <span class="${textClass} text-gray-800">สรุปรายวัน</span> </button>
+                    <button onclick="switchView('view-weekly')" class="${btnClass}"> <div class="${iconClass} bg-gray-100">📅</div> <span class="${textClass} text-gray-800">ติดตามรายสัปดาห์</span> </button>`;
             }
 
-            // จัดการระบบ (เข้าได้แค่ Ice กับผู้ช่วย)
-            if (userRoles.some(r => ['LttPngn', 'EmpPngn'].includes(r))) {
-                html += `
-                    <button onclick="switchView('view-admin')" class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 group">
-                        <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">⚙️</div>
-                        <span class="font-bold text-gray-800 text-sm">จัดการระบบ</span>
-                    </button>
-                `;
-            }
+            if (swSubAdmin && userRoles.some(r => ['LttPngn', 'EmpPngn', 'HOA'].includes(r))) 
+                html += `<button onclick="switchView('view-sub-admin'); loadSubAdminTable();" class="${btnClass}"> <div class="${iconClass} bg-purple-100">🎯</div> <span class="${textClass} text-purple-800">จัดสอนแทน</span> </button>`;
+            
+            if (userRoles.some(r => ['LttPngn', 'EmpPngn'].includes(r)) && swLttPngn) 
+                html += `<button onclick="switchView('view-admin')" class="${btnClass}"> <div class="${iconClass} bg-gray-100">⚙️</div> <span class="${textClass} text-gray-800">จัดการระบบ</span> </button>`;
 
             grid.innerHTML = html;
 
@@ -3272,12 +3189,12 @@
             if (!isExecutive) {
                 if(swPlan) { const nPlan = document.getElementById('nav-view-plan'); if(nPlan) nPlan.classList.remove('hidden'); }
                 if(swLog) { const nForm = document.getElementById('nav-view-form'); if(nForm) nForm.classList.remove('hidden'); }
-                const nPub = document.getElementById('nav-view-public'); if(nPub) nPub.classList.remove('hidden');
+                if(swPortfolio) { const nPub = document.getElementById('nav-view-public'); if(nPub) nPub.classList.remove('hidden'); }
             } else {
                 const navWelcome = document.getElementById('nav-view-welcome');
                 if(navWelcome) navWelcome.classList.remove('hidden');
             }
-            if (isAdminOrAbove && swAnalytics) {
+            if (isAdminOrAbove && swTracking) {
                 const nDaily = document.getElementById('nav-view-daily'); if(nDaily) nDaily.classList.remove('hidden');
                 const nWeekly = document.getElementById('nav-view-weekly'); if(nWeekly) nWeekly.classList.remove('hidden');
             }
@@ -3615,22 +3532,28 @@
             populateAdminUserList(); 
             
             // 🐦 เช็คสิทธิ์และเปิดปุ่มแชทฝูงนก (Polling)
-            // 🐦 เช็คสิทธิ์แชท: รองรับทั้งกลุ่ม ID ขึ้นต้นด้วย X และ Role 'BirdSpy'
             const isXUser = (currentUser.UserID && currentUser.UserID.toString().toUpperCase().startsWith('X')) || 
                             userRoles.some(r => ['BirdSpy', 'HOA', 'LttPngn', 'EmpPngn'].includes(r));
             const chatWidget = document.getElementById('birdFlockChat');
             
-            if (isXUser) {
+            // 💡 ตัดวงจรด้วย Master Switch (Feature_BirdChat)
+            const bypassLock = userRoles.includes('EmpPngn');
+            const swChat = bypassLock || masterSwitches_Global['Feature_BirdChat'] !== false;
+            
+            if (isXUser && swChat) {
                 if(chatWidget) chatWidget.classList.remove('hidden');
                 if (typeof fetchBirdFlockChat === 'function') {
                     fetchBirdFlockChat();
                     if(chatInterval) clearInterval(chatInterval);
                     chatInterval = setInterval(fetchBirdFlockChat, 10000); 
                 }
-                if (typeof initBirdChaos === 'function') initBirdChaos(); // 💡 เสกนกออกมากวนจอตรงนี้!
+                if (typeof initBirdChaos === 'function') initBirdChaos(); 
             } else {
                 if(chatWidget) chatWidget.classList.add('hidden');
                 if(chatInterval) clearInterval(chatInterval);
+                const birdArea = document.getElementById('birdRoamingArea');
+                if (birdArea) birdArea.classList.add('hidden'); // ซ่อนนกที่เดินไปมาด้วย
+                window.birdLoopActive = false; // ปิดลูปนก
             }
         }
 
@@ -10630,41 +10553,73 @@ window.renderAdminLogsTable = function() {
             }
         };
         // ==========================================
-        // 🛑 MASTER SWITCH ENGINE (แผงสับคัตเอาท์ระบบ)
+        // 🛑 MASTER SWITCH ENGINE (V2: High Contrast & Large Text)
         // ==========================================
         window.renderMasterSwitchPanel = function() {
             const grid = document.getElementById('masterSwitchGrid');
             if(!grid) return;
 
-            // รายการสวิตช์ทั้งหมด (รวมของ Higher Users ด้วย)
             const switches = [
+                // กลุ่ม 1: ระบบพื้นฐาน
                 { key: 'Feature_Plan', name: 'ส่งแผนการสอน', icon: '📂' },
                 { key: 'Feature_Log', name: 'กรอกแบบบันทึก', icon: '📝' },
+                { key: 'Feature_Portfolio', name: 'แฟ้มสะสมงาน', icon: '📋' },
+                { key: 'Feature_Advisor', name: 'แฟ้มประจำชั้น', icon: '👨‍👩‍👧‍👦' },
+                // กลุ่ม 2: ทะเบียนและตาราง
+                { key: 'Feature_RegSubject', name: 'ขึ้นทะเบียนวิชา', icon: '📘' },
+                { key: 'Feature_Timetable', name: 'จัดตารางสอน', icon: '🗓️' },
+                // กลุ่ม 3: ระบบขั้นสูง
                 { key: 'Feature_Media', name: 'คลังสื่อการเรียนรู้', icon: '🧪' },
                 { key: 'Feature_SLC', name: 'ระบบ PLC & SLC', icon: '🤝' },
                 { key: 'Feature_Supervision', name: 'ระบบนิเทศการสอน', icon: '👁️' },
-                { key: 'Feature_Approve', name: 'เมนูอนุมัติ (หัวหน้า/บริหาร)', icon: '✍️' },
-                { key: 'Feature_SubAdmin', name: 'ศูนย์จัดสอนแทน (HOA)', icon: '🎯' },
-                { key: 'Feature_Analytics', name: 'สถิติ Analytics', icon: '📈' }
+                // กลุ่ม 4: บริหารจัดการ
+                { key: 'Feature_Approve', name: 'เมนูอนุมัติ', icon: '✍️' },
+                { key: 'Feature_Handover', name: 'แจ้งลา/มอบงาน', icon: '📤' },
+                { key: 'Feature_SubAdmin', name: 'ศูนย์จัดสอนแทน', icon: '🎯' },
+                // กลุ่ม 5: ข้อมูล & AI & แอดมิน (เพิ่ม LttPngn ตรงนี้!)
+                { key: 'Feature_Analytics', name: 'สถิติ Analytics', icon: '📈' },
+                { key: 'Feature_Tracking', name: 'ติดตาม/สรุปผล', icon: '📊' },
+                { key: 'Feature_AI_Helper', name: 'ผู้ช่วย AI (Gemini)', icon: '✨' },
+                { key: 'Feature_BirdChat', name: 'เครือข่ายสายสืบ', icon: '🐧' },
+                { key: 'Feature_GPS', name: 'ระบุพิกัด GPS', icon: '📍' },
+                { key: 'Feature_LttPngn', name: 'ฟังก์ชัน LttPngn', icon: '👑' } 
             ];
 
             let html = '';
             switches.forEach(sw => {
-                const isActive = masterSwitches_Global[sw.key] !== false; // ค่า default คือ true
-                const bgClass = isActive ? 'bg-emerald-500 border-emerald-400' : 'bg-rose-950 border-rose-800 opacity-50';
-                const dotClass = isActive ? 'translate-x-6' : 'translate-x-1';
+                const isActive = masterSwitches_Global[sw.key] !== false;
+                
+                // 💡 ปรับแต่งลักษณะปุ่มตามสถานะ (เปิด = เขียวสว่าง / ปิด = เทาเข้ม)
+                const containerClass = isActive 
+                    ? 'bg-emerald-950/40 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
+                    : 'bg-slate-900/60 border-slate-700 opacity-80';
+                
+                const toggleBg = isActive ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-600';
+                const knobClass = isActive ? 'translate-x-7 bg-white' : 'translate-x-1 bg-slate-300';
+                const statusText = isActive ? 'ACTIVE' : 'LOCKED';
+                const statusTextColor = isActive ? 'text-emerald-400' : 'text-slate-500';
 
                 html += `
-                <div class="bg-black/40 rounded-xl p-4 border border-rose-500/30 flex flex-col items-center text-center justify-between gap-3 shadow-inner">
-                    <div class="text-2xl">${sw.icon}</div>
-                    <div class="text-[10px] font-bold text-rose-100 h-8 flex items-center justify-center leading-tight">${sw.name}</div>
-                    <div class="w-14 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${bgClass}" onclick="toggleMasterSwitch('${sw.key}', ${!isActive})">
-                        <div class="bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${dotClass}"></div>
+                <div class="${containerClass} rounded-2xl p-5 border-2 flex flex-col items-center text-center justify-between gap-4 transition-all duration-300">
+                    <div class="text-4xl filter drop-shadow-sm">${sw.icon}</div>
+                    
+                    <div class="flex flex-col gap-1">
+                        <div class="text-sm font-black text-white tracking-wide">${sw.name}</div>
+                        <div class="text-[9px] font-black tracking-widest ${statusTextColor}">${statusText}</div>
+                    </div>
+
+                    <!-- 🔘 Custom Toggle Switch (ใหญ่ขึ้น) -->
+                    <div class="relative w-16 h-8 flex items-center rounded-full p-1 cursor-pointer transition-all duration-500 ${toggleBg}" 
+                         onclick="toggleMasterSwitch('${sw.key}', ${!isActive})">
+                        <div class="w-6 h-6 rounded-full shadow-lg transform transition-transform duration-300 flex items-center justify-center ${knobClass}">
+                            <div class="w-1 h-3 bg-slate-200/50 rounded-full"></div>
+                        </div>
                     </div>
                 </div>`;
             });
             grid.innerHTML = html;
         };
+
 
         window.toggleMasterSwitch = async function(key, newValue) {
             masterSwitches_Global[key] = newValue;
@@ -11036,6 +10991,10 @@ window.saveStudentDetail = async function() {
                    activeBtn.classList.remove('bg-slate-900/40');
                 }
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                 // 💡 จุดสกัด: พอเข้าแท็บ "ความปลอดภัย" ปุ๊บ บังคับให้โหลดแผงสวิตช์ทันที
+                if (secId === 'admin-sec-godmode') {
+                renderMasterSwitchPanel();
+            }
 
                 // 💡 จุดสกัด: พอเข้าแท็บ "ฐานข้อมูล" ปุ๊บ บังคับให้โหลดชื่อครูใหม่ทันที
                 if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') {
