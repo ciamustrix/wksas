@@ -6886,10 +6886,10 @@ window.renderAdminLogsTable = function() {
             }
         };
 
-         // ตัวแปรส่วนกลางสำหรับเก็บข้อมูลรอการตรวจสอบ
+        // ตัวแปรส่วนกลางสำหรับเก็บข้อมูลรอการตรวจสอบ
         window.tempAISubstitutions = [];
 
-        // 🧠 The AI Engine (ประมวลผลการจัดสอนแทน V3: Drag & Drop Matrix)
+        // 🧠 The AI Engine (ประมวลผลการจัดสอนแทน V4: Weighted Scoring Algorithm)
         window.runMasterAISubstitution = async function() {
             const dateVal = document.getElementById('masterSubDate').value;
             if(!dateVal) return customAlert("กรุณาเลือกวันที่ต้องการจัดสอนแทนครับ");
@@ -6925,7 +6925,7 @@ window.renderAdminLogsTable = function() {
 
             const btn = document.getElementById('btnRunMasterAI');
             const origTxt = btn.innerHTML;
-            btn.innerHTML = `<div class="loader loader-white mr-2 border-2"></div> AI กำลังวิเคราะห์...`;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block"></div> AI กำลังคิดคำนวณ...`;
             btn.disabled = true;
 
             window.tempAISubstitutions = [];
@@ -6944,9 +6944,19 @@ window.renderAdminLogsTable = function() {
                         if(pData && pData.trim() !== '') {
                             const parts = pData.split(';');
                             const subjectData = (parts[0]||'').trim() + " " + (parts[1]||'').trim(); 
+                            
+                            // 💡 ดึงข้อมูลวิชาและห้องเพื่อเอาไปเข้าสมการให้คะแนน
+                            const targetSubCode = (parts[0]||'').trim();
+                            const targetRoomRaw = (parts[1]||'').trim();
+                            const targetRoomClean = targetRoomRaw.replace('ม.', ''); // ให้เหลือแค่ 1/1, 4/2
+                            
+                            let targetDept = "";
+                            const subjInfo = subjectsDB_Global.find(s => s.SubjectCode === targetSubCode);
+                            if(subjInfo) targetDept = subjInfo.Department;
 
-                            // 3. กรองหา "ครูที่ว่าง" ในคาบนี้
+                            // 3. กรองหา "ครูที่ว่าง" พร้อมระบบให้คะแนน (The INTJ Scoring Engine)
                             let availableTeachers = [];
+                            
                             timetableDB_Global.forEach(sub_tt => {
                                 if (sub_tt.Day !== targetDayName) return; 
                                 if (sub_tt.TeacherName === absent.fullName) return; 
@@ -6957,14 +6967,42 @@ window.renderAdminLogsTable = function() {
 
                                 const sub_pData = sub_tt[`Period${i}`];
                                 if(!sub_pData || sub_pData.trim() === '') {
-                                    availableTeachers.push(sub_tt.TeacherName);
+                                    // 🟢 คนนี้ว่าง! เข้าสู่กระบวนการคำนวณคะแนนความเหมาะสม
+                                    let score = 0;
+                                    const subUser = usersDB_Global.find(u => u.FullName === sub_tt.TeacherName);
+                                    
+                                    if (subUser) {
+                                        // Priority 1: ภาระงานวันนี้ (ใครสอนน้อย เอาคะแนนไปเยอะๆ)
+                                        let taughtPeriods = 0;
+                                        for(let p=1; p<=9; p++) {
+                                            if(sub_tt[`Period${p}`] && sub_tt[`Period${p}`].trim() !== '') taughtPeriods++;
+                                        }
+                                        score += (9 - taughtPeriods) * 10; // Max +90 คะแนน
+
+                                        // Priority 3: กลุ่มสาระเดียวกัน
+                                        if (targetDept && subUser.Department === targetDept) {
+                                            score += 500;
+                                        }
+
+                                        // Priority 4: เป็นครูที่ปรึกษาห้องนี้พอดี!
+                                        if (subUser.AdvisorRoom && subUser.AdvisorRoom === targetRoomClean) {
+                                            score += 1000; // ทะลุหลอด! จัดให้คนนี้แน่นอน
+                                        }
+                                    }
+                                    
+                                    // Priority 5: ตัวแปรสุ่มของ AI (ป้องกันคนได้คะแนนเท่ากันแล้วซ้ำคนเดิมตลอด)
+                                    score += Math.random() * 5;
+
+                                    availableTeachers.push({ name: sub_tt.TeacherName, score: score });
                                 }
                             });
 
-                            // 4. สุ่มเลือก 1 คนแล้วโยนเข้ากระดานทดสอบ
+                            // 4. เลือกคนที่มีคะแนนสูงสุด!
                             let chosenSub = ""; 
                             if(availableTeachers.length > 0) {
-                                chosenSub = availableTeachers[Math.floor(Math.random() * availableTeachers.length)];
+                                // เรียงจากคะแนนมาก (Best Match) ไปหาน้อย
+                                availableTeachers.sort((a, b) => b.score - a.score);
+                                chosenSub = availableTeachers[0].name;
                             }
 
                             window.tempAISubstitutions.push({
@@ -6986,7 +7024,6 @@ window.renderAdminLogsTable = function() {
                 if (window.tempAISubstitutions.length === 0) {
                     customAlert("ไม่มีคาบสอนที่ต้องจัดคนไปสอนแทนในวันนี้ครับ", "info");
                 } else {
-                    // 💡 โยนเข้ากระดาน The Matrix 
                     renderDragDropReviewBoard(targetDayName, absentTeachers, excludedAM, excludedPM);
                 }
 
@@ -6997,7 +7034,6 @@ window.renderAdminLogsTable = function() {
                 btn.disabled = false;
             }
         };
-
         // 🎛️ The Matrix Review Board (กระดานลากวาง)
         window.renderDragDropReviewBoard = function(targetDayName, absentTeachers, excludedAM, excludedPM) {
             const parent = document.getElementById('masterControlPanelContainer').parentElement;
