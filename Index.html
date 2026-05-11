@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- html2pdf.js สำหรับสร้างไฟล์ PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- html2canvas สำหรับสร้างไฟล์รูปภาพ JPG (แก้บั๊ก is not defined) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- SheetJS สำหรับอ่านไฟล์ Excel หน้าเว็บ (ลดภาระเซิร์ฟเวอร์) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- SweetAlert2 สำหรับป๊อปอัปแจ้งเตือน -->
@@ -7259,7 +7261,7 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
         // ตัวแปรส่วนกลางสำหรับเก็บข้อมูลรอการตรวจสอบ
         window.tempAISubstitutions = [];
 
-        // 🧠 The AI Engine (ประมวลผลการจัดสอนแทน V6: Max 3 Quota + Overload Penalty)
+        // 🧠 The AI Engine (V.Recycle ID: ป้องกันข้อมูลซ้ำซ้อนใน SubstitutionLogs)
         window.runMasterAISubstitution = async function() {
             const dateVal = document.getElementById('masterSubDate').value;
             if(!dateVal) return customAlert("กรุณาเลือกวันที่ต้องการจัดสอนแทนครับ");
@@ -7272,7 +7274,6 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 return customAlert("ระบบรองรับการจัดสอนแทนเฉพาะวันจันทร์ - ศุกร์ครับ");
             }
 
-            // 1. อ่านค่าแผงควบคุมทั้งหมด
             let absentTeachers = [];
             let excludedAM = [];
             let excludedPM = [];
@@ -7280,13 +7281,11 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             usersDB_Global.forEach(u => {
                 const statusEl = document.querySelector(`input[name="status_${u.Username}"]:checked`);
                 if(!statusEl) return;
-                
                 const status = statusEl.value;
                 if(status !== 'none') {
                     const dur = document.querySelector(`input[name="dur_${u.Username}"]:checked`).value;
                     absentTeachers.push({ fullName: u.FullName, type: status, duration: dur });
                 }
-                
                 if(document.getElementById(`exAM_${u.Username}`).checked) excludedAM.push(u.FullName);
                 if(document.getElementById(`exPM_${u.Username}`).checked) excludedPM.push(u.FullName);
             });
@@ -7299,12 +7298,9 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             btn.disabled = true;
 
             window.tempAISubstitutions = [];
-            
-            // 💡 สร้างตัวนับโควต้าสอนแทนของแต่ละคน (Load Balancing)
             let dailySubCount = {};
 
             try {
-                // 2. ลูปตามรายชื่อครูที่ลา
                 for (let absent of absentTeachers) {
                     const tt = timetableDB_Global.find(t => t.TeacherName === absent.fullName && t.Day === targetDayName);
                     if(!tt) continue; 
@@ -7317,19 +7313,15 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                         if(pData && pData.trim() !== '') {
                             const parts = pData.split(';');
                             const subjectData = (parts[0]||'').trim() + " " + (parts[1]||'').trim(); 
-                            
                             const targetSubCode = (parts[0]||'').trim();
                             const targetRoomRaw = (parts[1]||'').trim();
-                            const targetRoomClean = targetRoomRaw.replace('ม.', '');
-                            const targetLoc = (parts[2]||'').trim(); // 💡 ดึงสถานที่ออกมาด้วย! 
+                            const targetLoc = (parts[2]||'').trim(); 
                             
                             let targetDept = "";
                             const subjInfo = subjectsDB_Global.find(s => s.SubjectCode === targetSubCode);
                             if(subjInfo) targetDept = subjInfo.Department;
 
-                            // 3. กรองหา "ครูที่ว่าง" พร้อมระบบให้คะแนน
                             let availableTeachers = [];
-                            
                             timetableDB_Global.forEach(sub_tt => {
                                 if (sub_tt.Day !== targetDayName) return; 
                                 if (sub_tt.TeacherName === absent.fullName) return; 
@@ -7337,114 +7329,57 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                                 if (i <= 4 && excludedAM.includes(sub_tt.TeacherName)) return;
                                 if (i >= 5 && excludedPM.includes(sub_tt.TeacherName)) return;
                                 if (typeof persistentExclusions !== 'undefined' && persistentExclusions.includes(sub_tt.TeacherName)) return;
-
-                                // 💡 กฎเหล็กข้อ 1: ห้ามสอนแทนเกิน 3 คาบต่อวัน! (ตัดสิทธิ์เข้าประกวดทันที)
                                 if ((dailySubCount[sub_tt.TeacherName] || 0) >= 3) return;
-
-                                // 💡 กฎเหล็กข้อ 2: ป้องกันการแยกร่าง (ถ้าโดน AI จับคู่ไปแล้วในคาบเดียวกัน ห้ามดึงมาใช้อีก)
-                                const alreadyAssignedThisPeriod = window.tempAISubstitutions.some(temp => temp.SubTeacher === sub_tt.TeacherName && temp.Period === i.toString());
-                                if (alreadyAssignedThisPeriod) return;
+                                if (window.tempAISubstitutions.some(temp => temp.SubTeacher === sub_tt.TeacherName && temp.Period === i.toString())) return;
 
                                 const sub_pData = sub_tt[`Period${i}`];
                                 if(!sub_pData || sub_pData.trim() === '') {
-                                    
                                     let score = 0;
                                     const subUser = usersDB_Global.find(u => u.FullName === sub_tt.TeacherName);
-                                    
                                     if (subUser) {
-                                        // 💡 Load Balancing: เอาคาบสอนปัจจุบัน + คาบที่โดน AI ยัดไปแล้ว มารวมเป็น "ภาระงาน"
                                         let taughtPeriods = dailySubCount[sub_tt.TeacherName] || 0;
-                                        for(let p=1; p<=9; p++) {
-                                            if(sub_tt[`Period${p}`] && sub_tt[`Period${p}`].trim() !== '') taughtPeriods++;
-                                        }
-                                        
-                                        score += (9 - taughtPeriods) * 10; // ใครภาระงานรวมน้อย จะได้คะแนนเยอะกว่า
-                                        // 🚨 ลอจิกใหม่: ตรวจจับ "คาบคู่" (Double Period Logic)
-                                        const prevPeriodData = tt[`Period${i-1}`];
-                                        const nextPeriodData = tt[`Period${i+1}`];
-                                        
-                                        // 1. ถ้าคาบนี้เป็น "ครึ่งหลัง" ของคาบคู่ -> ให้คะแนนคนที่สอน "ครึ่งแรก" ไปแล้วแบบทะลุเพดาน! (บังคับเลือกคนเดิม)
-                                        if (prevPeriodData && prevPeriodData.trim() === pData.trim()) {
-                                            const prevAssignment = window.tempAISubstitutions.find(temp => temp.AbsentTeacher === absent.fullName && temp.Period === (i-1).toString());
-                                            if (prevAssignment && prevAssignment.SubTeacher === sub_tt.TeacherName) {
-                                                score += 10000; // บังคับจับคู่!
-                                            }
-                                        }
-                                        
-                                        // 2. ถ้าคาบนี้เป็น "ครึ่งแรก" ของคาบคู่ -> เช็คว่าครูคนนี้ว่างคาบหน้าด้วยไหม? ถ้าว่างเอาคะแนนบวกไป ถ้าไม่ว่างโดนหักคะแนน!
-                                        if (nextPeriodData && nextPeriodData.trim() === pData.trim()) {
-                                            const candidateNextPeriod = sub_tt[`Period${i+1}`];
-                                            if (!candidateNextPeriod || candidateNextPeriod.trim() === '') {
-                                                score += 3000; // ว่าง 2 คาบติด เอาไปเลย!
-                                            } else {
-                                                score -= 2000; // ไม่ว่างคาบหน้า อย่าหาทำมาแย่งคาบแรก
-                                            }
-                                        }
-
-                                        // 🚨 กฎใหม่ (Overload Penalty): ถ้ามีคาบสอนรวมเกิน 5 คาบ ให้หักคะแนนทิ้งแบบยับๆ ให้ไปอยู่ก้นตาราง!
-                                        if (taughtPeriods > 5) {
-                                            score -= 5000;
-                                        }
-
-                                        if (targetDept && subUser.Department === targetDept) {
-                                            score += 500;
-                                        }
-
-                                        if (subUser.AdvisorRoom && subUser.AdvisorRoom === targetRoomClean) {
-                                            score += 1000; 
-                                        }
+                                        for(let p=1; p<=9; p++) if(sub_tt[`Period${p}`] && sub_tt[`Period${p}`].trim() !== '') taughtPeriods++;
+                                        score += (9 - taughtPeriods) * 10; 
+                                        if (taughtPeriods > 5) score -= 5000;
+                                        if (targetDept && subUser.Department === targetDept) score += 500;
                                     }
-                                    
                                     score += Math.random() * 5;
-
                                     availableTeachers.push({ name: sub_tt.TeacherName, score: score });
                                 }
                             });
 
-                            // 4. เลือกคนที่มีคะแนนสูงสุด!
                             let chosenSub = ""; 
                             if(availableTeachers.length > 0) {
                                 availableTeachers.sort((a, b) => b.score - a.score);
                                 chosenSub = availableTeachers[0].name;
-                                
-                                // 💡 อัปเดตโควต้าสะสมว่าคนนี้โดนจัดสอนแทนไปกี่คาบแล้ว
                                 dailySubCount[chosenSub] = (dailySubCount[chosenSub] || 0) + 1;
                             }
 
+                            // 💡 หัวใจสำคัญ: ถ้ายกเลิกแล้วจัดใหม่ หรือแก้ข้อมูล ให้ใช้ LogID เดิม!
+                            const existing = (substitutionsDB_Global || []).find(x => x.Date === dateVal && x.AbsentTeacher === absent.fullName && x.Period === i.toString());
+                            const finalLogID = existing ? existing.LogID : ('SUB-' + Date.now() + '-' + i + Math.floor(Math.random()*1000));
+
                             window.tempAISubstitutions.push({
-                                LogID: 'SUB-AI-' + Date.now() + '-' + i + Math.floor(Math.random()*100),
+                                LogID: finalLogID,
                                 Date: dateVal,
                                 AbsentTeacher: absent.fullName,
                                 SubTeacher: chosenSub,
                                 Period: i.toString(),
                                 SubjectData: subjectData,
-                                
-                                // 💡 เติม 3 ฟิลด์ที่หายไปให้ครบ!
                                 SubjectCode: targetSubCode,
                                 ClassLevel: targetRoomRaw,
                                 Location: targetLoc,
-                                
                                 LeaveType: absent.type,
-                                HandoverPlan: "",
-                                HandoverMedia: "",
+                                HandoverPlan: "", HandoverMedia: "",
                                 HandoverNote: "จัดสอนแทนโดยระบบอัตโนมัติ"
                             });
                         }
                     }
                 }
-
-                if (window.tempAISubstitutions.length === 0) {
-                    customAlert("ไม่มีคาบสอนที่ต้องจัดคนไปสอนแทนในวันนี้ครับ", "info");
-                } else {
-                    renderDragDropReviewBoard(targetDayName, absentTeachers, excludedAM, excludedPM);
-                }
-
-            } catch (e) {
-                customAlert("เกิดข้อผิดพลาดในการประมวลผล: " + e.message);
-            } finally {
-                btn.innerHTML = `✨ รันระบบ AI จัดสอนแทน`;
-                btn.disabled = false;
-            }
+                if (window.tempAISubstitutions.length === 0) customAlert("ไม่มีคาบสอนที่ต้องจัดคนไปสอนแทนในวันนี้ครับ", "info");
+                else renderDragDropReviewBoard(targetDayName, absentTeachers, excludedAM, excludedPM);
+            } catch (e) { customAlert("Error: " + e.message); } 
+            finally { btn.innerHTML = origTxt; btn.disabled = false; }
         };
         // 🎛️ The Matrix Review Board (กระดานลากวาง)
         window.renderDragDropReviewBoard = function(targetDayName, absentTeachers, excludedAM, excludedPM) {
@@ -7659,47 +7594,54 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
 
         window.assignedSubDataCache = []; // เก็บความจำชั่วคราวไว้ใช้วาดหน้าสรุป
 
-        // 💾 อัปเกรดปุ่ม Save (V.Ultimate): ส่งแบบเหมาเข่ง (Batch Request) ครั้งเดียวจบ!
+        // 💾 อัปเกรดปุ่ม Save (V.Smart Message: แยกแยะระหว่าง "บันทึกใหม่" กับ "อัปเดต")
         window.saveAISub = async function() {
-            const finalData = window.tempAISubstitutions.filter(s => s.SubTeacher !== "");
-            if (finalData.length === 0) return customAlert("ไม่มีรายการถูกบันทึก เนื่องจากคุณดึงการ์ดออกทั้งหมดครับ", "info");
+            const finalData = window.tempAISubstitutions.map(s => {
+                if (!s.SubTeacher || s.SubTeacher.trim() === '') {
+                    s.SubTeacher = 'Pending';
+                    s.Status = 'Pending';
+                } else {
+                    s.Status = 'Assigned';
+                }
+                return s;
+            });
+
+            if (finalData.length === 0) return customAlert("ไม่มีข้อมูลให้บันทึก", "info");
+
+            // 💡 ตรรกะวิเคราะห์: เช็คว่าในฐานข้อมูลจริงมี LogID นี้อยู่หรือยัง
+            const existingCount = finalData.filter(item => 
+                (substitutionsDB_Global || []).some(db => db.LogID === item.LogID)
+            ).length;
+            const newCount = finalData.length - existingCount;
+
+            let loadingMsg = "";
+            if (existingCount > 0 && newCount > 0) loadingMsg = `เพิ่มข้อมูลใหม่ ${newCount} รายการ และอัปเดตทับของเดิม ${existingCount} รายการ`;
+            else if (existingCount > 0) loadingMsg = `อัปเดตทับข้อมูลเดิม ${existingCount} รายการ`;
+            else loadingMsg = `บันทึกข้อมูลใหม่ ${newCount} รายการ`;
 
             Swal.fire({
                 title: 'กำลังอัปโหลดขึ้นฐานข้อมูล...',
-                html: '<div class="loader loader-white border-4 border-purple-500 border-t-transparent mt-4 mb-2 mx-auto"></div><p class="text-sm font-bold text-purple-600 mt-2">ประมวลผลรวดเดียว ' + finalData.length + ' รายการ</p>',
+                html: `<div class="loader loader-white border-4 border-purple-500 border-t-transparent mt-4 mb-2 mx-auto"></div><p class="text-sm font-bold text-purple-600 mt-2">${loadingMsg}</p>`,
                 showConfirmButton: false,
                 allowOutsideClick: false
             });
 
             try {
-                // อัปเดตสถานะเตรียมส่ง
-                finalData.forEach(item => item.Status = "Assigned");
-
-                // 💡 แพ็คข้อมูลทั้งหมดลงกล่องเดียว ยิงทีเดียวจบ! (ทะลวงระบบสแปมของ Google)
                 const payload = { action: 'batchSubmitHandover', data: finalData };
-                
                 const response = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify(payload), 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow'
+                    method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow'
                 });
-                
                 const result = await response.json();
                 
                 if(result.status === 'success') {
                     Swal.close();
-                    window.assignedSubDataCache = finalData; 
+                    window.assignedSubDataCache = finalData.filter(s => s.SubTeacher !== 'Pending'); 
                     document.getElementById('aiDragDropBoard').classList.add('hidden'); 
-                    
                     if(typeof updateMasterSubDateDisplay === 'function') updateMasterSubDateDisplay();
-                    
                     renderSubSummary(); 
                     switchView('view-sub-summary'); 
-                    fetchAllDatabasesFromGAS(); // รีเฟรชฐานข้อมูล
-                } else {
-                    throw new Error(result.message);
-                }
+                    fetchAllDatabasesFromGAS(); // รีเฟรชความจำระบบทันที
+                } else throw new Error(result.message);
             } catch(e) {
                 Swal.close();
                 customAlert("เกิดข้อผิดพลาดในการบันทึก: " + e.message, "error");
@@ -7835,235 +7777,184 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             });
         };
 
-        // 1️⃣ ฟังก์ชันสร้างประกาศ PDF (V.Ultimate - ตัดบั๊กตารางหาย + บังคับสีฟอนต์)
+        // 1️⃣ ฟังก์ชันสร้างประกาศ (V.Image Export - ฟอนต์ทางการ Sarabun + ลายเซ็น 100%)
         window.generateSubOrderPDF = async function() {
-            if(window.assignedSubDataCache.length === 0) return customAlert("ไม่มีข้อมูลสำหรับการสร้างประกาศครับ");
+            if(!window.assignedSubDataCache || window.assignedSubDataCache.length === 0) {
+                return customAlert("ไม่มีข้อมูลสำหรับการสร้างประกาศครับ", "error");
+            }
             
-            const target = document.getElementById('subOrderPrintTarget');
-            let tableRows = '';
-            
-            window.assignedSubDataCache.forEach((item, index) => {
-                const partsData = item.SubjectData.split(' ');
-                const shortSubj = partsData[0] || '';
-                const classLevel = (partsData.length > 1 && partsData[1].trim() !== '') ? partsData.slice(1).join(' ').trim() : '';
-                
-                const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-                const d = new Date(item.Date);
-                const tt = timetableDB_Global.find(t => t.TeacherName === item.AbsentTeacher && t.Day === dayNames[d.getDay()]);
-                let locationStr = '-';
-                if(tt && tt[`Period${item.Period}`]) {
-                     const pParts = tt[`Period${item.Period}`].split(';');
-                     if(pParts.length > 2) locationStr = pParts[2].trim();
-                }
-                const note = (item.HandoverNote === 'จัดสอนแทนโดยระบบอัตโนมัติ' || !item.HandoverNote) ? '-' : item.HandoverNote;
-                
-                const rowBg = index % 2 === 0 ? 'background-color: #ffffff;' : 'background-color: #f8fafc;';
-
-                // 🚨 ลบ page-break-inside ทิ้ง เพื่อกันบั๊กตารางหาย
-                tableRows += `
-                    <tr style="${rowBg} border-bottom: 1px solid #cbd5e1; color: #1e293b;">
-                        <td style="padding: 12px; font-weight: bold; text-align: left; font-size: 16px; color: #0f172a;">${item.SubTeacher}</td>
-                        <td style="padding: 12px; text-align: center; font-weight: 900; font-size: 18px; color: #be123c;">${item.Period}</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold; font-size: 14px;">${shortSubj}</td>
-                        <td style="padding: 12px; text-align: center; color: #475569; font-size: 14px;">${classLevel}</td>
-                        <td style="padding: 12px; text-align: center; color: #047857; font-weight: bold; font-size: 14px;">${locationStr}</td>
-                        <td style="padding: 12px; text-align: left; font-size: 14px; color: #475569;">${item.AbsentTeacher}</td>
-                        <td style="padding: 12px; text-align: left; font-size: 12px; color: #c2410c; font-weight: 500;">${note}</td>
-                    </tr>
-                `;
-            });
-
-            const sigHtml = currentUser.SavedSignature 
-                ? `<img src="${getEmbeddableUrl(currentUser.SavedSignature)}" crossorigin="anonymous" style="height: 60px; margin: 0 auto; display: block;">` 
-                : `<div style="height: 60px; border-bottom: 2px dotted #cbd5e1; width: 150px; margin: 0 auto; margin-bottom: 5px;"></div>`;
-
-            // 💡 บังคับใส่สีดาร์กบลูลงไปในหัวตาราง + บังคับตัวหนังสือสีขาวด้วย !important
-            target.innerHTML = `
-                <div style="padding: 20px; background: white; color: #0f172a; font-family: 'Sarabun', sans-serif; width: 1122px;" id="actualPrintArea">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h2 style="font-size: 32px; font-weight: 900; margin: 0; color: #0f172a;">ประกาศการจัดสอนแทน${window.currentSubWeekStr}</h2>
-                        <div style="font-size: 20px; font-weight: bold; margin-top: 5px; color: #475569;">
-                            ประจำ${window.currentSubThaiDate}
-                        </div>
-                    </div>
-                    
-                    <div style="border-radius: 8px; overflow: hidden; border: 2px solid #0f172a; margin-bottom: 30px;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 16px; background: white;">
-                            <thead>
-                                <tr style="background-color: #0f172a; text-align: left;">
-                                    <th style="padding: 12px; font-weight: bold; width: 22%; color: #ffffff !important;">ผู้รับสอนแทน</th>
-                                    <th style="padding: 12px; text-align: center; width: 8%; color: #ffffff !important;">คาบ</th>
-                                    <th style="padding: 12px; text-align: center; width: 12%; color: #ffffff !important;">รหัสวิชา</th>
-                                    <th style="padding: 12px; text-align: center; width: 12%; color: #ffffff !important;">ระดับชั้น</th>
-                                    <th style="padding: 12px; text-align: center; width: 12%; color: #ffffff !important;">สถานที่</th>
-                                    <th style="padding: 12px; text-align: left; width: 18%; color: #ffffff !important;">ครูประจำวิชา</th>
-                                    <th style="padding: 12px; text-align: left; width: 16%; color: #ffffff !important;">หมายเหตุ</th>
-                                </tr>
-                            </thead>
-                            <tbody>${tableRows}</tbody>
-                        </table>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
-                        <div style="font-size: 14px; color: #64748b;">
-                            โรงเรียนวังตะเคียนวิทยาคม | WKS Academic System
-                        </div>
-                        <div style="text-align: center; font-size: 16px; color: #1e293b; padding-right: 50px;">
-                            ${sigHtml}
-                            <div style="margin-top: 5px; font-weight: bold;">( ${currentUser.FullName} )</div>
-                            <div style="font-weight: 500; color: #475569; font-size: 14px;">ผู้จัดทำคำสั่งสอนแทน</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
             const btn = document.querySelector('button[onclick="generateSubOrderPDF()"]');
             const origTxt = btn ? btn.innerHTML : "สร้าง PDF";
-            if (btn) btn.innerHTML = "กำลังเตรียม PDF...";
+            if (btn) { btn.innerHTML = "กำลังสร้างไฟล์รูปภาพ..."; btn.disabled = true; }
 
             try {
+                // 1. ลอจิกเรียงลำดับ ก-ฮ
+                let sortedData = [...window.assignedSubDataCache];
+                const stripPrefix = (name) => {
+                    if (!name) return "";
+                    return String(name).replace(/^(นาย|นางสาว|นาง|ว่าที่ร้อยตรีหญิง|ว่าที่ร้อยตรี|ว่าที่ ร\.ต\. หญิง|ว่าที่ ร\.ต\.|Mr\.|Mrs\.|Ms\.)\s*/gi, '').trim();
+                };
+
+                sortedData.sort((a, b) => {
+                    const nameA = stripPrefix(a.SubTeacher);
+                    const nameB = stripPrefix(b.SubTeacher);
+                    const cmp = nameA.localeCompare(nameB, 'th');
+                    if (cmp === 0) return (parseInt(a.Period) || 0) - (parseInt(b.Period) || 0);
+                    return cmp;
+                });
+
+                // 💡 2. แก้บั๊กลายเซ็นหาย: เอา mix-blend-mode ออก เพราะ html2canvas ไม่รองรับ!
+                const sigHtml = currentUser.SavedSignature 
+                    ? `<img src="${getEmbeddableUrl(currentUser.SavedSignature)}" crossorigin="anonymous" style="height: 60px; margin: 0 auto; display: block;">` 
+                    : `<div style="height: 60px; border-bottom: 2px dotted #cbd5e1; width: 150px; margin: 0 auto; margin-bottom: 2px;"></div>`;
+
+                // 3. หั่นชื่อ 2 บรรทัด (เพิ่มขนาดฟอนต์ให้เข้ากับ Sarabun)
+                const formatName2Lines = (fullName) => {
+                    if(!fullName) return "-";
+                    const parts = fullName.trim().split(/\s+/);
+                    if(parts.length >= 2) {
+                        const lastName = parts.pop();
+                        const firstPart = parts.join(' ');
+                        return `<div style="font-weight: bold; color: #000000; line-height: 1.2;">${firstPart}</div><div style="font-size: 16px; font-weight: normal; color: #475569; margin-top: 2px; line-height: 1;">${lastName}</div>`;
+                    }
+                    return `<div style="font-weight: bold; color: #000000;">${fullName}</div>`;
+                };
+
+                // 4. วาดตาราง
+                let tableRows = '';
+                sortedData.forEach((item, index) => {
+                    const partsData = item.SubjectData.split(' ');
+                    const shortSubj = partsData[0] || '';
+                    const classLevel = (partsData.length > 1 && partsData[1].trim() !== '') ? partsData.slice(1).join(' ').trim() : '';
+                    
+                    const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+                    const d = new Date(item.Date);
+                    const tt = timetableDB_Global.find(t => t.TeacherName === item.AbsentTeacher && t.Day === dayNames[d.getDay()]);
+                    let locationStr = '-';
+                    if(tt && tt[`Period${item.Period}`]) {
+                         const pParts = tt[`Period${item.Period}`].split(';');
+                         if(pParts.length > 2) locationStr = pParts[2].trim();
+                    }
+                    const note = (item.HandoverNote === 'จัดสอนแทนโดยระบบอัตโนมัติ' || !item.HandoverNote) ? '-' : item.HandoverNote;
+                    
+                    const rowBg = index % 2 === 0 ? 'background-color: #ffffff;' : 'background-color: #f8fafc;';
+
+                    // ขยายฟอนต์ในตารางเป็น 18px เพราะฟอนต์สารบรรณตัวเล็ก
+                    tableRows += `
+                        <tr style="${rowBg} border-bottom: 1px solid #cbd5e1; color: #000000;">
+                            <td style="padding: 8px 12px; text-align: left; vertical-align: middle; font-size: 18px;">${formatName2Lines(item.SubTeacher)}</td>
+                            <td style="padding: 8px 12px; text-align: center; font-weight: 900; font-size: 20px; color: #000000; vertical-align: middle;">${item.Period}</td>
+                            <td style="padding: 8px 12px; text-align: center; font-weight: bold; font-size: 18px; vertical-align: middle;">${shortSubj}</td>
+                            <td style="padding: 8px 12px; text-align: center; font-size: 18px; color: #475569; vertical-align: middle;">${classLevel}</td>
+                            <td style="padding: 8px 12px; text-align: center; font-weight: bold; font-size: 18px; color: #000000; vertical-align: middle;">${locationStr}</td>
+                            <td style="padding: 8px 12px; text-align: left; vertical-align: middle; font-size: 18px;">${formatName2Lines(item.AbsentTeacher)}</td>
+                            <td style="padding: 8px 12px; text-align: left; font-size: 16px; color: #475569; vertical-align: middle;">${note}</td>
+                        </tr>
+                    `;
+                });
+
+                // 💡 5. ประกอบร่าง HTML (เปลี่ยนเป็นฟอนต์ Sarabun และขยายขนาดหัวข้อ)
+                const fullHtml = `
+                    <div id="imageCaptureTarget" style="width: 1122px; padding: 40px; background-color: #ffffff; color: #000000; font-family: 'Sarabun', sans-serif;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                            <div style="width: 150px; text-align: left;">
+                                <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" style="height: 70px; object-fit: contain;">
+                            </div>
+                            <div style="flex-grow: 1; text-align: center;">
+                                <h2 style="font-size: 36px; font-weight: bold; margin: 0; color: #000000; line-height: 1.2;">ประกาศการจัดสอนแทน${window.currentSubWeekStr || ''}</h2>
+                                <div style="font-size: 24px; font-weight: bold; margin-top: 5px; color: #000000;">
+                                    ประจำ${window.currentSubThaiDate || ''}
+                                </div>
+                            </div>
+                            <div style="width: 150px;"></div>
+                        </div>
+                        
+                        <div style="border-radius: 8px; overflow: hidden; border: 2px solid #000000; margin-bottom: 40px;">
+                            <table style="width: 100%; border-collapse: collapse; background: white;">
+                                <thead>
+                                    <tr style="background-color: #000000; text-align: left; color: #ffffff; font-size: 18px;">
+                                        <th style="padding: 12px; font-weight: bold; width: 22%;">ผู้รับสอนแทน</th>
+                                        <th style="padding: 12px; text-align: center; width: 8%;">คาบ</th>
+                                        <th style="padding: 12px; text-align: center; width: 12%;">รหัสวิชา</th>
+                                        <th style="padding: 12px; text-align: center; width: 12%;">ระดับชั้น</th>
+                                        <th style="padding: 12px; text-align: center; width: 12%;">สถานที่</th>
+                                        <th style="padding: 12px; text-align: left; width: 18%;">ครูประจำวิชา</th>
+                                        <th style="padding: 12px; text-align: left; width: 16%;">หมายเหตุ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${tableRows}</tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div style="font-size: 18px; color: #000000;">
+                                โรงเรียนวังตะเคียนวิทยาคม | WKS Academic System
+                            </div>
+                            <div style="text-align: center; color: #000000; padding-right: 40px;">
+                                ${sigHtml}
+                                <div style="margin-top: 5px; font-weight: bold; font-size: 18px;">${currentUser.FullName}</div>
+                                <div style="font-weight: normal; font-size: 18px;">งานจัดการเรียนการสอน</div>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+
+                // 6. กางกระดาษทับทุกสิ่งทุกอย่างบนหน้าจอ
+                const overlay = document.createElement('div');
+                overlay.id = 'tempImageOverlay';
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100vw';
+                overlay.style.height = '100vh';
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.9)';
+                overlay.style.zIndex = '99999999';
+                overlay.style.display = 'flex';
+                overlay.style.justifyContent = 'center';
+                overlay.style.alignItems = 'flex-start';
+                overlay.style.overflow = 'auto';
+                overlay.style.padding = '30px';
+                
+                overlay.innerHTML = fullHtml;
+                document.body.appendChild(overlay);
+
+                // รอเบราว์เซอร์วาดรูปและโหลดฟอนต์ Sarabun
+                await new Promise(r => setTimeout(r, 800));
                 if (document.fonts && document.fonts.ready) await document.fonts.ready;
-                
-                const printArea = document.getElementById('actualPrintArea');
-                
-                const images = printArea.getElementsByTagName('img');
+                const images = overlay.getElementsByTagName('img');
                 await Promise.all(Array.from(images).map(img => {
                     if (img.complete) return Promise.resolve();
                     return new Promise(resolve => { img.onload = img.onerror = resolve; });
                 }));
 
-                const opt = { 
-                    margin: [10, 10, 10, 10], 
-                    filename: `ประกาศสอนแทน_${window.currentSubThaiDate.replace(/\s+/g, '_')}.pdf`, 
-                    image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
-                };
-                
-                await html2pdf().set(opt).from(printArea).save();
-                customAlert("สร้าง PDF ประกาศสำเร็จ!", "success");
+                // 7. ใช้ html2canvas แท้ๆ แคปเป็นไฟล์ JPG ทันที
+                const captureTarget = document.getElementById('imageCaptureTarget');
+                html2canvas(captureTarget, {
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    const link = document.createElement('a');
+                    link.download = `ประกาศสอนแทน_${(window.currentSubThaiDate || 'ล่าสุด').replace(/\s+/g, '_')}.jpg`;
+                    link.href = imgData;
+                    link.click();
+                    
+                    document.body.removeChild(overlay);
+                    customAlert("ดาวน์โหลดไฟล์รูปภาพ (JPG) สำเร็จ!", "success");
+                    
+                    if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+                });
 
             } catch (err) {
                 console.error(err);
-                customAlert("เกิดข้อผิดพลาด: " + err.message, "error");
-            } finally {
-                if (btn) btn.innerHTML = origTxt;
-            }
-        };
-
-        // 1️⃣ ฟังก์ชันสร้างประกาศ PDF (V3 - ซ่อมบั๊กกล่องล่องหน + หัวตารางสีดำน้ำเงินเข้ม)
-        window.generateSubOrderPDF = async function() {
-            if(window.assignedSubDataCache.length === 0) return customAlert("ไม่มีข้อมูลสำหรับการสร้างประกาศครับ");
-            
-            const target = document.getElementById('subOrderPrintTarget');
-            let tableRows = '';
-            
-            window.assignedSubDataCache.forEach((item, index) => {
-                const partsData = item.SubjectData.split(' ');
-                const shortSubj = partsData[0] || '';
-                const classLevel = (partsData.length > 1 && partsData[1].trim() !== '') ? partsData.slice(1).join(' ').trim() : '';
-                
-                const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-                const d = new Date(item.Date);
-                const tt = timetableDB_Global.find(t => t.TeacherName === item.AbsentTeacher && t.Day === dayNames[d.getDay()]);
-                let locationStr = '-';
-                if(tt && tt[`Period${item.Period}`]) {
-                     const pParts = tt[`Period${item.Period}`].split(';');
-                     if(pParts.length > 2) locationStr = pParts[2].trim();
-                }
-                const note = (item.HandoverNote === 'จัดสอนแทนโดยระบบอัตโนมัติ' || !item.HandoverNote) ? '-' : item.HandoverNote;
-                
-                const rowBg = index % 2 === 0 ? 'background-color: #ffffff;' : 'background-color: #f8fafc;';
-
-                tableRows += `
-                    <tr style="${rowBg} border-bottom: 1px solid #cbd5e1; color: #1e293b; page-break-inside: avoid;">
-                        <td style="padding: 10px 12px; font-weight: bold; text-align: left; font-size: 16px; color: #0f172a;">${item.SubTeacher}</td>
-                        <td style="padding: 10px 12px; text-align: center; font-weight: 900; font-size: 18px; color: #be123c;">${item.Period}</td>
-                        <td style="padding: 10px 12px; text-align: center; font-weight: bold; font-size: 14px;">${shortSubj}</td>
-                        <td style="padding: 10px 12px; text-align: center; color: #475569; font-size: 14px;">${classLevel}</td>
-                        <td style="padding: 10px 12px; text-align: center; color: #047857; font-weight: bold; font-size: 14px;">${locationStr}</td>
-                        <td style="padding: 10px 12px; text-align: left; font-size: 14px; color: #475569;">${item.AbsentTeacher}</td>
-                        <td style="padding: 10px 12px; text-align: left; font-size: 12px; color: #c2410c; font-weight: 500;">${note}</td>
-                    </tr>
-                `;
-            });
-
-            const sigHtml = currentUser.SavedSignature 
-                ? `<img src="${getEmbeddableUrl(currentUser.SavedSignature)}" crossorigin="anonymous" style="height: 60px; margin: 0 auto; display: block;">` 
-                : `<div style="height: 60px; border-bottom: 2px dotted #cbd5e1; width: 150px; margin: 0 auto; margin-bottom: 5px;"></div>`;
-
-            target.innerHTML = `
-                <div style="padding: 0; background: white; color: #0f172a; font-family: 'Sarabun', sans-serif; width: 1122px; line-height: 1.5;" id="actualPrintArea">
-                    <div style="text-align: center; margin-bottom: 20px; padding-top: 20px;">
-                        <h2 style="font-size: 32px; font-weight: 900; margin: 0; color: #0f172a; padding-bottom: 5px;">ประกาศการจัดสอนแทน${window.currentSubWeekStr}</h2>
-                        <div style="font-size: 20px; font-weight: bold; margin-top: 5px; color: #475569;">
-                            ประจำ${window.currentSubThaiDate}
-                        </div>
-                    </div>
-                    
-                    <div style="border-radius: 8px; overflow: hidden; border: 2px solid #0f172a; margin-bottom: 30px;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 16px; background: white;">
-                            <thead>
-                                <!-- 💡 สีหัวตาราง: น้ำเงินเข้มเกือบดำ (#0f172a) -->
-                                <tr style="background-color: #0f172a; color: #ffffff; text-align: left;">
-                                    <th style="padding: 12px; font-weight: bold; width: 22%;">ผู้รับสอนแทน</th>
-                                    <th style="padding: 12px; text-align: center; width: 8%;">คาบ</th>
-                                    <th style="padding: 12px; text-align: center; width: 12%;">รหัสวิชา</th>
-                                    <th style="padding: 12px; text-align: center; width: 12%;">ระดับชั้น</th>
-                                    <th style="padding: 12px; text-align: center; width: 12%;">สถานที่</th>
-                                    <th style="padding: 12px; text-align: left; width: 18%;">ครูประจำวิชา</th>
-                                    <th style="padding: 12px; text-align: left; width: 16%;">หมายเหตุ</th>
-                                </tr>
-                            </thead>
-                            <tbody>${tableRows}</tbody>
-                        </table>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; page-break-inside: avoid; margin-top: 20px; padding-bottom: 20px;">
-                        <div style="font-size: 14px; color: #64748b;">
-                            โรงเรียนวังตะเคียนวิทยาคม | WKS Academic System
-                        </div>
-                        <div style="text-align: center; font-size: 16px; color: #1e293b; padding-right: 50px;">
-                            ${sigHtml}
-                            <div style="margin-top: 5px; font-weight: bold;">( ${currentUser.FullName} )</div>
-                            <div style="font-weight: 500; color: #475569; font-size: 14px;">ผู้จัดทำคำสั่งสอนแทน</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            const btn = document.querySelector('button[onclick="generateSubOrderPDF()"]');
-            const origTxt = btn ? btn.innerHTML : "สร้าง PDF";
-            if (btn) btn.innerHTML = "กำลังเตรียม PDF...";
-
-            try {
-                if (document.fonts && document.fonts.ready) await document.fonts.ready;
-                
-                const printArea = document.getElementById('actualPrintArea');
-                
-                const images = printArea.getElementsByTagName('img');
-                await Promise.all(Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => { img.onload = img.onerror = resolve; });
-                }));
-
-                const opt = { 
-                    margin: [10, 10, 10, 10], 
-                    filename: `ประกาศสอนแทน_${window.currentSubThaiDate.replace(/\s+/g, '_')}.pdf`, 
-                    image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 1122, width: 1122 }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
-                };
-                
-                await html2pdf().set(opt).from(printArea).save();
-                customAlert("สร้าง PDF ประกาศสำเร็จ!", "success");
-
-            // 💡 กู้ชีพ Catch (e) กลับมาแล้ว! ห้ามลบเด็ดขาด!
-            } catch (e) {
-                console.error(e);
-                customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
-            } finally {
-                if (btn) btn.innerHTML = origTxt;
+                const o = document.getElementById('tempImageOverlay');
+                if(o) document.body.removeChild(o);
+                customAlert("เกิดข้อผิดพลาดในการสร้างรูปภาพ: " + err.message, "error");
+                if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
             }
         };
         // 2️⃣ แจ้งเตือนครู (จะเชื่อมต่อ Apps Script ในสเตปถัดไป)
