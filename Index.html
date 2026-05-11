@@ -2966,7 +2966,7 @@
         let tempAdminProfileBase64 = null;
         let currentThemeObj = { from: 'from-emerald-500', to: 'to-teal-600', border: 'border-emerald-600' };
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhVL8K6sdruHKN57Hd59SSYastvBon7Uh4rTzimWroxMq0ePLJ1MfAg_1-slxodnBi/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMr1flMj_TN9jCfQ3GjDJ9CmgqOWEXBdx4pJPlFoHOwl4QiVlIfGpn_2WcQztEk2Lk/exec"; 
         const START_WEEK_DATE = new Date(2026, 4, 11); 
         
         const ROLE_NAMES_TH = {
@@ -6696,6 +6696,7 @@ window.renderAdminLogsTable = function() {
                     substitutionsDB_Global = result.data.substitutions || [];
                     plcGroupsDB_Global = result.data.plcGroups || [];
                     mediaDB_Global = result.data.media || [];
+                    leaveRecordsDB_Global = d.LeaveRecords || d.leaveRecords || []
                 }
             } catch(e) { console.warn("Fetch DBs Error:", e); }
         }
