@@ -7629,39 +7629,55 @@ window.renderAdminLogsTable = function() {
 
         window.assignedSubDataCache = []; // เก็บความจำชั่วคราวไว้ใช้วาดหน้าสรุป
 
-        // 💾 อัปเกรดปุ่ม Save: เซฟเสร็จแล้วให้เด้งไปหน้าสรุป
-        window.saveAISub = function() {
+        // 💾 อัปเกรดปุ่ม Save: ส่งข้อมูลแบบเข้าคิว (Sequential) กันข้อมูลตกหล่น 100%
+        window.saveAISub = async function() {
             const finalData = window.tempAISubstitutions.filter(s => s.SubTeacher !== "");
             if (finalData.length === 0) return customAlert("ไม่มีรายการถูกบันทึก เนื่องจากคุณดึงการ์ดออกทั้งหมดครับ", "info");
 
             Swal.fire({
                 title: 'กำลังส่งคำสั่งขึ้นสู่ระบบ...',
-                html: '<div class="loader loader-white mx-auto border-4 border-purple-500 border-t-transparent mt-4 mb-2"></div>',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="loader loader-white border-4 border-purple-500 border-t-transparent mt-4 mb-2"></div>
+                        <p id="subSaveProgress" class="text-sm font-bold text-purple-600 mt-2">กำลังบันทึกรายที่ 0 / ${finalData.length}</p>
+                    </div>
+                `,
                 showConfirmButton: false,
                 allowOutsideClick: false
             });
 
             try {
                 let successCount = 0;
-                finalData.forEach(async (item) => {
+                const progressEl = document.getElementById('subSaveProgress');
+
+                // 💡 เปลี่ยนจาก forEach เป็น for...of เพื่อใช้ await (รอส่งเสร็จทีละคน)
+                for (const item of finalData) {
                     item.Status = "Assigned";
                     const payload = { action: 'submitHandover', data: item };
-                    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                    
+                    // อัปเดต Progress บนหน้าจอ
+                    if(progressEl) progressEl.textContent = `กำลังบันทึกรายที่ ${successCount + 1} / ${finalData.length}`;
+
+                    // ยิงข้อมูลและรอ (await) ให้เซิร์ฟเวอร์ตอบกลับก่อนไปคนถัดไป
+                    await fetch(SCRIPT_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify(payload), 
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    });
+                    
                     successCount++;
-                });
+                }
                 
-                setTimeout(() => {
-                    Swal.close();
-                    window.assignedSubDataCache = finalData; // ส่งต่อข้อมูลให้หน้าสรุป
-                    document.getElementById('aiDragDropBoard').classList.add('hidden'); // ปิดหน้ากระดานลาก
-                    
-                    // 💡 ต้องรีเฟรชวันเปิดเทอมก่อนเข้าหน้า Summary ให้ชัวร์
-                    if(typeof updateMasterSubDateDisplay === 'function') updateMasterSubDateDisplay();
-                    
-                    renderSubSummary(); // วาดหน้าสรุป
-                    switchView('view-sub-summary'); // เด้งไปหน้าสรุป
-                    fetchAllDatabasesFromGAS(); // รีเฟรชข้อมูลเงียบๆ
-                }, 2000);
+                // พอหลุดลูป (แปลว่าส่งครบหมดแล้ว) ค่อยสั่งปิด Loading
+                Swal.close();
+                window.assignedSubDataCache = finalData; 
+                document.getElementById('aiDragDropBoard').classList.add('hidden'); 
+                
+                if(typeof updateMasterSubDateDisplay === 'function') updateMasterSubDateDisplay();
+                
+                renderSubSummary(); 
+                switchView('view-sub-summary'); 
+                fetchAllDatabasesFromGAS(); 
                 
             } catch(e) {
                 Swal.close();
