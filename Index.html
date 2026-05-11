@@ -1288,11 +1288,16 @@
                     </button>
                     
                     <div class="bg-white rounded-xl shadow-lg border border-purple-200 p-6 sm:p-8">
-                        <div class="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4 border-b border-gray-200 pb-4">
+                       <div class="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4 border-b border-gray-200 pb-4">
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                    🎯 ศูนย์บัญชาการจัดสอนแทน
-                                </h2>
+                                <div class="flex items-center gap-4">
+                                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                        🎯 ศูนย์บัญชาการจัดสอนแทน
+                                    </h2>
+                                    <button onclick="switchView('view-sub-history'); loadSubHistory();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1">
+                                        🕰️ ดูประวัติย้อนหลัง
+                                    </button>
+                                </div>
                                 <p class="text-sm text-gray-500 mt-1">ระบบ AI อัจฉริยะ: เลือกครูที่ลาและครูที่ต้องการละเว้น จากนั้นกดรันระบบ</p>
                             </div>
                              <div class="flex flex-col sm:flex-row items-end gap-3">
@@ -1373,8 +1378,41 @@
                             Execute Launch Protocol (รันคำสั่งทั้งหมด)
                         </button>
                         
-                        <div class="mt-4 text-center">
+                       <div class="mt-4 text-center">
                             <button onclick="switchView('view-sub-admin'); loadSubAdminTable();" class="text-xs text-gray-400 hover:text-purple-600 font-bold underline">กลับไปหน้าศูนย์จัดสอนแทน</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- VIEW 10.6: ประวัติการจัดสอนแทนย้อนหลัง -->
+                <!-- ========================================== -->
+                <div id="view-sub-history" class="app-view max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 hidden">
+                    <button onclick="switchView('view-sub-admin'); loadSubAdminTable();" class="mb-4 inline-flex items-center px-4 py-2 bg-white border border-gray-100 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors no-print">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                        กลับศูนย์จัดสอนแทน
+                    </button>
+                    
+                    <div class="bg-white rounded-3xl shadow-xl border-t-8 border-indigo-500 p-6 sm:p-8 relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 text-9xl opacity-5 pointer-events-none">🕰️</div>
+                        
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-gray-100 pb-4 relative z-10">
+                            <div>
+                                <h2 class="text-3xl font-black text-indigo-900 tracking-tight">🕰️ ประวัติการจัดสอนแทน</h2>
+                                <p class="text-gray-500 text-sm mt-1">เลือกวันที่เพื่อตรวจสอบภารกิจที่มอบหมายแล้ว</p>
+                            </div>
+                            <div class="w-full md:w-80 relative">
+                                <input type="text" id="subHistoryDateDisplay" readonly class="w-full rounded-xl border border-indigo-300 py-3 px-4 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-indigo-50 cursor-pointer font-bold text-indigo-900 shadow-sm text-center" placeholder="เลือกวันที่...">
+                                <input type="date" id="subHistoryDate" class="date-picker-cover absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="loadSubHistory()">
+                                <div class="absolute right-4 top-3 pointer-events-none text-indigo-500 text-lg">📅</div>
+                            </div>
+                        </div>
+
+                        <div id="subHistoryContent" class="relative z-10">
+                            <div class="py-16 text-center text-gray-400 font-bold italic">
+                                <div class="loader mx-auto border-4 border-indigo-500 border-t-transparent mb-4 w-8 h-8"></div>
+                                กำลังโหลดข้อมูล...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1802,14 +1840,14 @@
                     <!-- ส่วนหัว: ขยับชิดบนและปุ่มกลับหน้าหลัก -->
                     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 pt-4">
                         <button onclick="switchView('view-welcome')" class="inline-flex items-center px-6 py-3 bg-white border border-gray-200 rounded-2xl shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all group no-print">
-                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                             กลับหน้าหลัก (Dashboard)
                         </button>
                         <h2 class="text-3xl font-black text-gray-800 drop-shadow-sm tracking-tighter">⚙️ การตั้งค่าและจัดการระบบ</h2>
                     </div>
 
-                    <!-- ⚙️ Card Menu Grid (4 หัวข้อหลัก) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <!-- ⚙️ Card Menu Grid (จัดการ Layout ใหม่ให้สวยงาม ไม่เหมือนเด็กโยนของเล่น) -->
+                    <div id="adminCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 transition-all duration-500">
                         <!-- Card 1: Users -->
                         <div onclick="switchAdminTab('admin-sec-users')" class="admin-card-btn glass-panel p-6 rounded-3xl border border-indigo-100 hover:border-indigo-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden">
                             <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -1845,8 +1883,8 @@
                             <h4 class="font-black text-gray-800 text-lg">ความปลอดภัย</h4>
                             <p class="text-[10px] text-gray-500 mt-1">ตั้งค่าเทอม, ละเว้นครู, Master Switch</p>
                         </div>
-                    </div>
-                    <!-- 👑 Card 5: Emperor Command (EmpPngn Only) -->
+
+                        <!-- 👑 Card 5: Emperor Command (EmpPngn Only) ดึงเข้ามาอยู่ใน Grid -->
                         <div onclick="switchAdminTab('admin-sec-godmode')" id="card-godmode" class="admin-card-btn glass-panel p-6 rounded-3xl border border-amber-500/50 hover:border-amber-400 transition-all cursor-pointer group shadow-2xl relative overflow-hidden bg-slate-900/40 hidden">
                             <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg border border-amber-300">
                                 <span class="text-3xl text-white">👑</span>
@@ -1854,6 +1892,7 @@
                             <h4 class="font-black text-amber-400 text-lg">ศูนย์บัญชาการสูงสุด</h4>
                             <p class="text-[10px] text-amber-200/60 mt-1">Ghost Logs, Mind Reader, ประกาศิต</p>
                         </div>
+                    </div>
                    
                     <!-- [1] SECTION: USERS -->
                     <div id="admin-sec-users" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -2037,8 +2076,11 @@
         <div class="absolute right-3 top-2.5 pointer-events-none text-gray-400 text-lg">📅</div>
     </div>
 </div>
-                                <button onclick="adminUpdateSettings()" class="w-full py-3 bg-rose-600 text-white font-bold rounded-xl shadow-lg hover:bg-rose-700 transition-colors">⚙️ บันทึกการตั้งค่ามิติเวลา</button>
-                            </div>
+                                </div> <!-- ปิด Grid 3 คอลัมน์ตรงนี้ -->
+                                <button onclick="adminUpdateSettings()" class="w-full py-3 bg-rose-600 text-white font-bold rounded-xl shadow-lg hover:bg-rose-700 transition-colors mt-4">⚙️ บันทึกการตั้งค่ามิติเวลา</button>
+                            </div> <!-- ปิดการ์ดที่ 1 (ตั้งค่ามิติเวลา) ตรงนี้ -->
+                            
+                            <!-- แยกการ์ดที่ 2 ออกมาให้ตีคู่กันใน grid-cols-2 -->
                             <div id="exclusionAdminSection" class="bg-white rounded-3xl p-8 shadow-xl border border-rose-100">
                                 <h3 class="text-xl font-bold text-rose-800 mb-4 flex items-center gap-2">🚫 รายชื่อละเว้นจัดสอนแทนถาวร</h3>
                                 <div class="flex gap-2 mb-4"><select id="adminExclusionSelect" class="flex-grow rounded-xl border-gray-300 p-3 text-sm outline-none"></select><button onclick="adminAddExclusion()" class="bg-rose-100 text-rose-600 px-4 rounded-xl font-bold">เพิ่ม</button></div>
@@ -2047,7 +2089,9 @@
                             </div>
                         </div>
                     </div>
-                    <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
+                </div> <!-- 💡 ตัวการสำคัญ! ปิด Tag ของ [4] SECTION: CONFIG & SECURITY ที่แกเปิดค้างไว้ -->
+
+                <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
                     <div id="admin-sec-godmode" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             
@@ -3936,19 +3980,16 @@
                 btn.innerHTML = origTxt; btn.disabled = false;
             }
         };
-
-        function populateAdminUserList() {
+        window.populateAdminUserList = function() {
             const selectAdmin = document.getElementById('adminUserSelect');
             const selectImp = document.getElementById('impersonateUserSelect');
             const selectReset = document.getElementById('adminResetUserSelect');
             const selectExc = document.getElementById('adminExclusionSelect');
-            
             if (selectAdmin) selectAdmin.innerHTML = '<option value="">-- เลือกผู้ใช้งาน --</option>';
-            if (selectImp) selectImp.innerHTML = '<option value="">-- เลือกบัญชี --</option>';
-            if (selectReset) selectReset.innerHTML = '<option value="">-- เลือกบัญชี --</option>';
-            if (selectExc) selectExc.innerHTML = '<option value="">-- เลือกบัญชี --</option>';
+        if (selectImp) selectImp.innerHTML = '<option value="">-- เลือกบัญชี --</option>';
+        if (selectReset) selectReset.innerHTML = '<option value="">-- เลือกบัญชี --</option>';
 
-            if(usersDB_Global && usersDB_Global.length > 0) {
+        if(usersDB_Global && usersDB_Global.length > 0) {
                 // 💡 ลอจิกการเรียงลำดับใหม่: กลุ่มสาระฯ (ตาม LEARNING_AREAS) -> ลำดับอาวุโส (Sq)
                 const sortedUsers = [...usersDB_Global].sort((a, b) => {
                     // 1. เรียงตามกลุ่มสาระฯ ก่อน (อ้างอิงลำดับจาก LEARNING_AREAS)
@@ -3968,7 +4009,9 @@
                     if (selectAdmin) selectAdmin.add(new Option(`${deptLabel}${u.FullName} (${u.Username})`, u.Username));
                     if (selectImp) selectImp.add(new Option(`${deptLabel}${u.FullName} (${u.Username})`, u.Username));
                     if (selectReset) selectReset.add(new Option(`${deptLabel}${u.FullName} (${u.Username})`, u.Username));
-                    if (selectExc && u.Role.includes('User')) selectExc.add(new Option(`${deptLabel}${u.FullName} (${u.Username})`, u.Username));
+                    
+                    // 💡 แก้บั๊กที่ 3: ปลดล็อกดึงทุกคนรวมถึง ผอ. และ รองฯ มาโชว์ในรายชื่อละเว้น (ใช้ FullName เป็น Value)
+                    if (selectExc) selectExc.add(new Option(`${deptLabel}${u.FullName}`, u.FullName));
                 });
             }
         }
@@ -5815,10 +5858,9 @@ window.renderAdminLogsTable = function() {
             const element = document.getElementById(elementId); 
             if (!element) return customAlert("ไม่พบข้อมูลสำหรับสร้าง PDF");
             
-            // 💡 แก้บั๊กที่ 1: บังคับให้เบราว์เซอร์รอโหลดฟอนต์ Sarabun ให้เสร็จ 100% ก่อนแคปหน้าจอ
-            await document.fonts.ready;
+           // 💡 แก้บั๊กที่ 1: บังคับให้เบราว์เซอร์รอโหลดฟอนต์ Sarabun ให้เสร็จ 100% ก่อนแคปหน้าจอ
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
             // 💡 บังคับให้รอรูปภาพ (ลายเซ็น) ทุกรูปโหลดเสร็จ 100% ก่อนแคปหน้าจอ ไม่งั้นล่องหน!
-            const images = element.getElementsByTagName('img');
             await Promise.all(Array.from(images).map(img => {
                 if (img.complete) return Promise.resolve();
                 return new Promise(resolve => { img.onload = img.onerror = resolve; });
@@ -6840,10 +6882,11 @@ window.renderAdminLogsTable = function() {
                     const parts = pData.split(';');
                     const subCode = parts[0] ? parts[0].trim() : 'ไม่ระบุวิชา';
                     const room = parts[1] ? parts[1].trim() : '';
+                    const loc = parts[2] ? parts[2].trim() : '-'; // 💡 ดึงสถานที่
                     
                     container.innerHTML += `
                         <label class="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-orange-50 transition-colors">
-                            <input type="checkbox" name="handoverPeriod" value="${i}|${subCode} ${room}" class="form-checkbox text-orange-500 h-5 w-5">
+                            <input type="checkbox" name="handoverPeriod" value="${i}|${subCode}|${room}|${loc}" class="form-checkbox text-orange-500 h-5 w-5">
                             <span class="text-sm font-bold text-gray-800">คาบที่ ${i} <span class="text-orange-600 ml-2">${subCode} ${room}</span></span>
                         </label>
                     `;
@@ -6885,7 +6928,7 @@ window.renderAdminLogsTable = function() {
                         }
 
                         for (let cb of cbs) {
-                            const [periodNum, subjectData] = cb.value.split('|');
+                            const [periodNum, subCode, classLevel, loc] = cb.value.split('|'); // 💡 หั่นออกเป็น 4 ท่อน
                             const payload = {
                                 action: 'submitHandover',
                                 data: {
@@ -6894,7 +6937,11 @@ window.renderAdminLogsTable = function() {
                                     AbsentTeacher: currentUser.FullName,
                                     SubTeacher: 'Pending',
                                     Period: periodNum,
-                                    SubjectData: subjectData,
+                                    SubjectData: subCode + ' ' + classLevel,
+                                    // 💡 ยัดฟิลด์ลง DB
+                                    SubjectCode: subCode,
+                                    ClassLevel: classLevel,
+                                    Location: loc,
                                     LeaveType: document.getElementById('handoverType').value,
                                     HandoverPlan: fileBase64,
                                     HandoverMedia: document.getElementById('handoverLink').value,
@@ -7050,6 +7097,15 @@ window.renderAdminLogsTable = function() {
         window.loadSubAdminTable = function() {
             const container = document.getElementById('masterControlPanelContainer');
             const dateInput = document.getElementById('masterSubDate');
+            
+            // --- เพิ่ม 4 บรรทัดนี้ เพื่อยกเลิกการซ่อนหน้าต่าง ---
+            if(container) container.classList.remove('hidden');
+            const btnRun = document.getElementById('btnRunMasterAI');
+            if(btnRun) btnRun.classList.remove('hidden');
+            const dragBoard = document.getElementById('aiDragDropBoard');
+            if(dragBoard) dragBoard.classList.add('hidden');
+            // ------------------------------------------
+
             if(!container) return;
             
             // 1. ตั้งค่าวันที่เริ่มต้นเป็นวันนี้ (ถ้ายังไม่มีการเลือก)
@@ -7062,7 +7118,25 @@ window.renderAdminLogsTable = function() {
 
             // 💡 3. ดึงข้อมูลการลาจาก HR (LeaveRecords) มาเป็นค่าตั้งต้น
             const selectedDate = dateInput.value;
-            const existingRecord = leaveRecordsDB_Global.find(r => r.LeaveDate === selectedDate);
+            // 💡 แฮ็กระบบความจำเสื่อม: ดักจับการแปลง Timezone ของ Google Sheets
+            const matchingRecords = leaveRecordsDB_Global.filter(r => {
+                if (!r.LeaveDate) return false;
+                if (r.LeaveDate === selectedDate) return true; // ถ้าเป็น Text ตรงๆ ให้ผ่านเลย
+                
+                // แปลง ISO String กลับมาเป็น YYYY-MM-DD ชนกันตรงๆ
+                const dbD = new Date(r.LeaveDate);
+                if (!isNaN(dbD.getTime())) {
+                    const y = dbD.getFullYear();
+                    const m = String(dbD.getMonth() + 1).padStart(2, '0');
+                    const dNum = String(dbD.getDate()).padStart(2, '0');
+                    if (`${y}-${m}-${dNum}` === selectedDate) return true;
+                }
+                return false;
+            });
+
+            // 💡 ทีเด็ดอยู่ตรงนี้! หยิบเอา 'แถวล่าสุด' (อันที่อยู่ล่างสุดใน Sheet) มาแกะกล่อง
+            const existingRecord = matchingRecords.length > 0 ? matchingRecords[matchingRecords.length - 1] : null;
+
             let hrData = {};
             if(existingRecord) {
                 try { hrData = JSON.parse(existingRecord.Data || "{}"); } catch(e){ console.error("Parse HR Data Error", e); }
@@ -7220,7 +7294,8 @@ window.renderAdminLogsTable = function() {
                             
                             const targetSubCode = (parts[0]||'').trim();
                             const targetRoomRaw = (parts[1]||'').trim();
-                            const targetRoomClean = targetRoomRaw.replace('ม.', ''); 
+                            const targetRoomClean = targetRoomRaw.replace('ม.', '');
+                            const targetLoc = (parts[2]||'').trim(); // 💡 ดึงสถานที่ออกมาด้วย! 
                             
                             let targetDept = "";
                             const subjInfo = subjectsDB_Global.find(s => s.SubjectCode === targetSubCode);
@@ -7296,6 +7371,12 @@ window.renderAdminLogsTable = function() {
                                 SubTeacher: chosenSub,
                                 Period: i.toString(),
                                 SubjectData: subjectData,
+                                
+                                // 💡 เติม 3 ฟิลด์ที่หายไปให้ครบ!
+                                SubjectCode: targetSubCode,
+                                ClassLevel: targetRoomRaw,
+                                Location: targetLoc,
+                                
                                 LeaveType: absent.type,
                                 HandoverPlan: "",
                                 HandoverMedia: "",
@@ -7550,6 +7631,10 @@ window.renderAdminLogsTable = function() {
                     Swal.close();
                     window.assignedSubDataCache = finalData; // ส่งต่อข้อมูลให้หน้าสรุป
                     document.getElementById('aiDragDropBoard').classList.add('hidden'); // ปิดหน้ากระดานลาก
+                    
+                    // 💡 ต้องรีเฟรชวันเปิดเทอมก่อนเข้าหน้า Summary ให้ชัวร์
+                    if(typeof updateMasterSubDateDisplay === 'function') updateMasterSubDateDisplay();
+                    
                     renderSubSummary(); // วาดหน้าสรุป
                     switchView('view-sub-summary'); // เด้งไปหน้าสรุป
                     fetchAllDatabasesFromGAS(); // รีเฟรชข้อมูลเงียบๆ
@@ -7570,23 +7655,18 @@ window.renderAdminLogsTable = function() {
             const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
             const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
             const dayName = dayNames[d.getDay()];
-            
-            // 💡 สมองกลคำนวณสัปดาห์ (เอากลับมาแล้วเว้ย!)
-            let weekStr = "";
-            if (typeof currentStartDate !== 'undefined' && currentStartDate) {
-                const startD = new Date(currentStartDate);
-                const diffTime = d.getTime() - startD.getTime();
-                if (diffTime >= 0) {
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    const weekNum = Math.floor(diffDays / 7) + 1;
-                    weekStr = ` สัปดาห์ที่ ${weekNum}`;
-                }
-            }
-            
             const thaiDateFull = `วัน${dayName}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${d.getFullYear()+543}`;
-            window.currentSubThaiDate = thaiDateFull; // ฝังไว้ให้ตัวทำรูปดึงไปใช้
-            window.currentSubWeekStr = weekStr;
+            window.currentSubThaiDate = thaiDateFull; 
 
+            // --- เพิ่มส่วนนี้เข้าไป ---
+            let weekStr = "";
+            if (typeof calculateWeekString === 'function') {
+                weekStr = calculateWeekString(rawDate);
+            }
+            window.currentSubWeekStr = weekStr;
+            // ---------------------
+
+            // เปลี่ยนบรรทัดนี้ ให้บวก weekStr ต่อท้ายไปด้วย
             document.getElementById('summarySubDate').textContent = thaiDateFull + weekStr;
             
             // 💡 เรียงลำดับคอลัมน์ผู้รับสอนแทน ตามตาราง Users (Sq)
@@ -7633,6 +7713,10 @@ window.renderAdminLogsTable = function() {
         // ฟังก์ชันจำค่าหมายเหตุที่แอดมินพิมพ์ใส่ตาราง
         window.updateSubNote = function(idx, val) {
              window.assignedSubDataCache[idx].HandoverNote = val;
+             // 💡 ยิงอัปเดตลง DB เงียบๆ ทันทีที่พิมพ์เสร็จ (Background Sync)
+             const item = window.assignedSubDataCache[idx];
+             const payload = { action: 'submitHandover', data: item };
+             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
         };
 
         // 🚀 The Launch Protocol (รัน 3 อย่างรวดเดียว)
@@ -7696,10 +7780,9 @@ window.renderAdminLogsTable = function() {
             if(window.assignedSubDataCache.length === 0) return customAlert("ไม่มีข้อมูลสำหรับการสร้างประกาศครับ");
             
             const target = document.getElementById('subOrderPrintTarget');
-            
-            // เตรียมข้อมูลตาราง
+            // เตรียมข้อมูลตาราง (อัปเกรดความสวยงามสไตล์ Modern Card)
             let tableRows = '';
-            window.assignedSubDataCache.forEach(item => {
+            window.assignedSubDataCache.forEach((item, index) => {
                 const partsData = item.SubjectData.split(' ');
                 const shortSubj = partsData[0] || '';
                 const classLevel = (partsData.length > 1 && partsData[1].trim() !== '') ? partsData.slice(1).join(' ').trim() : '';
@@ -7712,60 +7795,77 @@ window.renderAdminLogsTable = function() {
                      const pParts = tt[`Period${item.Period}`].split(';');
                      if(pParts.length > 2) locationStr = pParts[2].trim();
                 }
-                const note = (item.HandoverNote === 'จัดสอนแทนโดยระบบอัตโนมัติ' || !item.HandoverNote) ? '' : item.HandoverNote;
+                const note = (item.HandoverNote === 'จัดสอนแทนโดยระบบอัตโนมัติ' || !item.HandoverNote) ? '-' : item.HandoverNote;
+                
+                // สลับสีพื้นหลังแถวให้ดูอ่านง่ายขึ้น (Zebra Striping)
+                const rowBg = index % 2 === 0 ? 'background-color: #ffffff;' : 'background-color: #f8fafc;';
 
                 tableRows += `
-                    <tr style="border-bottom: 1px solid #000;">
-                        <td style="border: 1px solid #000; padding: 12px; font-weight: bold; text-align: left;">${item.SubTeacher}</td>
-                        <td style="border: 1px solid #000; padding: 12px; text-align: center; font-weight: bold;">${item.Period}</td>
-                        <td style="border: 1px solid #000; padding: 12px; text-align: center;">${shortSubj}</td>
-                        <td style="border: 1px solid #000; padding: 12px; text-align: center;">${classLevel}</td>
-                        <td style="border: 1px solid #000; padding: 12px; text-align: center;">${locationStr}</td>
-                        <td style="border: 1px solid #000; padding: 12px; text-align: left; font-size: 14px;">${item.AbsentTeacher}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: left; font-size: 12px; color: #b91c1c;">${note}</td>
+                    <tr style="${rowBg} border-bottom: 1px solid #e2e8f0; color: #1e293b;">
+                        <td style="padding: 16px; font-weight: bold; text-align: left; font-size: 20px; color: #4338ca;">${item.SubTeacher}</td>
+                        <td style="padding: 16px; text-align: center; font-weight: 900; font-size: 22px; color: #e11d48;">${item.Period}</td>
+                        <td style="padding: 16px; text-align: center; font-weight: bold;">${shortSubj}</td>
+                        <td style="padding: 16px; text-align: center; color: #475569;">${classLevel}</td>
+                        <td style="padding: 16px; text-align: center; color: #059669; font-weight: bold;">${locationStr}</td>
+                        <td style="padding: 16px; text-align: left; font-size: 18px; color: #64748b;">${item.AbsentTeacher}</td>
+                        <td style="padding: 16px; text-align: left; font-size: 16px; color: #ea580c; font-weight: 500;">${note}</td>
                     </tr>
                 `;
             });
 
+            // ดึงลายเซ็นมาจัดทรงให้ดูมีมิติ
             const sigHtml = currentUser.SavedSignature 
-                ? `<img src="${getEmbeddableUrl(currentUser.SavedSignature)}" crossorigin="anonymous" style="height: 80px; margin: 0 auto; display: block;">` 
-                : `<div style="height: 80px;"></div>`;
+                ? `<img src="${getEmbeddableUrl(currentUser.SavedSignature)}" crossorigin="anonymous" style="height: 90px; margin: 0 auto; display: block; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">` 
+                : `<div style="height: 90px; border-bottom: 2px dotted #cbd5e1; width: 220px; margin: 0 auto; margin-bottom: 10px;"></div>`;
 
-            // 💡 วาดโครงสร้างใหม่ตาม Blueprint: ตรา -> สัปดาห์ -> วันที่ -> ตาราง -> ลายเซ็นขวา
+            // 💡 วาดโครงสร้างใหม่สไตล์ Infographic Premium
             target.innerHTML = `
-                <div style="padding: 50px; background: white; color: black; font-family: 'Sarabun', sans-serif;" id="actualPrintArea">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" style="width: 100px; margin-bottom: 15px;">
-                        <h2 style="font-size: 32px; font-weight: bold; margin: 0;">ประกาศการจัดสอนแทน${window.currentSubWeekStr}</h2>
-                        <h3 style="font-size: 22px; font-weight: bold; color: #374151; margin: 10px 0 0 0;">ประจำ${window.currentSubThaiDate}</h3>
-                    </div>
-                    
-                    <table style="width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 18px; margin-bottom: 40px;">
-                        <thead>
-                            <tr style="background-color: #f3f4f6; border-bottom: 2px solid #000;">
-                                <th style="border: 1px solid #000; padding: 12px;">ผู้รับสอนแทน</th>
-                                <th style="border: 1px solid #000; padding: 12px; width: 60px;">คาบ</th>
-                                <th style="border: 1px solid #000; padding: 12px;">รหัสวิชา</th>
-                                <th style="border: 1px solid #000; padding: 12px;">ระดับชั้น</th>
-                                <th style="border: 1px solid #000; padding: 12px;">สถานที่</th>
-                                <th style="border: 1px solid #000; padding: 12px;">ครูประจำวิชา</th>
-                                <th style="border: 1px solid #000; padding: 12px; width: 180px;">หมายเหตุ</th>
-                            </tr>
-                        </thead>
-                        <tbody>${tableRows}</tbody>
-                    </table>
-                    
-                    <div style="display: flex; justify-content: flex-end; padding-right: 40px;">
-                        <div style="text-align: center; font-size: 20px;">
-                            ${sigHtml}
-                            <div style="margin-top: 5px;">( ${currentUser.FullName} )</div>
-                            <div style="font-weight: bold; margin-top: 5px;">งานจัดการเรียนการสอน ฝ่ายบริหารงานวิชาการ</div>
+                <div style="padding: 60px; background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); color: #0f172a; font-family: 'Sarabun', sans-serif; width: 1200px;" id="actualPrintArea">
+                    <div style="background: white; border-radius: 30px; padding: 50px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 2px solid #e0e7ff; position: relative; overflow: hidden;">
+                        
+                        <!-- BG Graphic Element -->
+                        <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%); border-radius: 50%; opacity: 0.4; z-index: 0;"></div>
+                        <div style="position: absolute; bottom: -80px; left: -80px; width: 300px; height: 300px; background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%); border-radius: 50%; opacity: 0.3; z-index: 0;"></div>
+
+                        <div style="text-align: center; margin-bottom: 40px; position: relative; z-index: 10;">
+                            <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" style="width: 120px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+                            <h2 style="font-size: 42px; font-weight: 900; margin: 0; color: #1e3a8a; letter-spacing: -0.5px;">ประกาศการจัดสอนแทน${window.currentSubWeekStr}</h2>
+                            <div style="display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 8px 24px; border-radius: 50px; font-size: 24px; font-weight: bold; margin-top: 15px; border: 1px solid #bfdbfe;">
+                                ประจำ${window.currentSubThaiDate}
+                            </div>
+                        </div>
+                        
+                        <div style="border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 50px; position: relative; z-index: 10; border: 1px solid #e2e8f0;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 20px; background: white;">
+                                <thead>
+                                    <tr style="background: linear-gradient(90deg, #312e81 0%, #4338ca 100%); color: white; text-align: left;">
+                                        <th style="padding: 20px; font-weight: bold; width: 22%;">ผู้รับสอนแทน</th>
+                                        <th style="padding: 20px; text-align: center; width: 8%;">คาบ</th>
+                                        <th style="padding: 20px; text-align: center; width: 12%;">รหัสวิชา</th>
+                                        <th style="padding: 20px; text-align: center; width: 12%;">ระดับชั้น</th>
+                                        <th style="padding: 20px; text-align: center; width: 12%;">สถานที่</th>
+                                        <th style="padding: 20px; text-align: left; width: 18%;">ครูประจำวิชา</th>
+                                        <th style="padding: 20px; text-align: left; width: 16%;">หมายเหตุ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>\${tableRows}</tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 10;">
+                            <div style="font-size: 16px; color: #94a3b8; font-weight: 500;">
+                                🤖 จัดทำโดยระบบ WKS Academic System<br>
+                                ฝ่ายบริหารงานวิชาการ โรงเรียนวังตะเคียนวิทยาคม
+                            </div>
+                            <div style="text-align: center; font-size: 22px; color: #1e293b;">
+                                \${sigHtml}
+                                <div style="margin-top: 10px; font-weight: bold;">( \${currentUser.FullName} )</div>
+                                <div style="font-weight: 500; margin-top: 5px; color: #475569; font-size: 18px;">ผู้จัดทำคำสั่งสอนแทน</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
-            
-            // โหลด html2canvas ถ้ายังไม่มี
             if (typeof html2canvas === 'undefined') {
                 const script = document.createElement('script');
                 script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
@@ -7773,10 +7873,15 @@ window.renderAdminLogsTable = function() {
                 await new Promise(r => script.onload = r);
             }
 
+            // 💡 แฮ็กระบบแก้อาการจอดำ/ขาว: ย้ายตำแหน่งกระดาษเข้ามาในจอชั่วคราวแต่ซ่อนไว้ใต้สุด
+            const targetParent = target.parentElement;
+            const originalStyle = targetParent.getAttribute('style');
+            targetParent.setAttribute('style', 'position: absolute; left: 0px; top: 0px; z-index: -9999; pointer-events: none;');
+
             try {
                 Swal.fire({ title: 'กำลังสร้างรูปภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 
-                await document.fonts.ready;
+                if (document.fonts && document.fonts.ready) await document.fonts.ready;
                 const images = target.getElementsByTagName('img');
                 await Promise.all(Array.from(images).map(img => {
                     if (img.complete) return Promise.resolve();
@@ -7804,6 +7909,9 @@ window.renderAdminLogsTable = function() {
                 console.error(e);
                 Swal.close();
                 customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
+            } finally {
+                // 💡 คืนร่างกลับไปซ่อนเหมือนเดิม
+                targetParent.setAttribute('style', originalStyle);
             }
         };
         // 2️⃣ แจ้งเตือนครู (จะเชื่อมต่อ Apps Script ในสเตปถัดไป)
@@ -7821,6 +7929,107 @@ window.renderAdminLogsTable = function() {
                 const payload = { action: 'notifySubStudents', data: window.assignedSubDataCache };
                 await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
             } catch(e) { console.error("Notify Students Failed", e); }
+        };
+        
+        // ==========================================
+        // 🕰️ ระบบดูประวัติการจัดสอนแทนย้อนหลัง
+        // ==========================================
+        window.loadSubHistory = function() {
+            const dateInput = document.getElementById('subHistoryDate');
+            const displayInput = document.getElementById('subHistoryDateDisplay');
+            
+            // ตั้งค่าเริ่มต้นถ้าไม่มีการเลือก
+            if (!dateInput.value) dateInput.valueAsDate = new Date();
+            
+            const selectedDate = dateInput.value;
+            const d = new Date(selectedDate);
+            const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+            const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            
+            // 💡 แปลงเป็นฟอร์แมต "วันจันทร์ที่ 11 พฤษภาคม พ.ศ. 2569" เป๊ะๆ
+            const fullDateStr = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
+            displayInput.value = fullDateStr;
+
+            // ค้นหาใน substitutionsDB_Global (ข้อมูลถูกโหลดมาตั้งแต่เปิดเว็บแล้ว)
+            // 💡 แก้บั๊ก: จัดการปัญหา Timezone & ISO String ของ Google Sheets 
+            const records = substitutionsDB_Global.filter(s => {
+                if (!s.Date) return false;
+                if (s.Date === selectedDate) return true; // ถ้าเป็น Text ตรงๆ ให้ผ่านเลย
+                
+                // แปลงก้อน ISO String (เช่น 2026-05-10T17:00:00.000Z) กลับมาเป็น YYYY-MM-DD ตามเวลาไทย
+                const dbD = new Date(s.Date);
+                if (!isNaN(dbD.getTime())) {
+                    const y = dbD.getFullYear();
+                    const m = String(dbD.getMonth() + 1).padStart(2, '0');
+                    const dNum = String(dbD.getDate()).padStart(2, '0');
+                    if (`${y}-${m}-${dNum}` === selectedDate) return true;
+                }
+                return false;
+            });
+            
+            renderSubHistoryTable(records, dayNames[d.getDay()]);
+        };
+
+        window.renderSubHistoryTable = function(records, dayName) {
+            const container = document.getElementById('subHistoryContent');
+            if(!records || records.length === 0) {
+                container.innerHTML = '<div class="py-16 text-center text-gray-400 font-bold italic">-- ไม่พบประวัติการจัดสอนแทนในวันที่เลือก --</div>';
+                return;
+            }
+
+            let tbodyHtml = '';
+            records.sort((a, b) => parseInt(a.Period) - parseInt(b.Period)).forEach(item => {
+                const partsData = (item.SubjectData || "").split(' ');
+                const shortSubj = partsData[0] || '';
+                const classLevel = (partsData.length > 1 && partsData[1].trim() !== '') ? partsData.slice(1).join(' ').trim() : '';
+                
+                // ควานหาสถานที่ (ห้อง) จากตารางสอนเดิมของครูต้นทาง
+                const tt = timetableDB_Global.find(t => t.TeacherName === item.AbsentTeacher && t.Day === dayName);
+                let locationStr = '-';
+                if(tt && tt[`Period${item.Period}`]) {
+                     const pParts = tt[`Period${item.Period}`].split(';');
+                     if(pParts.length > 2) locationStr = pParts[2].trim();
+                }
+
+                const isAssigned = item.SubTeacher && item.SubTeacher !== 'Pending' && item.SubTeacher !== '';
+                const subTeacherDisplay = isAssigned ? item.SubTeacher : '<span class="text-rose-500 italic">ยังไม่มีผู้สอนแทน</span>';
+                
+                // 💡 มาร์คว่าจัดแล้ว หรือ ยังไม่ได้จัด
+                const badge = isAssigned ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] shadow-sm ml-2 font-black border border-emerald-200">✅ จัดแล้ว</span>' : '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] shadow-sm ml-2 font-black border border-amber-200">⏳ รอดำเนินการ</span>';
+
+                tbodyHtml += `
+                    <tr class="hover:bg-indigo-50 transition-colors border-b border-gray-100">
+                        <td class="px-3 py-3 font-bold text-gray-800">${subTeacherDisplay} ${badge}</td>
+                        <td class="px-3 py-3 text-center font-black text-indigo-700 border-x border-gray-100">${item.Period}</td>
+                        <td class="px-3 py-3 font-bold text-indigo-700">${shortSubj}</td>
+                        <td class="px-3 py-3 text-xs font-bold text-gray-600">${classLevel}</td>
+                        <td class="px-3 py-3 text-xs text-amber-600 font-bold">${locationStr}</td>
+                        <td class="px-3 py-3 text-rose-600 text-xs">${item.AbsentTeacher}</td>
+                        <td class="px-3 py-3 text-gray-600 text-xs">${item.HandoverNote || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                        <thead class="bg-gradient-to-r from-indigo-800 to-blue-800 text-white">
+                            <tr>
+                                <th class="px-3 py-3 font-bold w-56 text-emerald-300">ผู้รับสอนแทน</th>
+                                <th class="px-3 py-3 font-bold text-center w-16">คาบ</th>
+                                <th class="px-3 py-3 font-bold">รหัสวิชา</th>
+                                <th class="px-3 py-3 font-bold">ระดับชั้น</th>
+                                <th class="px-3 py-3 font-bold text-amber-200">สถานที่</th>
+                                <th class="px-3 py-3 font-bold text-rose-200">ครูประจำวิชา</th>
+                                <th class="px-3 py-3 font-bold w-48">หมายเหตุ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            ${tbodyHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
         };
         
         // ==========================================
@@ -8460,10 +8669,10 @@ window.renderAdminLogsTable = function() {
             });
         };
 
-        window.adminAddExclusion = function() {
+       window.adminAddExclusion = function() {
             const sel = document.getElementById('adminExclusionSelect');
-            const name = sel.options[sel.selectedIndex]?.text.split(' (')[0]; 
-            if(!name || name.includes('-- เลือกผู้ใช้งาน --') || name.includes('-- เลือกบัญชี --')) return customAlert("กรุณาเลือกรายชื่อครับ");
+            const name = sel.value; // <--- แก้ให้ดึงค่า value ตรงๆ
+            if(!name || name === '') return customAlert("กรุณาเลือกรายชื่อครับ");
             if(persistentExclusions.includes(name)) return customAlert("มีรายชื่อนี้อยู่ในแบล็กลิสต์แล้วครับ", "info");
             
             persistentExclusions.push(name);
@@ -11470,13 +11679,24 @@ window.renderAdminLogsTable = function() {
         // 👑 Sprint 10: The Emperor's Magic (JS Logic)
         // ==========================================
 
-        // เปิดปุ่มศูนย์บัญชาการให้เฉพาะ EmpPngn
+        // เปิดปุ่มศูนย์บัญชาการให้เฉพาะ EmpPngn และปรับ Grid ให้สมมาตร
         const originalSetupUserEnvV2 = setupUserEnvironment;
         setupUserEnvironment = function() {
             originalSetupUserEnvV2();
+            
+            const adminGrid = document.getElementById('adminCardsContainer');
+            const godCard = document.getElementById('card-godmode');
+            
             if (currentUser && currentUser.Role && currentUser.Role.includes('EmpPngn')) {
-                const godCard = document.getElementById('card-godmode');
                 if(godCard) godCard.classList.remove('hidden');
+                // เพิ่ม 2 บรรทัดนี้
+                if(adminGrid) adminGrid.classList.remove('lg:grid-cols-4');
+                if(adminGrid) adminGrid.classList.add('lg:grid-cols-5');
+            } else {
+                if(godCard) godCard.classList.add('hidden');
+                // เพิ่ม 2 บรรทัดนี้
+                if(adminGrid) adminGrid.classList.remove('lg:grid-cols-5');
+                if(adminGrid) adminGrid.classList.add('lg:grid-cols-4');
             }
         };
 
@@ -12393,6 +12613,9 @@ window.saveStudentDetail = async function() {
                     supervisionDB_Global = d.supervisions || d.Supervisions || d.supervision || [];
                     slcSessionsDB_Global = d.slcSessions || d.SLCSessions || d.slc || [];
                     
+                    // 💡 เติมบรรทัดนี้ลงไป! (บังคับให้เป็น Array เท่านั้น ป้องกันตัวแปรมั่วมาทับจนพัง)
+                    let rawLeave = d.LeaveRecords || d.leaveRecords || [];
+                    leaveRecordsDB_Global = Array.isArray(rawLeave) ? rawLeave : [];
                     // กระตุ้นให้วาด Dropdown ใหม่ทันที
                     if (typeof populateAdminPLCList === 'function') populateAdminPLCList();
                     return true;
