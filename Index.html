@@ -6983,24 +6983,47 @@ window.renderAdminLogsTable = function() {
             }
 
             const selectedDate = dateInput.value;
-            // หาข้อมูลที่เคยบันทึกไว้ในวันนี้
-            const existingRecord = leaveRecordsDB_Global.find(r => r.LeaveDate === selectedDate);
+            const existingRecord = leaveRecordsDB_Global.find(r => {
+                let dbDate = r.LeaveDate || r.leavedate || r.Date || r.date;
+                if (!dbDate) return false;
+                if (dbDate === selectedDate) return true;
+                const dbD = new Date(dbDate);
+                if (!isNaN(dbD.getTime())) {
+                    const y = dbD.getFullYear();
+                    const m = String(dbD.getMonth() + 1).padStart(2, '0');
+                    const dNum = String(dbD.getDate()).padStart(2, '0');
+                    if (`${y}-${m}-${dNum}` === selectedDate) return true;
+                }
+                return false;
+            });
+
             let leaveData = {};
             if(existingRecord) {
-                try { leaveData = JSON.parse(existingRecord.Data || "{}"); } catch(e){}
+                const rawData = existingRecord.Data || existingRecord.data || existingRecord.DATA || "{}";
+                try { leaveData = JSON.parse(rawData); } catch(e){}
             }
 
             container.innerHTML = '';
             if(usersDB_Global.length === 0) return;
 
             const grouped = {};
-            usersDB_Global.forEach(u => {
+            const sortedUsers = [...usersDB_Global].sort((a, b) => {
+                const indexA = typeof LEARNING_AREAS !== 'undefined' ? LEARNING_AREAS.indexOf(a.Department) : -1;
+                const indexB = typeof LEARNING_AREAS !== 'undefined' ? LEARNING_AREAS.indexOf(b.Department) : -1;
+                const sortA = indexA === -1 ? 99 : indexA;
+                const sortB = indexB === -1 ? 99 : indexB;
+                
+                if (sortA !== sortB) return sortA - sortB;
+                return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
+            });
+
+            sortedUsers.forEach(u => {
                 const dept = u.Department || 'ไม่มีสังกัด';
                 if (!grouped[dept]) grouped[dept] = [];
                 grouped[dept].push(u);
             });
 
-            const deptOrder = ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์และเทคโนโลยี", "สังคมศึกษา ศาสนา และวัฒนธรรม", "สุขศึกษาและพลศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ"];
+            const deptOrder = ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์และเทคโนโลยี", "สังคมศึกษา ศาสนา และวัฒนธรรม", "สุขศึกษาและพลศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ", "กิจกรรมพัฒนาผู้เรียน", "บริหารวิชาการ"];
             const sortedDepts = Object.keys(grouped).sort((a, b) => {
                 let indexA = deptOrder.indexOf(a), indexB = deptOrder.indexOf(b);
                 if (indexA === -1) indexA = 999; if (indexB === -1) indexB = 999;
@@ -7010,13 +7033,12 @@ window.renderAdminLogsTable = function() {
             
             let html = '';
             sortedDepts.forEach(dept => {
-                const teachers = grouped[dept].sort((a,b) => a.FullName.localeCompare(b.FullName, 'th'));
+                const teachers = grouped[dept]; 
                 html += `<div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm"><div class="bg-fuchsia-100 px-4 py-2 font-bold text-fuchsia-900 border-b border-fuchsia-200">📁 กลุ่มสาระฯ: ${dept}</div><div class="divide-y divide-gray-100 bg-white">`;
 
                 teachers.forEach(u => {
                     if(u.Role.includes('BirdSpy') && !u.Role.includes('User')) return;
                     
-                    // ดึงค่าเก่ามาแสดง
                     const uData = leaveData[u.Username] || { status: 'none', dur: 'full' };
                     const chkNone = uData.status === 'none' ? 'checked' : '';
                     const chkLeave = uData.status === 'ลาป่วย/กิจ' ? 'checked' : '';
@@ -7098,33 +7120,25 @@ window.renderAdminLogsTable = function() {
             const container = document.getElementById('masterControlPanelContainer');
             const dateInput = document.getElementById('masterSubDate');
             
-            // --- เพิ่ม 4 บรรทัดนี้ เพื่อยกเลิกการซ่อนหน้าต่าง ---
             if(container) container.classList.remove('hidden');
             const btnRun = document.getElementById('btnRunMasterAI');
             if(btnRun) btnRun.classList.remove('hidden');
             const dragBoard = document.getElementById('aiDragDropBoard');
             if(dragBoard) dragBoard.classList.add('hidden');
-            // ------------------------------------------
 
             if(!container) return;
-            
-            // 1. ตั้งค่าวันที่เริ่มต้นเป็นวันนี้ (ถ้ายังไม่มีการเลือก)
-            if(!dateInput.value) {
-                dateInput.valueAsDate = new Date();
-            }
-
-            // 💡 2. อัปเดต "สัปดาห์ที่" และวันที่ภาษาไทยบนหน้าปัดทันที
+            if(!dateInput.value) dateInput.valueAsDate = new Date();
             if(typeof updateMasterSubDateDisplay === 'function') updateMasterSubDateDisplay();
 
-            // 💡 3. ดึงข้อมูลการลาจาก HR (LeaveRecords) มาเป็นค่าตั้งต้น
             const selectedDate = dateInput.value;
-            // 💡 แฮ็กระบบความจำเสื่อม: ดักจับการแปลง Timezone ของ Google Sheets
+            
+            // 💡 แก้ไข 1: ดักจับชื่อ Key ที่อาจเป็นพิมพ์เล็ก/ใหญ่จาก Apps Script
             const matchingRecords = leaveRecordsDB_Global.filter(r => {
-                if (!r.LeaveDate) return false;
-                if (r.LeaveDate === selectedDate) return true; // ถ้าเป็น Text ตรงๆ ให้ผ่านเลย
+                let dbDate = r.LeaveDate || r.leavedate || r.Date || r.date;
+                if (!dbDate) return false;
+                if (dbDate === selectedDate) return true; 
                 
-                // แปลง ISO String กลับมาเป็น YYYY-MM-DD ชนกันตรงๆ
-                const dbD = new Date(r.LeaveDate);
+                const dbD = new Date(dbDate);
                 if (!isNaN(dbD.getTime())) {
                     const y = dbD.getFullYear();
                     const m = String(dbD.getMonth() + 1).padStart(2, '0');
@@ -7134,12 +7148,13 @@ window.renderAdminLogsTable = function() {
                 return false;
             });
 
-            // 💡 ทีเด็ดอยู่ตรงนี้! หยิบเอา 'แถวล่าสุด' (อันที่อยู่ล่างสุดใน Sheet) มาแกะกล่อง
             const existingRecord = matchingRecords.length > 0 ? matchingRecords[matchingRecords.length - 1] : null;
 
             let hrData = {};
             if(existingRecord) {
-                try { hrData = JSON.parse(existingRecord.Data || "{}"); } catch(e){ console.error("Parse HR Data Error", e); }
+                // 💡 แก้ไข 2: ดักจับ Data หรือ data ป้องกัน undefined
+                const rawData = existingRecord.Data || existingRecord.data || existingRecord.DATA || "{}";
+                try { hrData = JSON.parse(rawData); } catch(e){ console.error("Parse HR Data Error", e); }
             }
 
             container.innerHTML = '';
@@ -7148,15 +7163,25 @@ window.renderAdminLogsTable = function() {
                 return;
             }
 
-            // 4. จัดกลุ่มตามสาระฯ (Department)
             const grouped = {};
-            usersDB_Global.forEach(u => {
+            
+            // 💡 แก้ไข 3: จัดเรียงข้อมูล 1.กลุ่มสาระฯ (ตามลิสต์มาตรฐาน) -> 2. ลำดับ Sq (อาวุโส)
+            const sortedUsers = [...usersDB_Global].sort((a, b) => {
+                const indexA = typeof LEARNING_AREAS !== 'undefined' ? LEARNING_AREAS.indexOf(a.Department) : -1;
+                const indexB = typeof LEARNING_AREAS !== 'undefined' ? LEARNING_AREAS.indexOf(b.Department) : -1;
+                const sortA = indexA === -1 ? 99 : indexA;
+                const sortB = indexB === -1 ? 99 : indexB;
+                
+                if (sortA !== sortB) return sortA - sortB;
+                return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
+            });
+
+            sortedUsers.forEach(u => {
                 const dept = u.Department || 'ไม่มีสังกัด';
                 if (!grouped[dept]) grouped[dept] = [];
                 grouped[dept].push(u);
             });
 
-            // 5. เรียงกลุ่มสาระฯ ตามลำดับมาตรฐาน
             const deptOrder = ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์และเทคโนโลยี", "สังคมศึกษา ศาสนา และวัฒนธรรม", "สุขศึกษาและพลศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ", "กิจกรรมพัฒนาผู้เรียน", "บริหารวิชาการ"];
             const sortedDepts = Object.keys(grouped).sort((a, b) => {
                 let indexA = deptOrder.indexOf(a), indexB = deptOrder.indexOf(b);
@@ -7167,8 +7192,7 @@ window.renderAdminLogsTable = function() {
             
             let html = '';
             sortedDepts.forEach(dept => {
-                // 💡 เรียงรายชื่อครูตามลำดับอาวุโส (Sq)
-                const teachers = grouped[dept].sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+                const teachers = grouped[dept]; 
                 
                 html += `
                 <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm">
@@ -7179,7 +7203,6 @@ window.renderAdminLogsTable = function() {
                 teachers.forEach(u => {
                     if(u.Role.includes('BirdSpy') && !u.Role.includes('User')) return;
 
-                    // 💡 6. ลอจิก Sync: เอาข้อมูลจาก HR มาติ๊กถูกให้อัตโนมัติ!
                     const uData = hrData[u.Username] || { status: 'none', dur: 'full' };
                     const chkNone = uData.status === 'none' ? 'checked' : '';
                     const chkLeave = uData.status === 'ลาป่วย/กิจ' ? 'checked' : '';
