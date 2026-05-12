@@ -1924,16 +1924,16 @@
                             </div>
 
                             <!-- โซนขวา: ค้นหาและแก้ไขรายคน -->
-                            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
-                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2 shrink-0">🔍 ฐานข้อมูลนักเรียน</h3>
-                                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                                        <!-- 💡 เพิ่ม Dropdown เลือกห้องเรียน -->
-                                        <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
-                                            <option value="">-- ทุกห้อง --</option>
-                                        </select>
-                                        <input type="text" id="adminSearchStudent" oninput="searchAdminStudents()" placeholder="พิมพ์ชื่อ หรือ รหัส..." class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
-                                    </div>
-                                </div>
+<div class="lg:col-span-2 bg-white rounded-3xl p-8 shadow-xl border border-emerald-100 h-fit">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2 shrink-0">🔍 ฐานข้อมูลนักเรียน</h3>
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
+                <option value="">-- ทุกห้อง --</option>
+            </select>
+            <input type="text" id="adminSearchStudent" oninput="searchAdminStudents()" placeholder="พิมพ์ชื่อ, รหัส หรือห้องเรียน..." class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+    </div>
 
                                 <div class="flex-grow overflow-x-auto rounded-xl border border-gray-200 shadow-inner">
                                     <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
@@ -11923,15 +11923,33 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                             return stu;
                         });
 
+                        // 💡 ฟังก์ชันช่วยจัดลำดับเพศ (ชายมาก่อนหญิง)
+                        const getGenderRank = (gender) => {
+                            const g = String(gender || '').trim().toLowerCase();
+                            if (g === 'ชาย' || g === 'm' || g === 'male' || g === 'ช') return 1;
+                            if (g === 'หญิง' || g === 'f' || g === 'female' || g === 'ญ') return 2;
+                            return 3;
+                        };
+
+                        // 💡 2. จัดเรียงข้อมูล: SchoolCode -> Room -> เพศ (ชาย-หญิง) -> StudentID
+                        // 💡 2. จัดเรียงข้อมูล: SchoolCode -> Room -> เพศ (ชาย-หญิง) -> StudentID
                         mappedData.sort((a, b) => {
-                            if (a.SchoolCode !== b.SchoolCode) return a.SchoolCode.localeCompare(b.SchoolCode, 'th');
-                            if (a.Room !== b.Room) return a.Room.localeCompare(b.Room, 'th');
+                            // 1. เรียงตามรหัสโรงเรียน (บังคับเป็น String ป้องกัน Error)
+                            if (a.SchoolCode !== b.SchoolCode) return String(a.SchoolCode || '').localeCompare(String(b.SchoolCode || ''), 'th');
+                            // 2. เรียงตามห้อง (บังคับเป็น String)
+                            if (a.Room !== b.Room) return String(a.Room || '').localeCompare(String(b.Room || ''), 'th');
                             
+                            // 3. เรียงตามเพศ (ชาย -> หญิง)
+                            const rankA = getGenderRank(a.Gender);
+                            const rankB = getGenderRank(b.Gender);
+                            if (rankA !== rankB) return rankA - rankB;
+                            
+                            // 4. เรียงตามรหัสประจำตัวนักเรียน
                             const numA = parseInt(a.StudentID) || 0;
                             const numB = parseInt(b.StudentID) || 0;
                             if (numA !== numB) return numA - numB;
                             
-                            return a.StudentID.localeCompare(b.StudentID, 'th');
+                            return String(a.StudentID || '').localeCompare(String(b.StudentID || ''), 'th');
                         });
 
                         let grouped = {};
