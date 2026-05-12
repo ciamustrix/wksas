@@ -13111,162 +13111,7 @@ window.saveStudentDetail = async function() {
             });
         };
 
-        // 6. ทับฟังก์ชันดึงรายชื่อ Buddy (ยัดสมองกล Dropdown Multi-select + Tags)
-        window.loadBuddiesFromPLC = function() {
-            const modelVal = document.getElementById('slc_model').value;
-            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
-            const container = document.getElementById('slc_buddies_container');
-            const groupLabel = document.getElementById('plcGroupNameLabel');
-            
-            if (!modelInfo) {
-                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
-                groupLabel.classList.add('hidden');
-                container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
-                return;
-            }
-
-            const modelUser = modelInfo.Username;
-            let targetGroup = null;
-            let membersArray = [];
-            
-            const isFreeSLC = masterSwitches_Global['Feature_FreeSLC'] === true; 
-
-            if (isFreeSLC) {
-                targetGroup = { GroupName: 'SLC อิสระ (เปิดให้เลือกข้ามกลุ่มได้)' };
-                membersArray = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User')).map(u => u.Username);
-            } else {
-                const effectiveGroups = getEffectivePLCGroups();
-                if (effectiveGroups && effectiveGroups.length > 0) {
-                    for (let i = effectiveGroups.length - 1; i >= 0; i--) {
-                        const g = effectiveGroups[i];
-                        try {
-                            const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
-                            if (mems && mems.includes(modelUser)) {
-                                targetGroup = g;
-                                membersArray = mems;
-                                break;
-                            }
-                        } catch(e) {}
-                    }
-                }
-            }
-
-            if (targetGroup) {
-                groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
-                groupLabel.classList.remove('hidden');
-                
-                const buddies = membersArray.filter(m => m !== modelUser);
-                if (buddies.length > 0) {
-                    // 💡 ล้างคลาสกรอบเดิมทิ้ง เพื่อวาง UI แบบ Dropdown ให้โปร่งใส
-                    container.className = 'w-full min-h-[38px] relative';
-
-                    let dropdownContent = '';
-
-                    if (isFreeSLC) {
-                        const grouped = {};
-                        buddies.forEach(bUser => {
-                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
-                            const dept = uInfo ? (uInfo.Department || 'ไม่มีสังกัด') : 'ไม่มีสังกัด';
-                            if(!grouped[dept]) grouped[dept] = [];
-                            grouped[dept].push({ username: bUser, name: uInfo ? uInfo.FullName : bUser });
-                        });
-
-                        Object.keys(grouped).sort().forEach(dept => {
-                            dropdownContent += `<div class="w-full mt-2 mb-1 border-b border-indigo-100 pb-1 shrink-0 px-2"><span class="text-[10px] font-bold text-indigo-400">📁 ${dept}</span></div>`;
-                            grouped[dept].sort((a,b) => a.name.localeCompare(b.name, 'th')).forEach(b => {
-                                dropdownContent += `
-                                <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50 px-2 py-1.5 rounded transition-colors w-full">
-                                    <input type="checkbox" name="slc_buddy_cb" value="${b.username}" data-name="${b.name}" class="form-checkbox text-indigo-600 rounded h-4 w-4" onchange="updateSLCBuddyTags()">
-                                    <span class="text-xs font-bold text-gray-700">${b.name}</span>
-                                </label>`;
-                            });
-                        });
-                    } else {
-                        buddies.sort((a,b) => {
-                           const ua = usersDB_Global.find(x => x.Username === a);
-                           const ub = usersDB_Global.find(x => x.Username === b);
-                           return (ua?.FullName || a).localeCompare((ub?.FullName || b), 'th');
-                        });
-
-                        dropdownContent = buddies.map(bUser => {
-                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
-                            const bName = uInfo ? uInfo.FullName : bUser;
-                            return `
-                            <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50 px-2 py-1.5 rounded transition-colors w-full">
-                                <input type="checkbox" name="slc_buddy_cb" value="${bUser}" data-name="${bName}" class="form-checkbox text-indigo-600 rounded h-4 w-4" onchange="updateSLCBuddyTags()">
-                                <span class="text-xs font-bold text-gray-700">${bName}</span>
-                            </label>`;
-                        }).join('');
-                    }
-
-                    // 💡 วาด UI แบบ Dropdown Multi-select + Tags
-                    container.innerHTML = `
-                        <!-- พื้นที่โชว์คนที่ถูกเลือก (Tags) -->
-                        <div id="slc_buddy_tags" class="flex flex-wrap gap-1.5 mb-2 empty:hidden"></div>
-                        
-                        <!-- ปุ่มกดเปิด Dropdown -->
-                        <button type="button" id="slc_buddy_toggle_btn" onclick="document.getElementById('slc_buddy_dropdown').classList.toggle('hidden')" class="w-full text-left bg-white border border-indigo-200 rounded-lg px-4 py-2.5 text-xs font-bold text-indigo-700 shadow-sm flex justify-between items-center hover:bg-indigo-50 hover:border-indigo-400 transition-colors">
-                            <span>➕ เลือกเพื่อนครูคู่คิด (Buddy)...</span>
-                            <span class="text-gray-400">▼</span>
-                        </button>
-                        
-                        <!-- หน้าต่าง Dropdown (ลอยอยู่เหนือตาราง) -->
-                        <div id="slc_buddy_dropdown" class="hidden absolute z-[60] mt-1 w-full md:w-[150%] bg-white border border-indigo-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto p-2 custom-scrollbar">
-                           ${dropdownContent}
-                        </div>
-                    `;
-
-                    // 💡 ป้องกันการสร้าง Event คลิกซ้ำซ้อนตอนดึงฟังก์ชันหลายรอบ
-                    if (!window._dropdownListenerAdded) {
-                        document.addEventListener('click', function(e) {
-                            const dropdown = document.getElementById('slc_buddy_dropdown');
-                            const toggleBtn = document.getElementById('slc_buddy_toggle_btn');
-                            // ปิด dropdown เมื่อคลิกที่อื่น
-                            if (dropdown && toggleBtn && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
-                                dropdown.classList.add('hidden');
-                            }
-                        });
-                        window._dropdownListenerAdded = true;
-                    }
-
-                } else {
-                    container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
-                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นให้เลือก</span>';
-                }
-            } else {
-                groupLabel.classList.add('hidden');
-                container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
-                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
-            }
-        };
-
-        // 💡 ฟังก์ชันสร้างป้ายชื่อและลบชื่อเมื่อกด X
-        window.updateSLCBuddyTags = function() {
-            const tagsContainer = document.getElementById('slc_buddy_tags');
-            if(!tagsContainer) return;
-            tagsContainer.innerHTML = '';
-            
-            const checkedBoxes = document.querySelectorAll('input[name="slc_buddy_cb"]:checked');
-            
-            checkedBoxes.forEach(cb => {
-                const name = cb.getAttribute('data-name');
-                const val = cb.value;
-                tagsContainer.innerHTML += `
-                    <div class="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md shadow-sm border border-emerald-300">
-                        <span class="text-[11px] font-bold">${name}</span>
-                        <button type="button" onclick="removeSLCBuddy('${val}')" class="text-emerald-600 hover:text-rose-500 font-black ml-1 outline-none text-xs leading-none">&times;</button>
-                    </div>
-                `;
-            });
-        };
-
-        window.removeSLCBuddy = function(val) {
-            const cb = document.querySelector(`input[name="slc_buddy_cb"][value="${val}"]`);
-            if(cb) {
-                cb.checked = false;
-                updateSLCBuddyTags(); // วาดแท็กใหม่
-            }
-        };
+        
 
         window.finishSLCObservation = async function() {
             if (Object.keys(observationData).length === 0) {
@@ -13631,6 +13476,156 @@ window.saveStudentDetail = async function() {
             } else {
                 groupLabel.classList.add('hidden');
                 container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
+            }
+        };
+
+        // 6. ดึงรายชื่อ Buddy (ยัดสมองกล Dropdown Multi-select + Tags)
+        window.loadBuddiesFromPLC = function() {
+            const modelVal = document.getElementById('slc_model').value;
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const container = document.getElementById('slc_buddies_container');
+            const groupLabel = document.getElementById('plcGroupNameLabel');
+            
+            if (!modelInfo) {
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
+                groupLabel.classList.add('hidden');
+                container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
+                return;
+            }
+
+            const modelUser = modelInfo.Username;
+            let targetGroup = null;
+            let membersArray = [];
+            
+            const isFreeSLC = masterSwitches_Global['Feature_FreeSLC'] === true; 
+
+            if (isFreeSLC) {
+                targetGroup = { GroupName: 'SLC อิสระ (เปิดให้เลือกข้ามกลุ่มได้)' };
+                membersArray = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User')).map(u => u.Username);
+            } else {
+                const effectiveGroups = getEffectivePLCGroups();
+                if (effectiveGroups && effectiveGroups.length > 0) {
+                    for (let i = effectiveGroups.length - 1; i >= 0; i--) {
+                        const g = effectiveGroups[i];
+                        try {
+                            const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
+                            if (mems && mems.includes(modelUser)) {
+                                targetGroup = g;
+                                membersArray = mems;
+                                break;
+                            }
+                        } catch(e) {}
+                    }
+                }
+            }
+
+            if (targetGroup) {
+                groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
+                groupLabel.classList.remove('hidden');
+                
+                const buddies = membersArray.filter(m => m !== modelUser);
+                if (buddies.length > 0) {
+                    // เคลียร์คลาสเก่า แล้วทำตำแหน่งอ้างอิงให้ Dropdown
+                    container.className = 'w-full min-h-[38px] relative';
+
+                    let dropdownContent = '';
+
+                    if (isFreeSLC) {
+                        const grouped = {};
+                        buddies.forEach(bUser => {
+                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                            const dept = uInfo ? (uInfo.Department || 'ไม่มีสังกัด') : 'ไม่มีสังกัด';
+                            if(!grouped[dept]) grouped[dept] = [];
+                            grouped[dept].push({ username: bUser, name: uInfo ? uInfo.FullName : bUser });
+                        });
+
+                        Object.keys(grouped).sort().forEach(dept => {
+                            dropdownContent += `<div class="w-full mt-2 mb-1 border-b border-indigo-200/50 pb-1 shrink-0 px-2"><span class="text-[10px] font-bold text-indigo-500">📁 ${dept}</span></div>`;
+                            grouped[dept].sort((a,b) => a.name.localeCompare(b.name, 'th')).forEach(b => {
+                                dropdownContent += `
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50/50 px-2 py-1.5 rounded transition-colors w-full">
+                                    <input type="checkbox" name="slc_buddy_cb" value="${b.username}" data-name="${b.name}" class="form-checkbox text-indigo-600 rounded h-4 w-4" onchange="updateSLCBuddyTags()">
+                                    <span class="text-xs font-bold text-gray-700">${b.name}</span>
+                                </label>`;
+                            });
+                        });
+                    } else {
+                        buddies.sort((a,b) => {
+                           const ua = usersDB_Global.find(x => x.Username === a);
+                           const ub = usersDB_Global.find(x => x.Username === b);
+                           return (ua?.FullName || a).localeCompare((ub?.FullName || b), 'th');
+                        });
+
+                        dropdownContent = buddies.map(bUser => {
+                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                            const bName = uInfo ? uInfo.FullName : bUser;
+                            return `
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50/50 px-2 py-1.5 rounded transition-colors w-full">
+                                <input type="checkbox" name="slc_buddy_cb" value="${bUser}" data-name="${bName}" class="form-checkbox text-indigo-600 rounded h-4 w-4" onchange="updateSLCBuddyTags()">
+                                <span class="text-xs font-bold text-gray-700">${bName}</span>
+                            </label>`;
+                        }).join('');
+                    }
+
+                    // วาด UI แบบ Dropdown Multi-select + Tags
+                    container.innerHTML = `
+                        <div id="slc_buddy_tags" class="flex flex-wrap gap-1.5 mb-2 empty:hidden"></div>
+                        <button type="button" id="slc_buddy_toggle_btn" onclick="document.getElementById('slc_buddy_dropdown').classList.toggle('hidden')" class="w-full text-left bg-white border border-indigo-200 rounded-lg px-4 py-2.5 text-xs font-bold text-indigo-600 shadow-sm flex justify-between items-center hover:bg-indigo-50 transition-colors">
+                            <span>➕ เลือกเพื่อนครูคู่คิด (Buddy)...</span>
+                            <span class="text-gray-500">▼</span>
+                        </button>
+                        <div id="slc_buddy_dropdown" class="hidden absolute z-[60] mt-1 w-full bg-white border border-indigo-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto p-2 custom-scrollbar">
+                           ${dropdownContent}
+                        </div>
+                    `;
+
+                    // ป้องกัน event ซ้อน
+                    if (!window._dropdownListenerAdded) {
+                        document.addEventListener('click', function(e) {
+                            const dropdown = document.getElementById('slc_buddy_dropdown');
+                            const toggleBtn = document.getElementById('slc_buddy_toggle_btn');
+                            if (dropdown && toggleBtn && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+                                dropdown.classList.add('hidden');
+                            }
+                        });
+                        window._dropdownListenerAdded = true;
+                    }
+
+                } else {
+                    container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
+                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นให้เลือก</span>';
+                }
+            } else {
+                groupLabel.classList.add('hidden');
+                container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
+                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
+            }
+        };
+
+        window.updateSLCBuddyTags = function() {
+            const tagsContainer = document.getElementById('slc_buddy_tags');
+            if(!tagsContainer) return;
+            tagsContainer.innerHTML = '';
+            
+            const checkedBoxes = document.querySelectorAll('input[name="slc_buddy_cb"]:checked');
+            
+            checkedBoxes.forEach(cb => {
+                const name = cb.getAttribute('data-name');
+                const val = cb.value;
+                tagsContainer.innerHTML += `
+                    <div class="flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md shadow-sm border border-emerald-300">
+                        <span class="text-[11px] font-bold">${name}</span>
+                        <button type="button" onclick="removeSLCBuddy('${val}')" class="text-emerald-600 hover:text-rose-500 font-black ml-1 outline-none text-xs leading-none">&times;</button>
+                    </div>
+                `;
+            });
+        };
+
+        window.removeSLCBuddy = function(val) {
+            const cb = document.querySelector(`input[name="slc_buddy_cb"][value="${val}"]`);
+            if(cb) {
+                cb.checked = false;
+                updateSLCBuddyTags(); 
             }
         };
 
