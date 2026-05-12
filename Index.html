@@ -231,7 +231,8 @@
 </div>
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
-                <p class="text-xs text-gray-500 font-medium">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
+                <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03 [2026-13-05] | Dev. by Thuntathorn 😁</p>
             </div>
         </div>
     </div>
@@ -1850,15 +1851,23 @@
 
                     <!-- ⚙️ Card Menu Grid (จัดการ Layout ใหม่ให้สวยงาม ไม่เหมือนเด็กโยนของเล่น) -->
                     <div id="adminCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 transition-all duration-500">
-                        <!-- Card 1: Users -->
-                        <div onclick="switchAdminTab('admin-sec-users')" class="admin-card-btn glass-panel p-6 rounded-3xl border border-indigo-100 hover:border-indigo-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden">
-                            <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <!-- Card 0: Students (ระบบจัดการนักเรียน) -->
+                        <div onclick="switchAdminTab('admin-sec-students')" class="admin-card-btn glass-panel p-6 rounded-3xl border border-emerald-100 hover:border-emerald-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden">
+                            <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <span class="text-3xl">🧑‍🎓</span>
+                            </div>
+                            <h4 class="font-black text-gray-800 text-lg">จัดการนักเรียน</h4>
+                            <p class="text-[10px] text-gray-500 mt-1">อัปโหลดรายชื่อ, จัดเลขที่, แก้ไขประวัติ</p>
+                        </div>
+                        <!-- Card 1: Users (จัดการบุคลากร) -->
+                        <div onclick="switchAdminTab('admin-sec-users')" class="admin-card-btn glass-panel p-6 rounded-3xl border border-sky-100 hover:border-sky-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden bg-slate-900/40">
+                            <div class="w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <span class="text-3xl">👥</span>
                             </div>
                             <h4 class="font-black text-gray-800 text-lg">จัดการบุคลากร</h4>
-                            <p class="text-[10px] text-gray-500 mt-1">เปลี่ยนรูป, รีเซ็ตรหัส, สวมรอยบัญชี</p>
+                            <p class="text-[10px] text-gray-500 mt-1">สวมรอย, อัปเดตโปรไฟล์, รีเซ็ตรหัสผ่าน</p>
                         </div>
-
+                        
                         <!-- Card 2: Database -->
                         <div onclick="switchAdminTab('admin-sec-db')" class="admin-card-btn glass-panel p-6 rounded-3xl border border-amber-100 hover:border-amber-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden">
                             <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -1896,34 +1905,97 @@
                         </div>
                     </div>
                    
-                    <!-- [1] SECTION: USERS -->
-                    <div id="admin-sec-users" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
-                                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">👑 เปลี่ยนรูปโปรไฟล์ (Admin Override)</h3>
-                                <div class="space-y-4">
-                                    <select id="adminUserSelect" class="w-full rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-sky-500"></select>
-                                    <input type="file" id="adminNewProfileFile" accept="image/*" class="w-full text-xs p-2 border border-gray-300 rounded-lg">
-                                    <div id="adminProfilePreviewContainer" class="hidden h-32 w-32 mx-auto rounded-full overflow-hidden border-4 border-sky-100 shadow-inner">
-                                        <img id="adminProfilePreview" class="w-full h-full object-cover">
-                                    </div>
-                                    <button onclick="adminUpdateProfile(event)" class="w-full py-3 bg-sky-600 text-white font-bold rounded-xl shadow hover:bg-sky-700 transition-colors">อัปเดตรูปภาพ</button>
+                    <!-- [0] SECTION: STUDENTS -->
+                    <div id="admin-sec-students" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            
+                            <!-- โซนซ้าย: อัปโหลดและจัดการรันเลขที่ -->
+                            <div class="lg:col-span-1 bg-white rounded-3xl p-8 shadow-xl border border-emerald-100 h-fit">
+                                <h3 class="text-xl font-bold text-emerald-800 mb-2 flex items-center gap-2">📥 นำเข้าบัญชีรายชื่อ</h3>
+                                <p class="text-xs text-gray-500 mb-6">อัปโหลดไฟล์ .xlsx ระบบจะจัดกลุ่มตามห้องและรันเลขที่ให้อัตโนมัติ</p>
+                                
+                                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 border-dashed text-center">
+                                    <div class="text-4xl mb-2 opacity-50">📊</div>
+                                    <input type="file" id="adminStudentExcelV2" accept=".xlsx, .xls" class="block w-full text-xs text-emerald-700 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer outline-none mb-4">
+                                    <button onclick="previewStudentExcel()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
+                                        ✨ ตรวจสอบและรันเลขที่
+                                    </button>
                                 </div>
                             </div>
-                            <div class="space-y-8">
-                                <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">🔓 รีเซ็ตรหัสผ่าน</h3>
-                                    <div class="flex gap-2">
-                                        <select id="adminResetUserSelect" class="flex-grow rounded-xl border border-gray-300 p-3 text-sm outline-none"></select>
-                                        <button onclick="adminResetPassword()" class="bg-rose-500 text-white px-6 rounded-xl font-bold hover:bg-rose-600 shadow transition-colors">รีเซ็ต</button>
+
+                            <!-- โซนขวา: ค้นหาและแก้ไขรายคน -->
+                            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2 shrink-0">🔍 ฐานข้อมูลนักเรียน</h3>
+                                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                        <!-- 💡 เพิ่ม Dropdown เลือกห้องเรียน -->
+                                        <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
+                                            <option value="">-- ทุกห้อง --</option>
+                                        </select>
+                                        <input type="text" id="adminSearchStudent" oninput="searchAdminStudents()" placeholder="พิมพ์ชื่อ หรือ รหัส..." class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
                                     </div>
-                                    <p class="text-[10px] text-gray-400 mt-2">* รหัสผ่านจะถูกตั้งกลับเป็น "1234" ทันที</p>
                                 </div>
-                                <div id="impersonateSection" class="bg-amber-50 rounded-3xl p-8 shadow-xl border border-amber-200">
-                                    <h3 class="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">🎭 ระบบสวมรอย (Impersonation)</h3>
-                                    <div class="flex gap-2">
-                                        <select id="impersonateUserSelect" class="flex-grow rounded-xl border border-amber-300 p-3 text-sm outline-none bg-white"></select>
-                                        <button onclick="impersonateUser()" class="bg-amber-600 text-white px-6 rounded-xl font-bold hover:bg-amber-700 shadow transition-colors">สวมรอย</button>
+
+                                <div class="flex-grow overflow-x-auto rounded-xl border border-gray-200 shadow-inner">
+                                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                                        <thead class="bg-gray-50 sticky top-0 z-10">
+                                            <tr>
+                                                <th class="px-4 py-3 font-bold text-gray-700">รหัสนักเรียน</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700">ชื่อ-นามสกุล</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700 text-center">ห้อง</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700 text-center">เลขที่</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700 text-center">จัดการ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="adminStudentTableBody" class="bg-white divide-y divide-gray-100">
+                                            <tr><td colspan="5" class="py-10 text-center text-gray-400 font-bold italic">พิมพ์ค้นหาหรือรอดูข้อมูล...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- [1] SECTION: USERS (จัดการบุคลากร) -->
+                    <div id="admin-sec-users" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- โซนสวมรอย (Impersonate) -->
+                            <div id="impersonateSection" class="bg-white rounded-3xl p-8 shadow-xl border border-sky-100 h-fit">
+                                <h3 class="text-xl font-bold text-sky-800 mb-2 flex items-center gap-2">🎭 ระบบสวมรอย (Impersonation)</h3>
+                                <p class="text-xs text-gray-500 mb-6">เข้าใช้งานในฐานะบุคคลอื่นเพื่อตรวจสอบปัญหา</p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">เลือกบัญชีที่ต้องการสวมรอย</label>
+                                        <select id="impersonateUserSelect" class="w-full rounded-xl border border-gray-300 py-3 px-4 focus:ring-2 focus:ring-sky-500 outline-none text-sm bg-gray-50"></select>
+                                    </div>
+                                    <button onclick="impersonateUser()" class="w-full bg-gradient-to-r from-sky-600 to-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all flex justify-center items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        สวมรอยเข้าสู่ระบบ
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- โซนจัดการโปรไฟล์และรหัสผ่าน -->
+                            <div class="lg:col-span-2 bg-white rounded-3xl p-8 shadow-xl border border-indigo-100">
+                                <h3 class="text-xl font-bold text-indigo-800 mb-6 flex items-center gap-2">🧑‍💻 บริหารจัดการบัญชีผู้ใช้งาน</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <!-- อัปเดตรูป -->
+                                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 shadow-sm flex flex-col">
+                                        <h4 class="font-bold text-indigo-900 mb-4 text-sm">🖼️ บังคับเปลี่ยนรูปโปรไฟล์</h4>
+                                        <select id="adminUserSelect" class="w-full rounded-lg border border-gray-300 py-2.5 px-3 mb-4 text-sm outline-none"></select>
+                                        <input type="file" id="adminNewProfileFile" accept="image/*" class="w-full text-xs mb-4 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-indigo-200 file:text-indigo-800 cursor-pointer outline-none">
+                                        <div id="adminProfilePreviewContainer" class="hidden mb-4 text-center">
+                                            <img id="adminProfilePreview" src="" class="w-20 h-20 object-cover rounded-full mx-auto border-4 border-white shadow-md">
+                                        </div>
+                                        <button onclick="adminUpdateProfile(event)" class="mt-auto w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold shadow hover:bg-indigo-700 transition-colors">อัปเดตรูปภาพ</button>
+                                    </div>
+                                    <!-- รีเซ็ตรหัสผ่าน -->
+                                    <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 shadow-sm flex flex-col">
+                                        <h4 class="font-bold text-rose-900 mb-4 text-sm">🔑 รีเซ็ตรหัสผ่าน (Reset Password)</h4>
+                                        <p class="text-xs text-rose-600 mb-4 font-medium">รหัสผ่านจะถูกรีเซ็ตกลับไปเป็นค่าเริ่มต้นคือ "1234"</p>
+                                        <select id="adminResetUserSelect" class="w-full rounded-lg border border-gray-300 py-2.5 px-3 mb-6 text-sm outline-none"></select>
+                                        <button onclick="adminResetPassword()" class="mt-auto w-full bg-rose-600 text-white py-2.5 rounded-xl font-bold shadow hover:bg-rose-700 transition-colors flex items-center justify-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
+                                            บังคับรีเซ็ตรหัสผ่าน
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2090,8 +2162,7 @@
                                 <button onclick="adminSaveExclusions(event)" class="w-full mt-4 py-2.5 bg-gray-800 text-white font-bold rounded-xl">💾 บันทึกบัญชีดำถาวร</button>
                             </div>
                         </div>
-                    </div>
-                </div> <!-- 💡 ตัวการสำคัญ! ปิด Tag ของ [4] SECTION: CONFIG & SECURITY ที่แกเปิดค้างไว้ -->
+                    </div> <!-- 💡 ปิดแค่ admin-sec-config พอ! อย่าปิดเกิน! -->
 
                 <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
                     <div id="admin-sec-godmode" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -2266,6 +2337,45 @@
                         <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
                             <button onclick="document.getElementById('supEvalModal').classList.add('hidden')" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">ยกเลิก</button>
                             <button id="btnSaveSupEval" onclick="saveSupervisionEval()" class="px-6 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-md">💾 บันทึกผลการนิเทศ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal: ตรวจสอบและแก้ไขเลขที่นักเรียน (Excel Import Review) -->
+            <div id="studentUploadReviewModal" class="fixed inset-0 z-[90] hidden overflow-y-auto">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm transition-opacity" onclick="document.getElementById('studentUploadReviewModal').classList.add('hidden')"></div>
+                    <div class="inline-block bg-white rounded-3xl p-6 sm:p-8 text-left shadow-2xl transform transition-all max-w-5xl w-full relative z-50 border-t-8 border-emerald-500 flex flex-col h-[85vh]">
+                        <div class="flex justify-between items-center mb-4 border-b pb-4 shrink-0">
+                            <div>
+                                <h3 class="text-2xl font-bold text-emerald-800">✅ ตรวจสอบและยืนยันข้อมูลนักเรียน</h3>
+                                <p class="text-sm text-gray-500 mt-1">ระบบจัดกลุ่มตามห้องและรันเลขที่ให้อัตโนมัติ (สามารถพิมพ์แก้ไขเลขที่ได้ในตาราง)</p>
+                            </div>
+                            <button onclick="document.getElementById('studentUploadReviewModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none">&times;</button>
+                        </div>
+                        
+                        <!-- ตารางรีวิวข้อมูล -->
+                        <div class="flex-grow overflow-auto border border-gray-200 rounded-xl shadow-inner mb-4 custom-scrollbar">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-emerald-50 sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="px-4 py-3 font-bold text-emerald-800 text-center w-20">ห้อง</th>
+                                        <th class="px-4 py-3 font-bold text-emerald-800 text-center w-24">เลขที่ <span class="text-rose-500">*</span></th>
+                                        <th class="px-4 py-3 font-bold text-emerald-800">รหัสนักเรียน</th>
+                                        <th class="px-4 py-3 font-bold text-emerald-800">คำนำหน้า</th>
+                                        <th class="px-4 py-3 font-bold text-emerald-800">ชื่อ</th>
+                                        <th class="px-4 py-3 font-bold text-emerald-800">นามสกุล</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewStudentTableBody" class="bg-white divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="flex justify-end gap-3 shrink-0 pt-4 border-t border-gray-100">
+                            <button onclick="document.getElementById('studentUploadReviewModal').classList.add('hidden')" class="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">ยกเลิก</button>
+                            <button id="btnConfirmSaveStudents" onclick="confirmSaveStudentExcel()" class="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2">
+                                💾 บันทึกทับฐานข้อมูล
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2858,6 +2968,8 @@
                     </div>
                 </div>
             </div>
+                </main> <!-- 💡 ปิด Main Content Area ที่แท้จริงตรงนี้ -->
+            </div> <!-- 💡 ปิด App Wrapper -->
         </div> <!-- End Login View Wrapper -->
 
     <!-- 🐦 กรงนกสายสืบ: ต้องอยู่นอก App Wrapper และมี z-index สูงสุด (แต่ไม่บัง Modal) -->
@@ -3190,6 +3302,12 @@
             if (slcClassSelect) {
                 slcClassSelect.innerHTML = '<option value="">-- เลือกห้องเรียน --</option>';
                 CLASSROOMS_LIST.forEach(c => slcClassSelect.add(new Option(c, c)));
+            }
+            // 💡 เพิ่มตัวเลือกห้องเรียนลงในหน้าฐานข้อมูลนักเรียน (Admin)
+            const adminRoomSelect = document.getElementById('adminSearchRoom');
+            if (adminRoomSelect) {
+                adminRoomSelect.innerHTML = '<option value="">-- ทุกห้อง --</option>';
+                CLASSROOMS_LIST.forEach(c => adminRoomSelect.add(new Option(c, c)));
             }
             
             const areaSels = ['learningArea', 'originalLearningArea', 'planLearningArea'].map(id => document.getElementById(id));
@@ -7862,7 +7980,7 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                                 <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" style="height: 70px; object-fit: contain;">
                             </div>
                             <div style="flex-grow: 1; text-align: center;">
-                                <h2 style="font-size: 36px; font-weight: bold; margin: 0; color: #000000; line-height: 1.2;">ประกาศการจัดสอนแทน${window.currentSubWeekStr || ''}</h2>
+                                <h2 style="font-size: 36px; font-weight: bold; margin: 0; color:#1e3a8a; line-height: 1.2;">ประกาศการจัดสอนแทน${window.currentSubWeekStr || ''}</h2>
                                 <div style="font-size: 24px; font-weight: bold; margin-top: 5px; color: #000000;">
                                     ประจำ${window.currentSubThaiDate || ''}
                                 </div>
@@ -9466,33 +9584,45 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 slcMedia.add(new Option(`${mediaIcon} ${m.MediaTitle}`, m.MediaID));
             });
         };
-        // 🧠 ดึงรายชื่อ Buddy จากกลุ่ม PLC อัตโนมัติ (ลอจิกกรอง Model ทิ้ง)
+        // 6. ทับฟังก์ชันดึงรายชื่อ Buddy (ยัดสมองกล Free SLC + Auto PLC + จัดกลุ่มสาระฯ)
         window.loadBuddiesFromPLC = function() {
-            const modelUser = document.getElementById('slc_model').value;
+            const modelVal = document.getElementById('slc_model').value;
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
             const container = document.getElementById('slc_buddies_container');
             const groupLabel = document.getElementById('plcGroupNameLabel');
             
-            if (!modelUser) {
-                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาเลือก Model Teacher --</span>';
+            if (!modelInfo) {
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
                 groupLabel.classList.add('hidden');
+                container.classList.remove('max-h-48', 'overflow-y-auto', 'custom-scrollbar');
                 return;
             }
 
+            const modelUser = modelInfo.Username;
             let targetGroup = null;
             let membersArray = [];
             
-            if (plcGroupsDB_Global && plcGroupsDB_Global.length > 0) {
-                // ย้อนหาจากกลุ่มล่าสุดที่ครูคนนี้อยู่
-                for (let i = plcGroupsDB_Global.length - 1; i >= 0; i--) {
-                    const g = plcGroupsDB_Global[i];
-                    try {
-                        const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
-                        if (mems && mems.includes(modelUser)) {
-                            targetGroup = g;
-                            membersArray = mems;
-                            break;
-                        }
-                    } catch(e) {}
+            const isFreeSLC = masterSwitches_Global['Feature_FreeSLC'] === true; 
+
+            if (isFreeSLC) {
+                // 💡 โหมด SLC อิสระ: ดึงครูทุกคนในโรงเรียนมาให้เลือกเลย!
+                targetGroup = { GroupName: 'SLC อิสระ (เปิดให้เลือกข้ามกลุ่มได้)' };
+                membersArray = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User')).map(u => u.Username);
+            } else {
+                // โหมดจำกัดวง: ต้องอยู่ในกลุ่มเดียวกัน
+                const effectiveGroups = getEffectivePLCGroups();
+                if (effectiveGroups && effectiveGroups.length > 0) {
+                    for (let i = effectiveGroups.length - 1; i >= 0; i--) {
+                        const g = effectiveGroups[i];
+                        try {
+                            const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
+                            if (mems && mems.includes(modelUser)) {
+                                targetGroup = g;
+                                membersArray = mems;
+                                break;
+                            }
+                        } catch(e) {}
+                    }
                 }
             }
 
@@ -9500,24 +9630,61 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
                 groupLabel.classList.remove('hidden');
                 
-                // ตัด Model ออก แล้วโชว์เฉพาะคนอื่นเป็น Checkbox
                 const buddies = membersArray.filter(m => m !== modelUser);
                 if (buddies.length > 0) {
-                    container.innerHTML = buddies.map(bUser => {
-                        const uInfo = usersDB_Global.find(u => u.Username === bUser);
-                        const bName = uInfo ? uInfo.FullName : bUser;
-                        return `
-                        <label class="flex items-center gap-1 cursor-pointer bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-sm">
-                            <input type="checkbox" name="slc_buddy_cb" value="${bUser}" class="form-checkbox text-indigo-600 rounded h-3.5 w-3.5" checked>
-                            <span class="text-[11px] font-bold text-indigo-900">${bName}</span>
-                        </label>`;
-                    }).join('');
+                    // 💡 เพิ่ม Scrollbar และกำหนดความสูงกล่องไม่ให้ทะลักจอ
+                    container.classList.add('max-h-48', 'overflow-y-auto', 'custom-scrollbar');
+
+                    if (isFreeSLC) {
+                        // 🧠 ลอจิก INTJ: ถ้าคนเยอะ (Free SLC) ให้จัดกลุ่มตามสาระฯ
+                        const grouped = {};
+                        buddies.forEach(bUser => {
+                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                            const dept = uInfo ? (uInfo.Department || 'ไม่มีสังกัด') : 'ไม่มีสังกัด';
+                            if(!grouped[dept]) grouped[dept] = [];
+                            grouped[dept].push({ username: bUser, name: uInfo ? uInfo.FullName : bUser });
+                        });
+
+                        let html = '';
+                        // เรียงชื่อหมวดหมู่
+                        Object.keys(grouped).sort().forEach(dept => {
+                            html += `<div class="w-full mt-2 mb-1 border-b border-indigo-100 pb-1 shrink-0"><span class="text-[10px] font-bold text-indigo-400">📁 ${dept}</span></div>`;
+                            // เรียงชื่อคนในหมวด
+                            grouped[dept].sort((a,b) => a.name.localeCompare(b.name, 'th')).forEach(b => {
+                                html += `
+                                <label class="flex items-center gap-1 cursor-pointer bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-sm w-max shrink-0 mb-1">
+                                    <input type="checkbox" name="slc_buddy_cb" value="${b.username}" class="form-checkbox text-indigo-600 rounded h-3.5 w-3.5">
+                                    <span class="text-[11px] font-bold text-indigo-900">${b.name}</span>
+                                </label>`;
+                            });
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        // โหมด PLC ปกติ: คนน้อยอยู่แล้ว โชว์เรียงกันไปเลย
+                        buddies.sort((a,b) => {
+                           const ua = usersDB_Global.find(x => x.Username === a);
+                           const ub = usersDB_Global.find(x => x.Username === b);
+                           return (ua?.FullName || a).localeCompare((ub?.FullName || b), 'th');
+                        });
+
+                        container.innerHTML = buddies.map(bUser => {
+                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                            const bName = uInfo ? uInfo.FullName : bUser;
+                            return `
+                            <label class="flex items-center gap-1 cursor-pointer bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-sm shrink-0">
+                                <input type="checkbox" name="slc_buddy_cb" value="${bUser}" class="form-checkbox text-indigo-600 rounded h-3.5 w-3.5">
+                                <span class="text-[11px] font-bold text-indigo-900">${bName}</span>
+                            </label>`;
+                        }).join('');
+                    }
                 } else {
-                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นในกลุ่ม PLC นี้</span>';
+                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นให้เลือก</span>';
+                    container.classList.remove('max-h-48', 'overflow-y-auto', 'custom-scrollbar');
                 }
             } else {
                 groupLabel.classList.add('hidden');
-                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้ (กรุณาจัดตั้งกลุ่มในแท็บที่ 1 ก่อน)</span>';
+                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
+                container.classList.remove('max-h-48', 'overflow-y-auto', 'custom-scrollbar');
             }
         };
                 // 🧠 เพิ่มสมองให้ระบบค้นหาเพื่อนครู (สกัดจุดคนมีกลุ่มแล้ว)
@@ -11538,6 +11705,339 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 });
             }
         };
+        // ==========================================
+        // 🧑‍🎓 ระบบจัดการนักเรียน V2 (Admin Student Control)
+        // ==========================================
+        window.tempStudentUploadData = []; // เก็บความจำชั่วคราวตอนรีวิว
+
+        // 1. อ่าน Excel -> สกัด 25 สดมภ์ + แปลงวันเกิดอัจฉริยะ (Tame the Date!)
+        window.previewStudentExcel = async function() {
+            const fileInput = document.getElementById('adminStudentExcelV2');
+            if (!fileInput || fileInput.files.length === 0) return customAlert('กรุณาเลือกไฟล์ Excel ก่อนครับ');
+
+            const btn = window.event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังอ่าน...`;
+            btn.disabled = true;
+
+            try {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rawData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                        
+                        if (rawData.length === 0) throw new Error("ไฟล์ Excel ว่างเปล่า");
+
+                        const getVal = (row, keysArray) => {
+                            for (let key of keysArray) {
+                                if (row[key] !== undefined && row[key] !== null) return String(row[key]).trim();
+                            }
+                            return "";
+                        };
+
+                        // 💡 เครื่องยนต์แปลงวันเกิด (Tame the Date!)
+                        const parseThaiBirthday = (raw) => {
+                            if (!raw || String(raw).trim() === '') return "";
+                            let rawStr = String(raw).trim();
+                            let d;
+                            
+                            // กรณีที่ 1: เป็นตัวเลข Excel Serial Date (เช่น 238571)
+                            if (!isNaN(rawStr) && Number(rawStr) > 10000) {
+                                d = new Date(Math.round((Number(rawStr) - 25569) * 86400 * 1000));
+                                // ถอยปี ค.ศ. กลับมาก่อน เพื่อให้หาวันจันทร์-อาทิตย์ ได้ถูกต้อง
+                                if (d.getFullYear() > 2400) d.setFullYear(d.getFullYear() - 543);
+                            } 
+                            // กรณีที่ 2: เป็น Text Format (DD/MM/YYYY)
+                            else if (rawStr.includes('/')) {
+                                const p = rawStr.split(' ')[0].split('/'); 
+                                if (p.length === 3) {
+                                    let day = parseInt(p[0]);
+                                    let month = parseInt(p[1]) - 1;
+                                    let year = parseInt(p[2]);
+                                    if (year > 2400) year -= 543; 
+                                    d = new Date(year, month, day);
+                                }
+                            } 
+                            // กรณีที่ 3: เผื่อมาเป็น YYYY-MM-DD
+                            else if (rawStr.includes('-')) {
+                                d = new Date(rawStr);
+                                if (d.getFullYear() > 2400) d.setFullYear(d.getFullYear() - 543);
+                            } else {
+                                return rawStr; // เดาทางไม่ถูก คืนค่าเดิมไปเลย
+                            }
+
+                            // ถ้าสร้าง Date ไม่รอด คืนค่าเดิม
+                            if (!d || isNaN(d.getTime())) return rawStr;
+
+                            const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+                            const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                            
+                            const thaiYear = d.getFullYear() + 543;
+                            return `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${thaiYear}`;
+                        };
+
+                        let mappedData = rawData.map(row => {
+                            let stu = {};
+                            stu.SchoolCode = getVal(row, ['รหัสโรงเรียน', 'SchoolCode']);
+                            stu.Room = getVal(row, ['ชั้น/ห้อง', 'Room']);
+                            stu.StudentID = getVal(row, ['เลขประจำตัวนักเรียน', 'StudentID']);
+                            stu.Prefix = getVal(row, ['คำนำหน้า', 'Prefix']);
+                            stu.FirstName = getVal(row, ['ชื่อ', 'FirstName']);
+                            stu.LastName = getVal(row, ['นามสกุล', 'LastName']);
+                            stu.StudentIDN = getVal(row, ['เลขประจำตัวประชาชน', 'StudentIDN']);
+                            
+                            // 💡 เรียกใช้เครื่องยนต์แปลงวันเกิดตรงนี้เลย
+                            stu.Birthday = parseThaiBirthday(getVal(row, ['วันเกิด', 'Birthday']));
+                            
+                            stu.Gender = getVal(row, ['เพศ', 'Gender']);
+                            stu.Nationality = getVal(row, ['สัญชาติ', 'Nationality']);
+                            stu.Religion = getVal(row, ['ศาสนา', 'Religion']);
+                            stu.Race = getVal(row, ['เชื้อชาติ', 'เชื่อชาติ', 'Race']); 
+                            stu.FatherName = getVal(row, ['บิดา', 'FatherName']);
+                            stu.FatherIDN = getVal(row, ['เลขประชาชนบิดา', 'FatherIDN']);
+                            stu.MotherName = getVal(row, ['มารดา', 'MotherName']);
+                            stu.MotherIDN = getVal(row, ['เลขประชาชนมารดา', 'MotherIDN']);
+                            stu.Guardian = getVal(row, ['ผู้ปกครอง', 'Guardian']);
+                            stu.MainLevel = getVal(row, ['ระดับชั้น', 'MainLevel']);
+                            stu.EntryYear = getVal(row, ['ปีที่เข้า', 'EntryYear']);
+                            stu.Semister = getVal(row, ['ภาคเรียนที่', 'Semister']);
+                            stu.EntryDate = getVal(row, ['วันที่เข้า', 'EntryDate']);
+                            stu.EntraLevel = getVal(row, ['เข้าเรียนชั้น', 'EntraLevel']);
+                            stu.OldSchool = getVal(row, ['โรงเรียนเดิม', 'OldSchool']);
+                            stu.OldSchoolProvince = getVal(row, ['จังหวัด', 'OldSchoolProvince']);
+                            stu.Graduation = getVal(row, ['จบการศึกษาระดับ', 'Graduation']);
+                            
+                            stu.NickName = "";
+                            stu.ProfileImage = "";
+                            stu.Disease = "";
+                            stu.Allergy = "";
+                            stu.StudentPhone = "";
+                            stu.LineID = "";
+                            stu.Email = "";
+                            stu.Talent = "";
+                            stu.Dream = "";
+                            stu.AdvisorNote = "";
+                            
+                            let baseForPassword = stu.StudentIDN ? stu.StudentIDN : stu.StudentID;
+                            stu.Password = baseForPassword.replace(/-/g, '');
+
+                            stu.SemSave = currentYear + "0" + currentTerm;
+                            
+                            const today = new Date();
+                            const thYear = today.getFullYear() + 543;
+                            const thMonth = String(today.getMonth() + 1).padStart(2, '0');
+                            const thDay = String(today.getDate()).padStart(2, '0');
+                            stu.DateSave = `${thYear}-${thMonth}-${thDay}`;
+                            
+                            return stu;
+                        });
+
+                        mappedData.sort((a, b) => {
+                            if (a.SchoolCode !== b.SchoolCode) return a.SchoolCode.localeCompare(b.SchoolCode, 'th');
+                            if (a.Room !== b.Room) return a.Room.localeCompare(b.Room, 'th');
+                            
+                            const numA = parseInt(a.StudentID) || 0;
+                            const numB = parseInt(b.StudentID) || 0;
+                            if (numA !== numB) return numA - numB;
+                            
+                            return a.StudentID.localeCompare(b.StudentID, 'th');
+                        });
+
+                        let grouped = {};
+                        mappedData.forEach(stu => {
+                            let room = stu.Room || 'ไม่ระบุ';
+                            if(!grouped[room]) grouped[room] = [];
+                            grouped[room].push(stu);
+                        });
+
+                        window.tempStudentUploadData = [];
+                        let tbodyHtml = '';
+
+                        Object.keys(grouped).sort().forEach(room => {
+                            grouped[room].forEach((stu, idx) => {
+                                stu.No = idx + 1; 
+                                window.tempStudentUploadData.push(stu);
+                                
+                                const arrayIndex = window.tempStudentUploadData.length - 1;
+
+                                tbodyHtml += `
+                                <tr class="hover:bg-emerald-50/30">
+                                    <td class="px-4 py-2 text-center font-bold text-gray-700 bg-gray-50 border-r border-gray-200">${stu.Room}</td>
+                                    <td class="px-4 py-2 text-center border-r border-gray-200">
+                                        <input type="number" id="review_no_${arrayIndex}" value="${stu.No}" class="w-16 text-center border border-gray-300 rounded p-1 font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500">
+                                    </td>
+                                    <td class="px-4 py-2 text-gray-600">${stu.StudentID}</td>
+                                    <td class="px-4 py-2 text-gray-600">${stu.Prefix}</td>
+                                    <td class="px-4 py-2 font-bold text-gray-800">${stu.FirstName}</td>
+                                    <td class="px-4 py-2 font-bold text-gray-800">${stu.LastName}</td>
+                                </tr>`;
+                            });
+                        });
+
+                        document.getElementById('reviewStudentTableBody').innerHTML = tbodyHtml;
+                        document.getElementById('studentUploadReviewModal').classList.remove('hidden');
+
+                    } catch (err) {
+                        customAlert("ข้อผิดพลาด: " + err.message, "error");
+                    } finally {
+                        btn.innerHTML = origTxt; btn.disabled = false;
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                customAlert("เกิดข้อผิดพลาดในการอ่านไฟล์", "error");
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
+
+        // 2. ดึงข้อมูลที่แก้เลขที่แล้ว ผสานกับ DB เดิม แล้วส่งเซฟ (Smart Merge)
+        window.confirmSaveStudentExcel = async function() {
+            const btn = document.getElementById('btnConfirmSaveStudents');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังอัปโหลด...`;
+            btn.disabled = true;
+
+            try {
+                // 1. ดึงค่าเลขที่ (No) ล่าสุดจากช่อง Input ตอนรีวิว
+                window.tempStudentUploadData.forEach((stu, idx) => {
+                    const noInput = document.getElementById(`review_no_${idx}`);
+                    if (noInput) stu.No = noInput.value;
+                });
+
+                // 💡 2. THE SMART MERGE: ผสานก้อน Excel ใหม่ เข้ากับฐานข้อมูลเดิม
+                let mergedDB = [...studentsDB_Global]; // ก๊อปปี้ฐานข้อมูลเดิมมาเป็นสารตั้งต้น
+
+                window.tempStudentUploadData.forEach(newStu => {
+                    // ค้นหาว่ามีเด็กรหัสนี้ในระบบหรือยัง?
+                    const existingIndex = mergedDB.findIndex(oldStu => String(oldStu.StudentID) === String(newStu.StudentID));
+                    
+                    if (existingIndex > -1) {
+                        // 🟢 มีคนเดิมอยู่แล้ว: ให้เอาข้อมูลใหม่จาก Excel ทับลงไป
+                        const oldStu = mergedDB[existingIndex];
+                        mergedDB[existingIndex] = {
+                            ...newStu, // ทับข้อมูลพื้นฐาน (ชื่อ, นามสกุล, ห้อง ฯลฯ)
+                            // 🛡️ แต่ต้องดึงข้อมูล SLC (ที่ไม่มีใน SGS) ของเดิมมาแปะกลับเข้าไปด้วย ป้องกันการสูญหาย!
+                            NickName: oldStu.NickName || newStu.NickName,
+                            ProfileImage: oldStu.ProfileImage || newStu.ProfileImage,
+                            Disease: oldStu.Disease || newStu.Disease,
+                            Allergy: oldStu.Allergy || newStu.Allergy,
+                            StudentPhone: oldStu.StudentPhone || newStu.StudentPhone,
+                            ParentPhone: oldStu.ParentPhone || newStu.ParentPhone,
+                            LineID: oldStu.LineID || newStu.LineID,
+                            Email: oldStu.Email || newStu.Email,
+                            Talent: oldStu.Talent || newStu.Talent,
+                            Dream: oldStu.Dream || newStu.Dream,
+                            AdvisorNote: oldStu.AdvisorNote || newStu.AdvisorNote,
+                            Password: oldStu.Password || newStu.Password // รักษารหัสผ่านเดิมไว้
+                        };
+                    } else {
+                        // 🔵 เป็นเด็กใหม่ (ไม่เคยมีในระบบ): จับยัดต่อท้ายได้เลย
+                        mergedDB.push(newStu);
+                    }
+                });
+
+                // 💡 3. จัดเรียงข้อมูลทั้งระบบใหม่ให้สวยงาม: รหัสโรงเรียน -> ห้อง -> เลขที่
+                mergedDB.sort((a, b) => {
+                    if (a.SchoolCode !== b.SchoolCode) return (a.SchoolCode || '').localeCompare(b.SchoolCode || '', 'th');
+                    if (a.Room !== b.Room) return (a.Room || '').localeCompare(b.Room || '', 'th');
+                    return parseInt(a.No || 0) - parseInt(b.No || 0);
+                });
+
+                // 4. เตรียมยิงข้อมูลก้อนที่รวมเสร็จแล้ว (Merged Data) กลับไปเขียนทับทั้ง Sheet
+                const payload = {
+                    action: "uploadMasterData",
+                    type: "student",
+                    term: currentTerm,
+                    year: currentYear,
+                    data: mergedDB 
+                };
+
+                const response = await fetch(SCRIPT_URL, { 
+                    method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" 
+                });
+
+                const textResult = await response.text();
+                const result = JSON.parse(textResult);
+
+                if (result.status === 'success') {
+                    customAlert(`นำเข้าและผสานข้อมูลสำเร็จ! (รวมข้อมูลในระบบทั้งหมด ${mergedDB.length} รายการ)`, 'success');
+                    document.getElementById('adminStudentExcelV2').value = '';
+                    document.getElementById('studentUploadReviewModal').classList.add('hidden');
+                    
+                    // สั่งรีเฟรชฐานข้อมูล และโหลดตาราง
+                    await fetchAllDatabasesFromGAS(); 
+                    searchAdminStudents(); // รีเฟรชตารางโชว์เด็ก
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                customAlert("ข้อผิดพลาด: " + err.message, "error");
+            } finally {
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
+
+        // 3. ระบบค้นหานักเรียนฝั่ง Admin (รองรับตัวกรองห้องเรียน)
+        window.searchAdminStudents = function() {
+            const term = document.getElementById('adminSearchStudent').value.toLowerCase().trim();
+            const roomFilter = document.getElementById('adminSearchRoom').value; // 💡 ดึงค่าจาก Dropdown ห้อง
+            const tbody = document.getElementById('adminStudentTableBody');
+            
+            if(!studentsDB_Global || studentsDB_Global.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-rose-500 font-bold">ยังไม่มีข้อมูลนักเรียนในระบบ</td></tr>';
+                return;
+            }
+
+            let matches = studentsDB_Global;
+
+            // 💡 สเตป 1: กรองตามห้องก่อน (ถ้ามีการเลือกห้อง)
+            if (roomFilter !== "") {
+                matches = matches.filter(s => s.Room === roomFilter || s.Room === roomFilter.replace('ม.', ''));
+            }
+
+            // 💡 สเตป 2: กรองตามคำค้นหา (ถ้ามีการพิมพ์)
+            if (term !== "") {
+                matches = matches.filter(s => 
+                    (s.StudentID && s.StudentID.toString().toLowerCase().includes(term)) || 
+                    (s.FirstName && s.FirstName.toLowerCase().includes(term)) || 
+                    (s.LastName && s.LastName.toLowerCase().includes(term))
+                );
+            }
+
+            // 💡 สเตป 3: ถ้าไม่ได้กรองอะไรเลย ให้โชว์แค่ 20 คนแรก จะได้ไม่แลค
+            if (term === "" && roomFilter === "") {
+                matches = matches.slice(0, 20); 
+            }
+
+            tbody.innerHTML = '';
+            if (matches.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-500 font-bold">ไม่พบข้อมูลที่ค้นหา</td></tr>';
+                return;
+            }
+
+            matches.sort((a,b) => {
+                if(a.Room !== b.Room) return (a.Room||'').localeCompare(b.Room||'', 'th');
+                return parseInt(a.No||0) - parseInt(b.No||0);
+            }).forEach(s => {
+                tbody.innerHTML += `
+                <tr class="hover:bg-emerald-50 transition-colors border-b border-gray-50">
+                    <td class="px-4 py-3 text-sm font-mono text-gray-600">${s.StudentID}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-gray-800">${s.Prefix}${s.FirstName} ${s.LastName} <span class="text-xs text-sky-600 font-normal ml-1">${s.NickName ? `(${s.NickName})` : ''}</span></td>
+                    <td class="px-4 py-3 text-sm text-center font-bold text-emerald-700">${s.Room}</td>
+                    <td class="px-4 py-3 text-sm text-center text-gray-600">${s.No}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="openStudentDetail('${s.StudentID}')" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-1.5 px-4 rounded-full text-xs shadow-sm border border-indigo-200 transition-colors">
+                            ✏️ ข้อมูล/แก้ไข
+                        </button>
+                    </td>
+                </tr>`;
+            });
+        };
 
         // 2. ฟังก์ชัน One-Click Export (ปั่น PDF 20 สัปดาห์)
         window.generateTermBookPDF = async function() {
@@ -12558,6 +13058,7 @@ window.saveStudentDetail = async function() {
             });
         };
 
+        // 6. ทับฟังก์ชันดึงรายชื่อ Buddy (ยัดสมองกล Dropdown Multi-select + Tags)
         window.loadBuddiesFromPLC = function() {
             const modelVal = document.getElementById('slc_model').value;
             const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
@@ -12567,24 +13068,33 @@ window.saveStudentDetail = async function() {
             if (!modelInfo) {
                 container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
                 groupLabel.classList.add('hidden');
+                container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
                 return;
             }
 
-            const modelUser = modelInfo.Username; // 💡 ดึง Username แท้ๆ ไปควานหาในกลุ่ม PLC
+            const modelUser = modelInfo.Username;
             let targetGroup = null;
             let membersArray = [];
             
-            if (plcGroupsDB_Global && plcGroupsDB_Global.length > 0) {
-                for (let i = plcGroupsDB_Global.length - 1; i >= 0; i--) {
-                    const g = plcGroupsDB_Global[i];
-                    try {
-                        const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
-                        if (mems && mems.includes(modelUser)) {
-                            targetGroup = g;
-                            membersArray = mems;
-                            break;
-                        }
-                    } catch(e) {}
+            const isFreeSLC = masterSwitches_Global['Feature_FreeSLC'] === true; 
+
+            if (isFreeSLC) {
+                targetGroup = { GroupName: 'SLC อิสระ (เปิดให้เลือกข้ามกลุ่มได้)' };
+                membersArray = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User')).map(u => u.Username);
+            } else {
+                const effectiveGroups = getEffectivePLCGroups();
+                if (effectiveGroups && effectiveGroups.length > 0) {
+                    for (let i = effectiveGroups.length - 1; i >= 0; i--) {
+                        const g = effectiveGroups[i];
+                        try {
+                            const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
+                            if (mems && mems.includes(modelUser)) {
+                                targetGroup = g;
+                                membersArray = mems;
+                                break;
+                            }
+                        } catch(e) {}
+                    }
                 }
             }
 
@@ -12594,21 +13104,114 @@ window.saveStudentDetail = async function() {
                 
                 const buddies = membersArray.filter(m => m !== modelUser);
                 if (buddies.length > 0) {
-                    container.innerHTML = buddies.map(bUser => {
-                        const uInfo = usersDB_Global.find(u => u.Username === bUser);
-                        const bName = uInfo ? uInfo.FullName : bUser;
-                        return `
-                        <label class="flex items-center gap-1 cursor-pointer bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200 hover:bg-indigo-100 transition-colors shadow-sm">
-                            <input type="checkbox" name="slc_buddy_cb" value="${bUser}" class="form-checkbox text-indigo-600 rounded h-3.5 w-3.5" checked>
-                            <span class="text-[11px] font-bold text-indigo-900">${bName}</span>
-                        </label>`;
-                    }).join('');
+                    // 💡 ล้างคลาสกรอบเดิมทิ้ง เพื่อวาง UI แบบ Dropdown ให้โปร่งใส
+                    container.className = 'w-full min-h-[38px] relative';
+
+                    let dropdownContent = '';
+
+                    if (isFreeSLC) {
+                        const grouped = {};
+                        buddies.forEach(bUser => {
+                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                            const dept = uInfo ? (uInfo.Department || 'ไม่มีสังกัด') : 'ไม่มีสังกัด';
+                            if(!grouped[dept]) grouped[dept] = [];
+                            grouped[dept].push({ username: bUser, name: uInfo ? uInfo.FullName : bUser });
+                        });
+
+                        Object.keys(grouped).sort().forEach(dept => {
+                            dropdownContent += `<div class="w-full mt-2 mb-1 border-b border-indigo-100 pb-1 shrink-0 px-2"><span class="text-[10px] font-bold text-indigo-400">📁 ${dept}</span></div>`;
+                            grouped[dept].sort((a,b) => a.name.localeCompare(b.name, 'th')).forEach(b => {
+                                dropdownContent += `
+                                <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50 px-2 py-1.5 rounded transition-colors w-full">
+                                    <input type="checkbox" name="slc_buddy_cb" value="${b.username}" data-name="${b.name}" class="form-checkbox text-indigo-600 rounded h-4 w-4" onchange="updateSLCBuddyTags()">
+                                    <span class="text-xs font-bold text-gray-700">${b.name}</span>
+                                </label>`;
+                            });
+                        });
+                    } else {
+                        buddies.sort((a,b) => {
+                           const ua = usersDB_Global.find(x => x.Username === a);
+                           const ub = usersDB_Global.find(x => x.Username === b);
+                           return (ua?.FullName || a).localeCompare((ub?.FullName || b), 'th');
+                        });
+
+                        dropdownContent = buddies.map(bUser => {
+                            const uInfo = usersDB_Global.find(u => u.Username === bUser);
+                            const bName = uInfo ? uInfo.FullName : bUser;
+                            return `
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50 px-2 py-1.5 rounded transition-colors w-full">
+                                <input type="checkbox" name="slc_buddy_cb" value="${bUser}" data-name="${bName}" class="form-checkbox text-indigo-600 rounded h-4 w-4" onchange="updateSLCBuddyTags()">
+                                <span class="text-xs font-bold text-gray-700">${bName}</span>
+                            </label>`;
+                        }).join('');
+                    }
+
+                    // 💡 วาด UI แบบ Dropdown Multi-select + Tags
+                    container.innerHTML = `
+                        <!-- พื้นที่โชว์คนที่ถูกเลือก (Tags) -->
+                        <div id="slc_buddy_tags" class="flex flex-wrap gap-1.5 mb-2 empty:hidden"></div>
+                        
+                        <!-- ปุ่มกดเปิด Dropdown -->
+                        <button type="button" id="slc_buddy_toggle_btn" onclick="document.getElementById('slc_buddy_dropdown').classList.toggle('hidden')" class="w-full text-left bg-white border border-indigo-200 rounded-lg px-4 py-2.5 text-xs font-bold text-indigo-700 shadow-sm flex justify-between items-center hover:bg-indigo-50 hover:border-indigo-400 transition-colors">
+                            <span>➕ เลือกเพื่อนครูคู่คิด (Buddy)...</span>
+                            <span class="text-gray-400">▼</span>
+                        </button>
+                        
+                        <!-- หน้าต่าง Dropdown (ลอยอยู่เหนือตาราง) -->
+                        <div id="slc_buddy_dropdown" class="hidden absolute z-[60] mt-1 w-full md:w-[150%] bg-white border border-indigo-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto p-2 custom-scrollbar">
+                           ${dropdownContent}
+                        </div>
+                    `;
+
+                    // 💡 ป้องกันการสร้าง Event คลิกซ้ำซ้อนตอนดึงฟังก์ชันหลายรอบ
+                    if (!window._dropdownListenerAdded) {
+                        document.addEventListener('click', function(e) {
+                            const dropdown = document.getElementById('slc_buddy_dropdown');
+                            const toggleBtn = document.getElementById('slc_buddy_toggle_btn');
+                            // ปิด dropdown เมื่อคลิกที่อื่น
+                            if (dropdown && toggleBtn && !dropdown.contains(e.target) && !toggleBtn.contains(e.target)) {
+                                dropdown.classList.add('hidden');
+                            }
+                        });
+                        window._dropdownListenerAdded = true;
+                    }
+
                 } else {
-                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นในกลุ่ม PLC นี้</span>';
+                    container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
+                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นให้เลือก</span>';
                 }
             } else {
                 groupLabel.classList.add('hidden');
-                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้ (กรุณาจัดตั้งกลุ่มในแท็บที่ 1 ก่อน)</span>';
+                container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
+                container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
+            }
+        };
+
+        // 💡 ฟังก์ชันสร้างป้ายชื่อและลบชื่อเมื่อกด X
+        window.updateSLCBuddyTags = function() {
+            const tagsContainer = document.getElementById('slc_buddy_tags');
+            if(!tagsContainer) return;
+            tagsContainer.innerHTML = '';
+            
+            const checkedBoxes = document.querySelectorAll('input[name="slc_buddy_cb"]:checked');
+            
+            checkedBoxes.forEach(cb => {
+                const name = cb.getAttribute('data-name');
+                const val = cb.value;
+                tagsContainer.innerHTML += `
+                    <div class="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md shadow-sm border border-emerald-300">
+                        <span class="text-[11px] font-bold">${name}</span>
+                        <button type="button" onclick="removeSLCBuddy('${val}')" class="text-emerald-600 hover:text-rose-500 font-black ml-1 outline-none text-xs leading-none">&times;</button>
+                    </div>
+                `;
+            });
+        };
+
+        window.removeSLCBuddy = function(val) {
+            const cb = document.querySelector(`input[name="slc_buddy_cb"][value="${val}"]`);
+            if(cb) {
+                cb.checked = false;
+                updateSLCBuddyTags(); // วาดแท็กใหม่
             }
         };
 
@@ -13241,8 +13844,5 @@ window.saveStudentDetail = async function() {
             customAlert(`เปิดกระดานเพื่อแก้ไขคาบที่ ${period} แล้ว ลากการ์ดจัดใหม่และกดเซฟได้เลยครับ!`, "info");
         };
     </script>
-    <div class="fixed bottom-2 right-3 text-[10px] font-medium text-gray-400 z-[100] opacity-50 hover:opacity-100 transition-opacity pointer-events-none tracking-wide">
-        [V_1.02]_Dev_by_Thuntathorn
-    </div>
 </body>
 </html>
