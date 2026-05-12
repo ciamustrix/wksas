@@ -1931,6 +1931,9 @@
             <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
                 <option value="">-- ทุกห้อง --</option>
             </select>
+            <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
+    <option value="">-- ทุกห้อง --</option>
+</select>
             <input type="text" id="adminSearchStudent" oninput="searchAdminStudents()" placeholder="พิมพ์ชื่อ, รหัส หรือห้องเรียน..." class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
     </div>
@@ -3607,7 +3610,7 @@
             btn.disabled = true;
 
             try {
-                // 💡 แก้คดีที่ 3 (V2): ดึงข้อมูล Users สดๆ และถ้าพังต้อง "ตะโกนฟ้อง" ให้รู้!
+                // ดึงข้อมูล Users สดๆ และถ้าพังต้อง "ตะโกนฟ้อง" ให้รู้!
                 let userList = [];
                 if (typeof usersDB_Global !== 'undefined' && usersDB_Global.length > 0) {
                     userList = usersDB_Global; 
@@ -3622,7 +3625,7 @@
                             result = JSON.parse(textResult);
                         } catch(e) {
                             console.error("Raw Response:", textResult);
-                            throw new Error("หลังบ้านไม่ได้ส่ง JSON กลับมา (อาจลืมเปิดสิทธิ์ Anyone หรือ SCRIPT_URL ผิด)");
+                            throw new Error("หลังบ้านไม่ได้ส่ง JSON กลับมา");
                         }
                         
                         if (result.status === 'success') {
@@ -3632,14 +3635,13 @@
                             throw new Error(result.message);
                         }
                     } catch(err) {
-                        // 💥 เลิกปิดปากเงียบ! สั่งให้มันฟ้อง Error กลางจอไปเลยว่าพังตรงไหน!
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                         return customAlert("การดึงข้อมูลล้มเหลว: " + err.message, "error");
                     }
                 }
 
-                // 💡 แก้คดีที่ 2: ปลดล็อกเงื่อนไข Status === 'Active' ออกไปก่อน เผื่อแกลืมเติมใน Sheet
+                // เช็ครหัสผ่าน
                 const user = userList.find(usr => 
                     (usr.Username === u || usr.username === u || usr.UserID === u) && 
                     (usr.Password == p || usr.password == p)
@@ -3652,7 +3654,7 @@
                     
                     if(typeof setupUserEnvironment === 'function') setupUserEnvironment();
                     
-                    // สลับหน้าจอ
+                    // 🚀 สลับหน้าจอทันที ไม่ต้องรอสูบข้อมูล!
                     document.getElementById('auth-login-screen').classList.add('hidden');
                     document.getElementById('loginView').classList.remove('hidden');
                     document.getElementById('loginView').classList.add('flex');
@@ -3661,11 +3663,10 @@
                         document.getElementById('forceResetModal').classList.remove('hidden');
                     }
 
-                    // 💡 แก้คดีที่ 1: กู้คืนป๊อปอัปแจ้งเตือนความสำเร็จ (Swal.fire) ที่แกเผลอลบทิ้ง!
                     const isEmpPngn = (user.Role && user.Role.includes('EmpPngn')) || (user.role && user.role.includes('EmpPngn'));
                     Swal.fire({
                         icon: 'success',
-                        title: `ยินดีต้อนรับ ${user.NickName || user.name}`,
+                        title: `ยินดีต้อนรับ ${user.NickName || user.name || user.FullName || 'อาจารย์'}`,
                         text: 'เข้าสู่ระบบสำเร็จ',
                         timer: 1500,
                         showConfirmButton: false,
@@ -3673,20 +3674,21 @@
                         color: isEmpPngn ? '#EAEAEA' : '#545454'
                     });
 
-                    // โหลดข้อมูลหลังบ้าน (ดัก Catch ไว้ไม่ให้ค้างเวลาเน็ตโรงเรียนกะพริบ)
+                    // 🚀 เทอร์โบชาร์จ: ซ่อน Loader แล้ววาร์ปเข้าหน้า Welcome ทันที!
                     document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden')); 
-                    document.getElementById('mainLoader').classList.remove('hidden');
-                    
-                    // 💡 แก้บั๊กความจำเสื่อมตอน Login: ดึง Settings มาด้วย
-                    await Promise.all([fetchLogsFromGAS(), fetchPlansFromGAS(), fetchAllDatabasesFromGAS(), fetchSettingsFromGAS()]).catch(e => console.warn(e));
-                    if(typeof populateTermYearFilter === 'function') populateTermYearFilter();
-                    
-                    // 💡 ดึงวิชาใส่ Dropdown ทันทีหลังโหลด Database เสร็จ!
-                    setupSubjectDropdowns(currentUser.FullName, 'planSubjectSelector', 'planSubjectName', 'planSubjectCode');
-                    setupSubjectDropdowns(currentUser.FullName, 'logSubjectSelector', 'subjectName', 'subjectCode');
-                    
                     document.getElementById('mainLoader').classList.add('hidden');
                     switchView('view-welcome');
+
+                    // 🤫 แอบสั่งโหลดข้อมูลทั้งหมดแบบ Background (ไม่บล็อกหน้าจอ)
+                    Promise.all([fetchLogsFromGAS(), fetchPlansFromGAS(), fetchAllDatabasesFromGAS(), fetchSettingsFromGAS()])
+                    .then(() => {
+                        // พอแอบโหลดเสร็จ ค่อยเอาข้อมูลมาจัดลง Dropdown
+                        if(typeof populateTermYearFilter === 'function') populateTermYearFilter();
+                        setupSubjectDropdowns(currentUser.FullName, 'planSubjectSelector', 'planSubjectName', 'planSubjectCode');
+                        setupSubjectDropdowns(currentUser.FullName, 'logSubjectSelector', 'subjectName', 'subjectCode');
+                        console.log("✅ Background Sync Completed!");
+                    })
+                    .catch(e => console.warn("Background Sync Error:", e));
 
                 } else {
                     if (errMsg) {
@@ -3707,6 +3709,7 @@
                 }
             }
         }
+        
         window.skipForceReset = function() {
             document.getElementById('forceResetModal').classList.add('hidden');
         };
@@ -12045,10 +12048,10 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                     }
                 });
 
-                // 💡 3. จัดเรียงข้อมูลทั้งระบบใหม่ให้สวยงาม: รหัสโรงเรียน -> ห้อง -> เลขที่
+                // 💡 3. จัดเรียงข้อมูลทั้งระบบใหม่ให้สวยงาม: รหัสโรงเรียน -> ห้อง -> เลขที่ (ใส่ยันต์ String กัน Error)
                 mergedDB.sort((a, b) => {
-                    if (a.SchoolCode !== b.SchoolCode) return (a.SchoolCode || '').localeCompare(b.SchoolCode || '', 'th');
-                    if (a.Room !== b.Room) return (a.Room || '').localeCompare(b.Room || '', 'th');
+                    if (a.SchoolCode !== b.SchoolCode) return String(a.SchoolCode || '').localeCompare(String(b.SchoolCode || ''), 'th');
+                    if (a.Room !== b.Room) return String(a.Room || '').localeCompare(String(b.Room || ''), 'th');
                     return parseInt(a.No || 0) - parseInt(b.No || 0);
                 });
 
