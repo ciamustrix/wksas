@@ -6824,9 +6824,11 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
         }
         window.fetchAllDatabasesFromGAS = function() {
             return new Promise(function(resolve, reject) {
+                let hasResolvedFromCache = false;
+
                 const processData = function(result) {
                     if (result.status === 'success') {
-                        usersDB_Global = result.data.users || []; // 💡 ตัวการอยู่ตรงนี้! ดึงรายชื่อครูกลับมาให้แล้ว
+                        usersDB_Global = result.data.users || [];
                         studentsDB_Global = result.data.students || [];
                         timetableDB_Global = result.data.timetable || [];
                         subjectsDB_Global = result.data.subjects || [];
@@ -6835,22 +6837,53 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                         mediaDB_Global = result.data.media || [];
                         supervisionDB_Global = result.data.supervisions || [];
                         slcSessionsDB_Global = result.data.slcSessions || [];
-                        resolve();
+                        
+                        // 💾 แอบเซฟลง Cache ในเครื่องไว้ใช้รอบหน้า (หัวใจความแรงอยู่ตรงนี้!)
+                        try {
+                            sessionStorage.setItem('WKS_DB_Cache', JSON.stringify(result.data));
+                        } catch(e) { console.warn("Cache save failed (Storage maybe full):", e); }
+
+                        if (!hasResolvedFromCache) {
+                            resolve(); // ถ้าไม่เคยโหลดจาก Cache ให้ปล่อยผ่านเข้าแอปตรงนี้
+                        } else {
+                            console.log("🔄 Background Sync: ข้อมูลหลังบ้านอัปเดตล่าสุดแล้วแบบเงียบๆ!");
+                        }
                     } else {
-                        reject(new Error(result.message));
+                        if (!hasResolvedFromCache) reject(new Error(result.message));
                     }
                 };
 
+                // 💡 1. เทอร์โบชาร์จ: ลองดึงจาก Cache ในเครื่องดูก่อน!
+                const cachedData = sessionStorage.getItem('WKS_DB_Cache');
+                if (cachedData) {
+                    try {
+                        const parsed = JSON.parse(cachedData);
+                        usersDB_Global = parsed.users || [];
+                        studentsDB_Global = parsed.students || [];
+                        timetableDB_Global = parsed.timetable || [];
+                        subjectsDB_Global = parsed.subjects || [];
+                        substitutionsDB_Global = parsed.substitutions || [];
+                        plcGroupsDB_Global = parsed.plcGroups || [];
+                        mediaDB_Global = parsed.media || [];
+                        supervisionDB_Global = parsed.supervisions || [];
+                        slcSessionsDB_Global = parsed.slcSessions || [];
+                        
+                        hasResolvedFromCache = true;
+                        resolve(); // 🚀 ทะลุด่าน Login ทันทีใน 0.1 วินาที! ไม่ต้องรอเน็ต!
+                    } catch(e) { console.warn("Cache broken, loading fresh..."); }
+                }
+
+                // 💡 2. ส่ง Request ไปดึงของใหม่จากหลังบ้าน (ถ้ามี Cache จะทำแบบ Background เงียบๆ ไม่บล็อกหน้าจอ)
                 if (typeof google !== 'undefined' && google.script) {
                     google.script.run
                         .withSuccessHandler(function(res) { processData(JSON.parse(res)); })
-                        .withFailureHandler(reject)
+                        .withFailureHandler(function(err) { if(!hasResolvedFromCache) reject(err); })
                         .doGet({ parameter: { action: 'getDatabase' } });
                 } else {
                     fetch(SCRIPT_URL + "?action=getDatabase", { redirect: "follow" })
                         .then(function(res) { return res.json(); })
                         .then(processData)
-                        .catch(reject);
+                        .catch(function(err) { if(!hasResolvedFromCache) reject(err); });
                 }
             });
         };
