@@ -1931,6 +1931,9 @@
             <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
                 <option value="">-- ทุกห้อง --</option>
             </select>
+            <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
+    <option value="">-- ทุกห้อง --</option>
+</select>
             <input type="text" id="adminSearchStudent" oninput="searchAdminStudents()" placeholder="พิมพ์ชื่อ, รหัส หรือห้องเรียน..." class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
     </div>
@@ -2217,36 +2220,128 @@
                     </div>
                 </div> <!-- [END VIEW 7] -->
                 <!-- ========================================== -->
-<!-- VIEW 8: แฟ้มประจำชั้น V.2 (Advisor) -->
-<!-- ========================================== -->
-<div id="view-advisor" class="app-view max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden">
-    <button onclick="switchView('view-welcome')" class="mb-4 inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg shadow-sm text-sm font-bold text-gray-300 hover:bg-slate-700 transition-colors no-print">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-        กลับหน้าหลัก (Dashboard)
-    </button>
-    
-    <div class="bg-[#1a1f36] rounded-xl shadow-lg border border-indigo-500/30 p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-white/10 pb-4">
-            <div>
-                <h2 class="text-2xl font-bold text-white mb-1 flex items-center gap-2">👨‍👩‍👧‍👦 แฟ้มประจำชั้น (My Students)</h2>
-                <p class="text-gray-400 text-sm">ข้อมูลนักเรียนและการดูแลช่วยเหลือ (SLC)</p>
-            </div>
-            <div class="mt-4 sm:mt-0 bg-indigo-900/50 px-4 py-2 rounded-lg border border-indigo-500/30">
-                <span class="text-gray-400 text-sm">ห้องประจำชั้น:</span> 
-                <!-- 🚨 ตัวนี้แหละที่ทำโค้ดแกช็อต! เค้าใส่มาให้ครบแล้ว 🚨 -->
-                <span id="advisorRoomLabel" class="font-bold text-indigo-300 text-lg ml-1">-</span>
-            </div>
-        </div>
-        
-        <!-- โซนเสกการ์ดนักเรียน -->
-        <div id="advisorStudentsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- JS จะเอาการ์ดมาวางตรงนี้ -->
-        </div>
-    </div>
-</div>
-                 
+                <!-- VIEW 8: แฟ้มประจำชั้น V.3 (The Advisor Hub) -->
                 <!-- ========================================== -->
-                <!-- VIEW 13: แดชบอร์ดวิเคราะห์ข้อมูล (Global Analytics) -->
+                <div id="view-advisor" class="app-view max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden">
+                    <button onclick="switchView('view-welcome')" class="mb-4 inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg shadow-sm text-sm font-bold text-gray-300 hover:bg-slate-700 transition-colors no-print">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                        กลับหน้าหลัก (Dashboard)
+                    </button>
+                    
+                    <div class="bg-[#1a1f36] rounded-3xl shadow-2xl border border-indigo-500/30 p-6 sm:p-8 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <!-- Header -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 border-b border-white/10 pb-6 relative z-10">
+                            <div>
+                                <h2 class="text-3xl font-black text-white mb-2 tracking-tight flex items-center gap-3">
+                                    <span class="bg-indigo-500/20 p-2 rounded-xl">👨‍👩‍👧‍👦</span> แฟ้มประจำชั้น (Advisor Hub)
+                                </h2>
+                                <p class="text-indigo-200/60 text-sm font-mono tracking-wide">ศูนย์กลางการดูแลนักเรียน และ Student Portal (SP)</p>
+                            </div>
+                            <div class="mt-4 sm:mt-0 flex flex-col items-end">
+                                <div class="bg-indigo-900/50 px-5 py-2.5 rounded-xl border border-indigo-500/30 shadow-inner flex items-center gap-3">
+                                    <span class="text-gray-400 text-sm font-bold">ที่ปรึกษาห้อง:</span> 
+                                    <span id="advisorRoomLabel" class="font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400 text-2xl">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 💡 แท็บเมนูแฟ้มประจำชั้น -->
+                        <div class="flex flex-wrap gap-2 mb-6 relative z-10 border-b border-indigo-500/20 pb-2">
+                            <button onclick="toggleAdvisorTab('students')" id="tab-adv-students" class="advisor-tab-btn active px-6 py-2.5 text-sm font-bold rounded-t-xl bg-indigo-600 text-white shadow-md transition-colors border border-indigo-500 border-b-0">
+                                🧑‍🎓 รายชื่อนักเรียน (SLC)
+                            </button>
+                            <button onclick="toggleAdvisorTab('portfolio')" id="tab-adv-portfolio" class="advisor-tab-btn px-6 py-2.5 text-sm font-bold rounded-t-xl bg-[#0f172a] text-gray-400 hover:text-indigo-300 border border-transparent hover:border-indigo-500/30 border-b-0 transition-colors">
+                                🏆 อัปโหลดผลงาน (Portfolio)
+                            </button>
+                            <button onclick="toggleAdvisorTab('broadcast')" id="tab-adv-broadcast" class="advisor-tab-btn px-6 py-2.5 text-sm font-bold rounded-t-xl bg-[#0f172a] text-gray-400 hover:text-indigo-300 border border-transparent hover:border-indigo-500/30 border-b-0 transition-colors">
+                                📢 ประกาศห้องเรียน (Broadcast)
+                            </button>
+                        </div>
+                        
+                        <!-- TAB 1: รายชื่อนักเรียน (ของเดิมที่แกมี) -->
+                        <div id="adv-content-students" class="advisor-tab-content relative z-10">
+                            <div id="advisorStudentsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <!-- JS จะเอาการ์ดมาวางตรงนี้ -->
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: อัปโหลดผลงาน / เกียรติบัตร -->
+                        <div id="adv-content-portfolio" class="advisor-tab-content hidden relative z-10 animate-in fade-in zoom-in duration-300">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-900/60 p-6 rounded-2xl border border-indigo-500/20 shadow-inner">
+                                    <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">📥 เพิ่มผลงานใหม่เข้า SP</h3>
+                                    <form id="advPortfolioForm" class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-400 mb-1">ชื่อผลงาน / กิจกรรม <span class="text-rose-400">*</span></label>
+                                            <input type="text" id="portTitle" required class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white focus:border-cyan-400 outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-400 mb-1">หมวดหมู่</label>
+                                            <select id="portCategory" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-3 text-white focus:border-cyan-400 outline-none">
+                                                <option value="วิชาการ">วิชาการ</option>
+                                                <option value="กีฬาและนันทนาการ">กีฬาและนันทนาการ</option>
+                                                <option value="จิตอาสาและคุณธรรม">จิตอาสาและคุณธรรม</option>
+                                                <option value="ศิลปะและดนตรี">ศิลปะและดนตรี</option>
+                                            </select>
+                                        </div>
+                                        <div class="bg-cyan-900/20 p-4 rounded-xl border border-cyan-500/20">
+                                            <label class="block text-xs font-bold text-cyan-300 mb-2">อัปโหลดไฟล์รูปภาพ (เกียรติบัตร/รูปกิจกรรม) <span class="text-rose-400">*</span></label>
+                                            <input type="file" id="portFiles" multiple accept="image/*" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30 cursor-pointer">
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between items-end mb-1">
+                                                <label class="block text-xs font-bold text-gray-400">แท็กนักเรียน (เลือกคนที่อยู่ในรูป)</label>
+                                                <button type="button" class="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold">เลือกทั้งห้อง</button>
+                                            </div>
+                                            <!-- เดี๋ยวมารัน JS ยัด Checkbox เด็กในห้องตรงนี้ -->
+                                            <div id="portStudentTags" class="max-h-40 overflow-y-auto bg-slate-800/50 border border-slate-600 p-3 rounded-xl flex flex-col gap-2 custom-scrollbar">
+                                                <div class="text-center text-gray-500 text-xs py-4">กรุณารอโหลดรายชื่อ...</div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="w-full py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-colors">
+                                            อัปโหลดเข้าแฟ้มสะสมงาน (Student Portal)
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="bg-slate-900/60 p-6 rounded-2xl border border-indigo-500/20 shadow-inner">
+                                    <h3 class="text-lg font-bold text-indigo-400 mb-4">📚 ประวัติการอัปโหลดของห้องนี้</h3>
+                                    <div class="flex flex-col gap-3 h-[450px] overflow-y-auto custom-scrollbar pr-2">
+                                        <div class="text-center text-gray-500 py-10 font-medium text-sm">-- ยังไม่มีประวัติอัปโหลด --</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: หอกระจายข่าว (Broadcast) -->
+                        <div id="adv-content-broadcast" class="advisor-tab-content hidden relative z-10 animate-in fade-in zoom-in duration-300">
+                            <div class="max-w-3xl mx-auto bg-slate-900/60 p-8 rounded-3xl border border-pink-500/20 shadow-inner">
+                                <h3 class="text-2xl font-black text-pink-400 mb-2 text-center">📢 หอกระจายข่าว (Class Broadcast)</h3>
+                                <p class="text-sm text-gray-400 text-center mb-6">ข้อความจะเด้งแจ้งเตือนไปยังแอป Student Portal ของนักเรียนทุกคนในห้อง</p>
+                                
+                                <form class="space-y-5">
+                                    <textarea rows="4" placeholder="พิมพ์ข้อความที่ต้องการแจ้งนักเรียน..." class="w-full bg-slate-800 border border-slate-600 rounded-2xl p-4 text-white focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none resize-none text-base"></textarea>
+                                    
+                                    <div class="flex items-center gap-4 bg-pink-500/10 p-4 rounded-xl border border-pink-500/20">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" class="form-checkbox w-5 h-5 text-pink-500 rounded border-slate-600 bg-slate-800">
+                                            <span class="text-sm font-bold text-pink-300">ตั้งเป็นประกาศด่วน (Urgent)</span>
+                                        </label>
+                                        <span class="text-xs text-gray-400">- จะขึ้นแถบสีแดงในแอปของเด็ก</span>
+                                    </div>
+
+                                    <button type="button" class="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black tracking-widest text-lg rounded-xl shadow-[0_0_20px_rgba(236,72,153,0.4)] hover:scale-[1.02] transition-transform">
+                                        🚀 ส่งประกาศ
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- ========================================== -->
+                <!-- VIEW 13: แดชบอร์ดวิเคราะห์ข้อมูล (Global Analytics V2) -->
                 <!-- ========================================== -->
                 <div id="view-analytics" class="app-view max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden">
                     <button onclick="switchView('view-welcome')" class="mb-4 inline-flex items-center px-4 py-2 bg-white border border-gray-100 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors no-print">
@@ -2256,43 +2351,79 @@
                     
                     <div class="bg-white rounded-3xl shadow-xl border border-indigo-100 p-6 sm:p-8 mb-6 relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-                        <h2 class="text-3xl font-extrabold text-indigo-900 mb-2 relative z-10">📈 WKS Global Analytics</h2>
-                        <p class="text-gray-500 mb-8 relative z-10">ข้อมูลสถิติภาพรวมโรงเรียนแบบ Real-time (วิเคราะห์จากฐานข้อมูลทั้งหมด)</p>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-                            <!-- กราฟที่ 1: สถานะแผนการสอน -->
-                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
-                                <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">สถานะการส่งแผนการสอน (ทั้งระบบ)</h3>
-                                <div class="h-64"><canvas id="chartPlanStatus"></canvas></div>
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-end mb-6 border-b border-indigo-100 pb-4 relative z-10 gap-4">
+                            <div>
+                                <h2 class="text-3xl font-extrabold text-indigo-900 mb-2">📈 ศูนย์บัญชาการติดตามงานวิชาการ</h2>
+                                <p class="text-gray-500 font-medium text-sm">Academic Command Center (V2.0) - <span id="analyticsScopeLabel" class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded"></span></p>
                             </div>
-                            
-                            <!-- กราฟที่ 2: สถิติการใช้สื่อ -->
-                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
-                                <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">สัดส่วนประเภทสื่อในคลัง WKS Media</h3>
-                                <div class="h-64"><canvas id="chartMediaType"></canvas></div>
+                            <div class="flex items-center gap-2 bg-indigo-100 px-4 py-2 rounded-xl shadow-inner border border-indigo-200">
+                                <span class="text-sm font-bold text-indigo-900">ภาคเรียนที่:</span>
+                                <span id="analyticsTermLabel" class="text-indigo-700 font-black text-lg"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-8 relative z-10">
+                            <!-- Section 4: PLC & SLC KPI -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-6 shadow-lg text-white flex items-center justify-between hover:scale-[1.02] transition-transform">
+                                    <div>
+                                        <p class="text-purple-200 font-bold text-sm mb-1">ชุมชนแห่งการเรียนรู้ (PLC)</p>
+                                        <h3 class="text-5xl font-black drop-shadow-md" id="kpiPlcCount">0</h3>
+                                        <p class="text-xs text-purple-200 mt-2 bg-black/20 px-2 py-1 rounded inline-block" id="kpiPlcDesc">กลุ่มที่จัดตั้งแล้วในระบบ</p>
+                                    </div>
+                                    <div class="text-6xl opacity-40">👥</div>
+                                </div>
+                                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 shadow-lg text-white flex items-center justify-between hover:scale-[1.02] transition-transform">
+                                    <div>
+                                        <p class="text-emerald-100 font-bold text-sm mb-1">การเปิดชั้นเรียน (SLC)</p>
+                                        <h3 class="text-5xl font-black drop-shadow-md" id="kpiSlcCount">0</h3>
+                                        <p class="text-xs text-emerald-100 mt-2 bg-black/20 px-2 py-1 rounded inline-block" id="kpiSlcDesc">ครั้งที่มีการเปิดชั้นเรียน</p>
+                                    </div>
+                                    <div class="text-6xl opacity-40">📢</div>
+                                </div>
                             </div>
 
-                            <!-- กราฟที่ 3: แชมป์คนขยัน (Top 5) -->
-                            <div class="lg:col-span-2 bg-indigo-800 p-6 rounded-2xl shadow-md text-white">
-                                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">🏆 Top 5 บุคลากรที่ส่งบันทึกการสอนมากที่สุด</h3>
-                                <div id="topTeachersList" class="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                                    <div class="text-center py-4 text-indigo-300 italic col-span-full">กำลังประมวลผล...</div>
+                            <!-- Section 1: Progress แผนการสอน -->
+                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm">
+                                <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">📑 ความคืบหน้าการส่งแผนการสอน <span class="text-xs font-normal text-gray-500">(เทียบกับวิชาที่ขึ้นทะเบียน)</span></h3>
+                                    <div class="flex flex-wrap gap-2 text-[10px] font-bold bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> อนุมัติ</span>
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-400"></span> รอวิชาการ/บริหาร</span>
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-amber-400"></span> รอหมวด</span>
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-rose-500"></span> แก้ไข</span>
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-gray-300"></span> ยังไม่ส่ง</span>
+                                    </div>
+                                </div>
+                                <div class="max-h-96 overflow-y-auto pr-2 custom-scrollbar space-y-4" id="analyticsPlanProgressList">
+                                    <div class="text-center py-10 text-gray-400 italic">กำลังโหลดข้อมูล...</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                                <!-- Section 2: Heatmap บันทึกการสอน -->
+                                <div class="xl:col-span-2 bg-gray-50 p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+                                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+                                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">🔥 ตารางติดตามบันทึกการสอน (Heatmap)</h3>
+                                        <select id="analyticsWeekSelect" class="text-sm rounded-xl border border-indigo-200 p-2 font-bold outline-none text-indigo-700 bg-white shadow-sm focus:ring-2 focus:ring-indigo-400 w-full sm:w-auto" onchange="renderAnalyticsDashboard()"></select>
+                                    </div>
+                                    <div class="overflow-x-auto rounded-xl border border-gray-300 shadow-inner bg-white flex-grow custom-scrollbar">
+                                        <table class="min-w-full divide-y divide-gray-300 text-xs text-center border-collapse">
+                                            <thead class="bg-slate-800 text-white shadow-md sticky top-0 z-10" id="heatmapThead"></thead>
+                                            <tbody id="heatmapTbody" class="divide-y divide-gray-200"></tbody>
+                                        </table>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 mt-3 font-bold bg-white inline-block p-1.5 rounded border border-gray-200">* ตัวเลข <span class="text-rose-600">สีแดง</span> คือจำนวนคาบที่มีสอนแต่ยังไม่ส่งบันทึก, เครื่องหมาย <span class="text-emerald-600">✓</span> คือส่งครบถ้วนแล้ว</p>
+                                </div>
+
+                                <!-- Section 3: สถิติสื่อ -->
+                                <div class="xl:col-span-1 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-1 w-full text-center">สถิติสื่อการเรียนรู้ในระบบ</h3>
+                                    <p class="text-[10px] text-gray-500 mb-6 w-full text-center bg-gray-50 py-1 rounded" id="analyticsMediaSubtitle">จำแนกตามประเภทและกลุ่มสาระ</p>
+                                    <div class="h-64 w-full flex-grow relative"><canvas id="chartAnalyticsMedia"></canvas></div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 💡 กระดาษซ่อนสำหรับทำ PDF รวมเล่ม (ซ่อนไว้ไม่ให้เกะกะจอ) -->
-                <div id="termBookModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-gray-900/90 backdrop-blur-sm">
-                    <div class="text-center">
-                        <div class="loader loader-white mx-auto border-4 border-indigo-500 border-t-transparent w-16 h-16 mb-4"></div>
-                        <h3 class="text-white text-2xl font-bold mb-2">กำลังเย็บเล่ม PDF...</h3>
-                        <p class="text-indigo-200" id="termBookProgress">ดึงข้อมูล 0 / 0 หน้า</p>
-                    </div>
-                    <!-- พื้นที่กระดาษจริง (บีบให้เล็กและซ่อนไว้พ้นจอ) -->
-                    <div class="absolute top-[-9999px] left-[-9999px]">
-                        <div id="termBookPrintTarget" class="bg-white text-black a4-paper thai-saraban"></div>
                     </div>
                 </div>
             <!-- ========================================== -->
@@ -5678,8 +5809,23 @@ window.renderAdminLogsTable = function() {
                     if(cont) cont.innerHTML = ''; 
                     const sec = document.getElementById('truantNamesSection');
                     if(sec) sec.classList.toggle('hidden', count === 0); 
+                    
+                    // 💡 เครื่องยนต์ดึงรายชื่อเด็กในห้องมาทำ Dropdown
+                    const selectedRoom = document.getElementById('classroom').value;
+                    let studentOptions = '<option value="">-- เลือกรายชื่อนักเรียน --</option>';
+                    
+                    if (selectedRoom) {
+                        const roomStudents = studentsDB_Global.filter(s => s.Room === selectedRoom || s.Room === selectedRoom.replace('ม.', ''));
+                        roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
+                            const fullName = `${s.FirstName} ${s.LastName}`;
+                            studentOptions += `<option value="${fullName}">เลขที่ ${s.No} - ${s.Prefix}${fullName}</option>`;
+                        });
+                    } else {
+                        studentOptions = '<option value="">-- ⚠️ กรุณาเลือกห้องเรียนในข้อ 1. ก่อนครับ --</option>';
+                    }
+
                     for(let i=0; i<count; i++) {
-                        if(cont) cont.innerHTML += `<input type="text" placeholder="คนที่ ${i+1} (ระบุชื่อ-นามสกุล)" class="w-full rounded-lg border border-gray-300 py-3 px-4 text-sm truant-name-input outline-none focus:ring-2 focus:ring-gray-400" required>`; 
+                        if(cont) cont.innerHTML += `<select class="w-full rounded-lg border border-rose-300 py-3 px-4 text-sm truant-name-input outline-none focus:ring-2 focus:ring-rose-500 bg-white font-bold text-rose-800 shadow-sm" required>${studentOptions}</select>`; 
                     }
                 });
             }
@@ -6361,9 +6507,35 @@ window.renderAdminLogsTable = function() {
             if(log.studentTruant > 0) {
                 truantSec.classList.remove('hidden');
                 truantCont.innerHTML = '';
+                
+                // 💡 สร้างตัวเลือกนักเรียนสำหรับห้องนี้
+                let studentOptions = '<option value="">-- เลือกรายชื่อนักเรียน --</option>';
+                const roomStudents = studentsDB_Global.filter(s => s.Room === log.classroom || s.Room === log.classroom.replace('ม.', ''));
+                roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
+                    const fullName = `${s.FirstName} ${s.LastName}`;
+                    studentOptions += `<option value="${fullName}">เลขที่ ${s.No} - ${s.Prefix}${fullName}</option>`;
+                });
+
                 for(let i=0; i<log.studentTruant; i++) {
-                    truantCont.innerHTML += `<input type="text" value="${log.truantNames && log.truantNames[i] ? log.truantNames[i] : ''}" placeholder="คนที่ ${i+1} (ระบุชื่อ-นามสกุล)" class="w-full rounded-lg border border-gray-300 py-3 px-4 text-sm truant-name-input outline-none focus:ring-2 focus:ring-gray-400" required>`; 
+                    const oldName = log.truantNames && log.truantNames[i] ? log.truantNames[i] : '';
+                    // เช็คว่ามีชื่อเดิมใน option ไหม ถ้าไม่มีให้แอบเติมเข้าไป (เผื่อเด็กย้ายห้องหรือแก้ชื่อ)
+                    let finalOptions = studentOptions;
+                    if (oldName && !studentOptions.includes(`value="${oldName}"`)) {
+                         finalOptions += `<option value="${oldName}">${oldName}</option>`;
+                    }
+                    
+                    truantCont.innerHTML += `<select id="edit_truant_${i}" class="w-full rounded-lg border border-rose-300 py-3 px-4 text-sm truant-name-input outline-none focus:ring-2 focus:ring-rose-500 bg-white font-bold text-rose-800 shadow-sm" required>${finalOptions}</select>`; 
                 }
+                
+                // Set ค่า value ให้ Select หลังจาก DOM วาดเสร็จ (หน่วงเวลาเสี้ยววิ)
+                setTimeout(() => {
+                    for(let i=0; i<log.studentTruant; i++) {
+                        const oldName = log.truantNames && log.truantNames[i] ? log.truantNames[i] : '';
+                        const sel = document.getElementById(`edit_truant_${i}`);
+                        if(sel && oldName) sel.value = oldName;
+                    }
+                }, 50);
+
             } else {
                 truantSec.classList.add('hidden');
                 truantCont.innerHTML = '';
@@ -11709,86 +11881,386 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             }
             requestAnimationFrame(birdLoop);
         }
-        // ==========================================
-        // 📈 Sprint 4 (Part 2): Analytics & One-Click Export
-        // ==========================================
 
-        // 1. ฟังก์ชันวาดกราฟ (Analytics Dashboard)
-        let chartPlanStatusInstance = null;
-        let chartMediaTypeInstance = null;
+        // ==========================================
+        // 📈 Sprint 4 (Part 2): Analytics & Command Center V2 (Bulletproof Edition)
+        // ==========================================
+        let chartAnalyticsMediaInstance = null;
 
         window.renderAnalyticsDashboard = function() {
-            // กรองเอาเฉพาะข้อมูลเทอมปัจจุบัน
-            const fTerm = currentTerm;
-            const fYear = currentYear;
+            try {
+                // 💡 เครื่องยนต์สกัดข้อมูลอัจฉริยะแบบกันตาย (Bulletproof Data Engine)
+                const getVal = (obj, keys) => {
+                    if (!obj || typeof obj !== 'object') return "";
+                    const objKeys = Object.keys(obj);
+                    for (let k of keys) {
+                        const match = objKeys.find(ok => ok.trim().toLowerCase() === k.toLowerCase());
+                        if (match) return obj[match];
+                    }
+                    return "";
+                };
+                const safeStr = (str) => (str !== undefined && str !== null) ? String(str).trim().replace(/\s+/g, ' ') : "";
 
-            // --- กราฟ 1: สถานะแผนการสอน ---
-            const termPlans = sessionPlans.filter(p => String(p.term||"1") === String(fTerm) && String(p.academicYear||"2569") === String(fYear));
-            let approved = 0, pending = 0, rejected = 0;
-            termPlans.forEach(p => {
-                if (p.status === 'Approved') approved++;
-                else if (p.status === 'Rejected') rejected++;
-                else pending++;
-            });
+                const fTerm = safeStr(currentTerm) || "1";
+                const fYear = safeStr(currentYear) || "2569";
+                
+                const termLabel = document.getElementById('analyticsTermLabel');
+                if(termLabel) termLabel.textContent = `${fTerm}/${fYear}`;
 
-            const ctxPlan = document.getElementById('chartPlanStatus');
-            if (chartPlanStatusInstance) chartPlanStatusInstance.destroy();
-            chartPlanStatusInstance = new Chart(ctxPlan, {
-                type: 'doughnut',
-                data: {
-                    labels: ['อนุมัติแล้ว', 'รอพิจารณา', 'ส่งกลับแก้ไข'],
-                    datasets: [{ data: [approved, pending, rejected], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 2, borderColor: '#fff' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
+                // 1. ระบุสิทธิ์ผู้เข้าชม (ป้องกัน Role undefined หรือเป็น Array)
+                let roleRaw = currentUser.Role || "";
+                if (Array.isArray(roleRaw)) roleRaw = roleRaw.join(',');
+                const userRoles = String(roleRaw).split(',').map(r => r.trim());
+                
+                const isHOAOrAbove = userRoles.some(r => ['HOA', 'AsstDir', 'DepDir', 'Director', 'LttPngn', 'EmpPngn'].includes(r));
+                const isHOD = userRoles.includes('HOD') && !isHOAOrAbove;
+                const myDept = safeStr(currentUser.Department);
+                
+                const scopeLabel = document.getElementById('analyticsScopeLabel');
+                if(scopeLabel) scopeLabel.textContent = isHOAOrAbove ? 'ภาพรวมทั้งโรงเรียน' : `ข้อมูลกลุ่มสาระฯ ${myDept}`;
 
-            // --- กราฟ 2: สถิติสื่อ ---
-            let digital = 0, physical = 0;
-            mediaDB_Global.forEach(m => {
-                if(m.MediaType === 'Digital') digital++; else physical++;
-            });
-
-            const ctxMedia = document.getElementById('chartMediaType');
-            if (chartMediaTypeInstance) chartMediaTypeInstance.destroy();
-            chartMediaTypeInstance = new Chart(ctxMedia, {
-                type: 'pie',
-                data: {
-                    labels: ['สื่อดิจิทัล (ออนไลน์)', 'สื่อประดิษฐ์ (ทำมือ)'],
-                    datasets: [{ data: [digital, physical], backgroundColor: ['#3b82f6', '#d97706'], borderWidth: 2, borderColor: '#fff' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-
-            // --- 3: Top 5 คนขยันส่ง Log ---
-            const termLogs = sessionLogs.filter(l => String(l.term||"1") === String(fTerm) && String(l.academicYear||"2569") === String(fYear) && l.status === 'Approved');
-            const teacherCounts = {};
-            termLogs.forEach(l => {
-                teacherCounts[l.teacherMain] = (teacherCounts[l.teacherMain] || 0) + 1;
-            });
-            
-            const sortedTeachers = Object.keys(teacherCounts).map(name => ({ name, count: teacherCounts[name] })).sort((a,b) => b.count - a.count).slice(0, 5);
-            
-            const topList = document.getElementById('topTeachersList');
-            topList.innerHTML = '';
-            if (sortedTeachers.length === 0) {
-                topList.innerHTML = '<div class="text-center py-4 text-indigo-300 italic col-span-full">ยังไม่มีข้อมูลในเทอมนี้</div>';
-            } else {
-                const medals = ['🥇', '🥈', '🥉', '🏅', '🏅'];
-                sortedTeachers.forEach((t, idx) => {
-                    // ดึงรูปมาโชว์ด้วย
-                    const uInfo = usersDB_Global.find(u => u.FullName === t.name) || {};
-                    const shortName = t.name.split(' ')[0].replace(/นาย|นางสาว|นาง|ว่าที่ร้อยตรีหญิง|ว่าที่ร้อยตรี|ว่าที่ ร\.ต\. หญิง|ว่าที่ ร\.ต\.|Mr\.|Mrs\.|Ms\./gi, '');
-                    const imgUrl = uInfo.ProfileImage ? getEmbeddableUrl(uInfo.ProfileImage) : `https://ui-avatars.com/api/?name=${encodeURIComponent(shortName)}&background=0ea5e9&color=fff`;
-
-                    topList.innerHTML += `
-                        <div class="bg-indigo-900/50 p-4 rounded-xl border border-indigo-700/50 flex flex-col items-center text-center relative hover:-translate-y-1 transition-transform">
-                            <div class="absolute -top-3 -right-2 text-2xl filter drop-shadow-md">${medals[idx]}</div>
-                            <img src="${imgUrl}" class="w-14 h-14 rounded-full border-2 border-indigo-400 object-cover mb-2">
-                            <span class="text-xs font-bold text-indigo-100 truncate w-full">${shortName}</span>
-                            <span class="text-xl font-black text-white mt-1">${t.count} <span class="text-[10px] text-indigo-300 font-normal">คาบ</span></span>
-                        </div>
-                    `;
+                // 💡 กรองครู (กรองพวก BirdSpy เพียวๆ ทิ้ง)
+                let targetTeachers = (usersDB_Global || []).filter(u => {
+                    let r = u.Role || "";
+                    if (Array.isArray(r)) r = r.join(',');
+                    const rStr = String(r);
+                    return !rStr.includes('BirdSpy') || rStr.includes('User');
                 });
+                
+                if (isHOD) targetTeachers = targetTeachers.filter(u => safeStr(u.Department) === myDept);
+                
+                // เรียงครู หมวด -> อาวุโส
+                targetTeachers.sort((a,b) => {
+                    const deptA = safeStr(a.Department);
+                    const deptB = safeStr(b.Department);
+                    const indexA = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(deptA) !== -1) ? LEARNING_AREAS.indexOf(deptA) : 99;
+                    const indexB = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(deptB) !== -1) ? LEARNING_AREAS.indexOf(deptB) : 99;
+                    if (indexA !== indexB) return indexA - indexB;
+                    return (parseInt(a.Sq) || 999) - (parseInt(b.Sq) || 999);
+                });
+
+                const targetTeacherNames = targetTeachers.map(u => safeStr(u.FullName));
+
+                // =====================================
+                // Section 4: KPI PLC & SLC
+                // =====================================
+                let plcCount = 0;
+                if (plcGroupsDB_Global && Array.isArray(plcGroupsDB_Global)) {
+                    if (isHOAOrAbove) {
+                        plcCount = plcGroupsDB_Global.filter(g => safeStr(getVal(g, ['status'])) === 'Active').length;
+                    } else {
+                        plcCount = plcGroupsDB_Global.filter(g => {
+                            if (safeStr(getVal(g, ['status'])) !== 'Active') return false;
+                            let mems = []; 
+                            let rawMems = getVal(g, ['members']);
+                            try { mems = typeof rawMems === 'string' ? JSON.parse(rawMems) : rawMems; } catch(e){}
+                            return Array.isArray(mems) && mems.some(m => {
+                                const tu = (usersDB_Global||[]).find(u => u.Username === m);
+                                return tu && safeStr(tu.Department) === myDept;
+                            });
+                        }).length;
+                    }
+                }
+                
+                // เอนิเมชันรันตัวเลข
+                const animateValue = (id, end) => {
+                    const el = document.getElementById(id); if(!el) return;
+                    let start = 0; const duration = 1000; const range = end - start;
+                    if (range === 0 || isNaN(range)) { el.textContent = end || 0; return; }
+                    const stepTime = Math.abs(Math.floor(duration / range));
+                    const timer = setInterval(() => { start += 1; el.textContent = start; if (start >= end) clearInterval(timer); }, stepTime);
+                };
+                
+                animateValue('kpiPlcCount', plcCount);
+                const plcDesc = document.getElementById('kpiPlcDesc');
+                if(plcDesc) plcDesc.textContent = isHOAOrAbove ? "กลุ่ม PLC ที่ Active ทั้งระบบ" : "กลุ่ม PLC ของครูในหมวด";
+
+                let slcCount = 0;
+                if (slcSessionsDB_Global && Array.isArray(slcSessionsDB_Global)) {
+                    const termSlcs = slcSessionsDB_Global.filter(s => targetTeacherNames.includes(safeStr(getVal(s, ['modelteacher', 'ผู้สอนหลัก']))));
+                    slcCount = termSlcs.length;
+                }
+                animateValue('kpiSlcCount', slcCount);
+                const slcDesc = document.getElementById('kpiSlcDesc');
+                if(slcDesc) slcDesc.textContent = isHOAOrAbove ? "จำนวน Open Class ทั้งหมด" : "จำนวน Open Class ของครูในหมวด";
+
+                // =====================================
+                // Section 1: Progress แผนการสอน
+                // =====================================
+                const planListContainer = document.getElementById('analyticsPlanProgressList');
+                if(planListContainer) planListContainer.innerHTML = '';
+                
+                targetTeachers.forEach(t => {
+                    const targetClean = safeStr(t.FullName);
+
+                    // 1. หาวิชาที่ลงทะเบียน
+                    const registeredSubs = (subjectsDB_Global || []).filter(s => {
+                        const dbTName = safeStr(getVal(s, ['teachername', 'ชื่อผู้สอน']));
+                        return dbTName === targetClean;
+                    });
+                    
+                    const totalTarget = registeredSubs.length;
+                    if (totalTarget === 0) return; // ข้ามคนที่ไม่ได้ลงทะเบียนวิชา
+
+                    // 2. หาแผนที่ส่งในเทอมนี้ 
+                    const myPlans = (sessionPlans || []).filter(p => {
+                        const pTeacher = safeStr(getVal(p, ['teachername', 'TeacherName', 'ชื่อผู้สอน']));
+                        const pTerm = safeStr(getVal(p, ['term', 'ภาคเรียน'])) || "1";
+                        const pYear = safeStr(getVal(p, ['academicyear', 'year', 'ปีการศึกษา'])) || "2569";
+                        
+                        return pTeacher === targetClean && pTerm === fTerm && pYear === fYear;
+                    });
+                    
+                    // 3. จัดกลุ่มรายวิชาที่ส่งแผนแล้ว (เอาแผนล่าสุดของวิชานั้นๆ)
+                    const planStatusBySub = {};
+                    myPlans.forEach(p => {
+                        const subCode = safeStr(getVal(p, ['subjectcode', 'รหัสวิชา']));
+                        const timestamp = getVal(p, ['timestamp', 'Timestamp']);
+                        
+                        if (!planStatusBySub[subCode] || new Date(timestamp) > new Date(getVal(planStatusBySub[subCode], ['timestamp', 'Timestamp']))) {
+                            planStatusBySub[subCode] = p;
+                        }
+                    });
+
+                    let approved = 0, waitHOA = 0, waitHOD = 0, rejected = 0;
+                    const uniqueSubmitted = Object.values(planStatusBySub);
+                    
+                    uniqueSubmitted.forEach(p => {
+                        const status = safeStr(getVal(p, ['status', 'Status'])) || 'Pending_HOD';
+                        if (status === 'Approved') approved++;
+                        else if (status === 'Rejected') rejected++;
+                        else if (status === 'Pending_HOD') waitHOD++;
+                        else waitHOA++; 
+                    });
+
+                    let missing = totalTarget - uniqueSubmitted.length;
+                    if (missing < 0) missing = 0;
+
+                    const p_app = (approved / totalTarget) * 100;
+                    const p_hoa = (waitHOA / totalTarget) * 100;
+                    const p_hod = (waitHOD / totalTarget) * 100;
+                    const p_rej = (rejected / totalTarget) * 100;
+                    const p_mis = (missing / totalTarget) * 100;
+
+                    const tooltipStr = `เป้าหมาย: ${totalTarget} วิชา &#10;✅ อนุมัติ: ${approved}&#10;🔵 รอวิชาการ/บริหาร: ${waitHOA}&#10;🟡 รอหมวด: ${waitHOD}&#10;🔴 แก้ไข: ${rejected}&#10;⚪ ยังไม่ส่ง: ${missing}`;
+
+                    if(planListContainer) {
+                        planListContainer.innerHTML += `
+                        <div class="flex items-center gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm hover:border-indigo-300 transition-colors cursor-help" title="${tooltipStr}">
+                            <div class="w-1/3 sm:w-1/4 text-xs font-bold text-gray-700 truncate pl-2">${t.FullName} <span class="text-[9px] text-gray-400 font-normal block">${isHOAOrAbove ? (t.Department||'ไม่มีสังกัด') : 'ครูผู้สอน'}</span></div>
+                            <div class="w-2/3 sm:w-3/4 h-6 rounded-full overflow-hidden flex bg-gray-200 border border-gray-300 shadow-inner relative">
+                                ${p_app > 0 ? `<div style="width:${p_app}%" class="bg-emerald-500 h-full flex items-center justify-center text-[10px] text-white font-bold border-r border-black/10">${approved}</div>` : ''}
+                                ${p_hoa > 0 ? `<div style="width:${p_hoa}%" class="bg-sky-400 h-full flex items-center justify-center text-[10px] text-white font-bold border-r border-black/10">${waitHOA}</div>` : ''}
+                                ${p_hod > 0 ? `<div style="width:${p_hod}%" class="bg-amber-400 h-full flex items-center justify-center text-[10px] text-white font-bold border-r border-black/10">${waitHOD}</div>` : ''}
+                                ${p_rej > 0 ? `<div style="width:${p_rej}%" class="bg-rose-500 h-full flex items-center justify-center text-[10px] text-white font-bold border-r border-black/10">${rejected}</div>` : ''}
+                                ${p_mis > 0 ? `<div style="width:${p_mis}%" class="bg-gray-300 h-full flex items-center justify-center text-[10px] text-gray-500 font-bold">${missing}</div>` : ''}
+                            </div>
+                        </div>`;
+                    }
+                });
+
+                if(planListContainer && planListContainer.innerHTML === '') {
+                    planListContainer.innerHTML = '<div class="text-center py-10 text-gray-400 font-bold">ไม่มีข้อมูลรายวิชาที่ขึ้นทะเบียน</div>';
+                }
+
+                // =====================================
+                // Section 2: Heatmap บันทึกการสอน
+                // =====================================
+                const weekSel = document.getElementById('analyticsWeekSelect');
+                if (weekSel && weekSel.options.length === 0 && weeksConfig && weeksConfig.length > 0) {
+                    weeksConfig.forEach((w, i) => weekSel.add(new Option(`สัปดาห์ที่ ${w.weekNum} (${w.start.toLocaleDateString('th-TH', {day:'numeric', month:'short'})} - ${w.end.toLocaleDateString('th-TH', {day:'numeric', month:'short'})})`, i)));
+                    const now = new Date();
+                    let cw = 0;
+                    for(let i=0; i<weeksConfig.length; i++) { if (now >= weeksConfig[i].start && now <= weeksConfig[i].end) { cw = i; break; } }
+                    weekSel.selectedIndex = cw;
+                }
+
+                const selIndex = weekSel ? weekSel.selectedIndex : 0;
+                const weekInfo = (weeksConfig && weeksConfig.length > 0) ? weeksConfig[selIndex > -1 ? selIndex : 0] : null;
+
+                if (weekInfo) {
+                    const dayNames = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
+                    const weekDays = [];
+                    for(let i=0; i<5; i++) {
+                        let d = new Date(weekInfo.start);
+                        d.setDate(d.getDate() + i);
+                        weekDays.push({
+                            dateString: d.toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' }),
+                            dayName: dayNames[i],
+                            shortLabel: `${dayNames[i]}<br><span class="text-[10px] font-normal text-sky-200">${d.toLocaleDateString('th-TH', {day:'numeric', month:'short'})}</span>`
+                        });
+                    }
+
+                    const thead = document.getElementById('heatmapThead');
+                    if(thead) {
+                        thead.innerHTML = `
+                        <tr>
+                            <th class="px-2 py-3 font-bold w-1/4 text-left border-r border-slate-600 pl-4">รายชื่อครูผู้สอน</th>
+                            ${weekDays.map(d => `<th class="px-2 py-3 font-bold border-r border-slate-600 leading-tight">${d.shortLabel}</th>`).join('')}
+                            <th class="px-2 py-3 font-black text-amber-300">ค้างรวม</th>
+                        </tr>`;
+                    }
+
+                    const heatmapTbody = document.getElementById('heatmapTbody');
+                    if(heatmapTbody) heatmapTbody.innerHTML = '';
+
+                    const weekLogs = (sessionLogs || []).filter(l => {
+                        const status = safeStr(getVal(l, ['status', 'Status']));
+                        if(status !== 'Approved') return false;
+                        const ts = getVal(l, ['timestamp', 'Timestamp']);
+                        if(!ts) return false;
+                        const logDate = new Date(ts);
+                        return logDate >= weekInfo.start && logDate <= weekInfo.end;
+                    });
+
+                    targetTeachers.forEach(t => {
+                        const targetClean = safeStr(t.FullName);
+                        let rowHtml = `<tr class="hover:bg-indigo-50"><td class="px-4 py-2 font-bold text-gray-700 text-left border-r border-gray-300 bg-white sticky left-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] truncate max-w-[150px]" title="${t.FullName}">${t.FullName}</td>`;
+                        let totalMissing = 0;
+
+                        weekDays.forEach(day => {
+                            const tt = (timetableDB_Global||[]).find(x => {
+                                const tName = safeStr(getVal(x, ['teachername', 'ชื่อผู้สอน']));
+                                const tDay = safeStr(getVal(x, ['day', 'วัน']));
+                                return tName === targetClean && tDay === day.dayName;
+                            });
+                            
+                            let expectedPeriods = [];
+                            if (tt) {
+                                for(let i=1; i<=9; i++) { 
+                                    const pData = getVal(tt, [`period${i}`, `คาบ${i}`]);
+                                    if(pData && String(pData).trim() !== '') expectedPeriods.push(i); 
+                                }
+                            }
+
+                            const logsToday = weekLogs.filter(l => {
+                                const lName = safeStr(getVal(l, ['teachermain', 'ชื่อผู้สอน']));
+                                const lDate = safeStr(getVal(l, ['teachdate', 'วันที่สอน']));
+                                return lName === targetClean && lDate === day.dateString;
+                            });
+                            
+                            let taughtPeriods = [];
+                            logsToday.forEach(l => {
+                                let pIds = getVal(l, ['periodids', 'คาบที่สอน']);
+                                // 💡 解 code (Decode) JSON String ที่ฝังใน Array!
+                                if (typeof pIds === 'string' && pIds.includes('[')) {
+                                    try { pIds = JSON.parse(pIds); } catch(e){}
+                                }
+                                if (pIds && Array.isArray(pIds)) {
+                                    pIds.forEach(pid => taughtPeriods.push(parseInt(pid) + 1)); 
+                                }
+                            });
+
+                            let missingCount = 0;
+                            expectedPeriods.forEach(p => { if (!taughtPeriods.includes(p)) missingCount++; });
+
+                            totalMissing += missingCount;
+
+                            if (expectedPeriods.length === 0) {
+                                rowHtml += `<td class="px-2 py-2 text-[10px] text-gray-300 bg-gray-50/50 border-r border-gray-200">-</td>`;
+                            } else if (missingCount === 0) {
+                                rowHtml += `<td class="px-2 py-2 text-sm text-emerald-500 font-bold bg-emerald-50/50 border-r border-emerald-100">✓</td>`;
+                            } else {
+                                rowHtml += `<td class="px-2 py-2 text-sm text-rose-600 font-black bg-rose-50 border-r border-rose-200 shadow-inner">-${missingCount}</td>`;
+                            }
+                        });
+
+                        const totalClass = totalMissing > 0 ? 'text-rose-700 bg-rose-100 font-black' : 'text-emerald-600 bg-emerald-50 font-bold';
+                        rowHtml += `<td class="px-2 py-2 ${totalClass} border-l-2 border-gray-300 shadow-inner">${totalMissing > 0 ? totalMissing : '✅'}</td></tr>`;
+                        
+                        if(heatmapTbody) heatmapTbody.innerHTML += rowHtml;
+                    });
+                }
+
+                // =====================================
+                // Section 3: สถิติสื่อ Media Analytics
+                // =====================================
+                const ctxMedia = document.getElementById('chartAnalyticsMedia');
+                if (ctxMedia) {
+                    if (chartAnalyticsMediaInstance) chartAnalyticsMediaInstance.destroy();
+
+                    if (isHOAOrAbove) {
+                        const subtitle = document.getElementById('analyticsMediaSubtitle');
+                        if(subtitle) subtitle.textContent = "เปรียบเทียบสัดส่วนสื่อระหว่างกลุ่มสาระฯ";
+                        
+                        const deptStats = {};
+                        if(typeof LEARNING_AREAS !== 'undefined') {
+                            LEARNING_AREAS.forEach(a => deptStats[a] = { digi: 0, phys: 0 });
+                        }
+                        
+                        (mediaDB_Global||[]).forEach(m => {
+                            const mTeacher = safeStr(getVal(m, ['teachername', 'teacherid', 'ชื่อผู้สอน']));
+                            const uInfo = (usersDB_Global||[]).find(u => safeStr(u.FullName) === mTeacher || safeStr(u.Username) === mTeacher);
+                            const d = uInfo ? uInfo.Department : null;
+                            if (d && deptStats[d]) {
+                                const mType = getVal(m, ['mediatype', 'ประเภทสื่อ']);
+                                if (mType === 'Digital') deptStats[d].digi++;
+                                else deptStats[d].phys++;
+                            }
+                        });
+
+                        const labels = [], dataDigi = [], dataPhys = [];
+                        if(typeof LEARNING_AREAS !== 'undefined') {
+                            LEARNING_AREAS.forEach(a => {
+                                if (deptStats[a].digi > 0 || deptStats[a].phys > 0) {
+                                    let shortName = a.replace('กลุ่มสาระการเรียนรู้', '').replace('และ', '&').replace('ศึกษา', '');
+                                    if(shortName.length > 10) shortName = shortName.substring(0, 10) + '..';
+                                    labels.push(shortName); 
+                                    dataDigi.push(deptStats[a].digi);
+                                    dataPhys.push(deptStats[a].phys);
+                                }
+                            });
+                        }
+
+                        chartAnalyticsMediaInstance = new Chart(ctxMedia, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    { label: 'ดิจิทัล', data: dataDigi, backgroundColor: '#6366f1', borderRadius: 4 },
+                                    { label: 'ทำมือ', data: dataPhys, backgroundColor: '#f59e0b', borderRadius: 4 }
+                                ]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                indexAxis: 'y', 
+                                scales: { x: { stacked: true }, y: { stacked: true, ticks: { font: { size: 10 } } } },
+                                plugins: { legend: { position: 'top', labels: { usePointStyle: true } } }
+                            }
+                        });
+
+                    } else {
+                        const subtitle = document.getElementById('analyticsMediaSubtitle');
+                        if(subtitle) subtitle.textContent = `สัดส่วนสื่อของกลุ่มสาระฯ ${myDept}`;
+                        let digi = 0, phys = 0;
+                        (mediaDB_Global||[]).forEach(m => {
+                            const mTeacher = safeStr(getVal(m, ['teachername', 'teacherid', 'ชื่อผู้สอน']));
+                            const uInfo = (usersDB_Global||[]).find(u => safeStr(u.FullName) === mTeacher || safeStr(u.Username) === mTeacher);
+                            if (uInfo && safeStr(uInfo.Department) === myDept) {
+                                const mType = getVal(m, ['mediatype', 'ประเภทสื่อ']);
+                                if (mType === 'Digital') digi++; else phys++;
+                            }
+                        });
+
+                        chartAnalyticsMediaInstance = new Chart(ctxMedia, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['สื่อดิจิทัล (ออนไลน์)', 'สื่อทำมือ (ประดิษฐ์)'],
+                                datasets: [{ data: [digi, phys], backgroundColor: ['#6366f1', '#f59e0b'], borderWidth: 3, borderColor: '#f9fafb' }]
+                            },
+                            options: { 
+                                responsive: true, maintainAspectRatio: false, 
+                                plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } },
+                                cutout: '60%'
+                            }
+                        });
+                    }
+                }
+
+            } catch (err) {
+                console.error("Dashboard Render Error: ", err);
+                const container = document.getElementById('analyticsPlanProgressList');
+                if(container) container.innerHTML = `<div class="text-rose-500 font-bold text-center py-10 w-full col-span-full">❌ เกิดข้อผิดพลาดในการคำนวณข้อมูลแดชบอร์ด: ${err.message}</div>`;
             }
         };
         // ==========================================
@@ -14090,6 +14562,164 @@ window.saveStudentDetail = async function() {
             }
         };
         };
+        // ฟังก์ชันสลับแท็บในหน้าแฟ้มประจำชั้น (Advisor Hub)
+        window.toggleAdvisorTab = function(tabName) {
+            document.querySelectorAll('.advisor-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.advisor-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
+                btn.classList.add('bg-[#0f172a]', 'text-gray-400', 'border-transparent');
+            });
+            
+            document.getElementById(`adv-content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-adv-${tabName}`);
+            activeBtn.classList.remove('bg-[#0f172a]', 'text-gray-400', 'border-transparent');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
+        };
+        // ==========================================
+        // 👨‍👩‍👧‍👦 ระบบแฟ้มประจำชั้น V.3 (The Advisor Hub - JS Logic)
+        // ==========================================
+
+        // 1. ฟังก์ชันดึงรายชื่อเด็กในห้องมาสร้างเป็น Checkbox (Tag)
+        window.loadPortfolioStudentTags = function() {
+            const room = currentUser.AdvisorRoom;
+            const container = document.getElementById('portStudentTags');
+            if(!container) return;
+            
+            if(!room || room === '-') {
+                container.innerHTML = '<div class="text-center text-rose-400 text-xs py-4 font-bold">คุณไม่มีห้องประจำชั้น ไม่สามารถแท็กนักเรียนได้</div>';
+                return;
+            }
+
+            const myStudents = studentsDB_Global.filter(s => s.Room === room || s.Room === room.replace('ม.', ''));
+            if(myStudents.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 text-xs py-4">ไม่พบข้อมูลนักเรียนในห้องนี้</div>';
+                return;
+            }
+
+            let html = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">';
+            myStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
+                html += `
+                <label class="flex items-center gap-2 cursor-pointer bg-slate-700/50 hover:bg-indigo-500/30 p-2 rounded-lg border border-slate-600 transition-colors">
+                    <input type="checkbox" name="port_student_cb" value="${s.StudentID}" class="form-checkbox text-cyan-500 rounded bg-slate-800 border-slate-500">
+                    <span class="text-xs text-gray-300 font-bold truncate">เลขที่ ${s.No} ${s.FirstName} ${s.LastName}</span>
+                </label>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        };
+
+        // 2. ดักให้โหลดรายชื่อตอนสลับมาแท็บ Portfolio
+        const oldToggleAdvTab = window.toggleAdvisorTab;
+        window.toggleAdvisorTab = function(tabName) {
+            oldToggleAdvTab(tabName);
+            if(tabName === 'portfolio') loadPortfolioStudentTags();
+        };
+
+        // 3. ฟังก์ชันอัปโหลดพอร์ตโฟลิโอ
+        document.getElementById('advPortfolioForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const tagged = Array.from(document.querySelectorAll('input[name="port_student_cb"]:checked')).map(cb => cb.value);
+            if(tagged.length === 0) return customAlert("กรุณาเลือกนักเรียนที่อยู่ในรูปอย่างน้อย 1 คนครับ", "info");
+
+            const files = document.getElementById('portFiles').files;
+            if(files.length === 0) return customAlert("กรุณาอัปโหลดรูปภาพด้วยครับ", "error");
+
+            const btn = document.querySelector('#advPortfolioForm button[type="submit"]');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังอัปโหลดลง SP...';
+            btn.disabled = true;
+
+            try {
+                // แปลงไฟล์เป็น Base64
+                const imagesBase64 = [];
+                for(let f of files) {
+                    if(f.size > 5 * 1024 * 1024) throw new Error(`ไฟล์ ${f.name} ใหญ่เกิน 5MB`);
+                    const b64 = await new Promise((res, rej) => {
+                        const r = new FileReader();
+                        r.onload = ev => res(ev.target.result);
+                        r.readAsDataURL(f);
+                    });
+                    imagesBase64.push(b64);
+                }
+
+                // 🚀 เตรียมยิงไปหลังบ้าน (เดี๋ยวค่อยไปเขียนฝั่ง Code.gs รับค่า)
+                const payload = {
+                    action: 'uploadSPPortfolio',
+                    data: {
+                        Title: document.getElementById('portTitle').value,
+                        Category: document.getElementById('portCategory').value,
+                        Images: imagesBase64,
+                        TaggedStudents: tagged,
+                        TeacherName: currentUser.FullName,
+                        Room: currentUser.AdvisorRoom
+                    }
+                };
+
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain;charset=utf-8'} });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    customAlert("อัปโหลดผลงานเข้านักเรียนเรียบร้อย!", "success");
+                    document.getElementById('advPortfolioForm').reset();
+                    document.querySelectorAll('input[name="port_student_cb"]').forEach(cb => cb.checked = false);
+                } else throw new Error(result.message);
+            } catch(err) {
+                customAlert("ข้อผิดพลาด: " + err.message, "error");
+            } finally {
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        });
+        // ==========================================
+        // 📢 ระบบหอกระจายข่าว (Broadcast)
+        // ==========================================
+        setTimeout(() => { // หน่วงเวลานิดนึงรอให้ DOM โหลดปุ่มเสร็จ
+            const broadcastBtn = document.querySelector('#adv-content-broadcast button');
+            if(broadcastBtn) {
+                broadcastBtn.addEventListener('click', async function() {
+                    const textarea = document.querySelector('#adv-content-broadcast textarea');
+                    const checkbox = document.querySelector('#adv-content-broadcast input[type="checkbox"]');
+                    
+                    const msg = textarea.value.trim();
+                    const isUrgent = checkbox.checked;
+                    const room = currentUser.AdvisorRoom;
+
+                    if(!msg) return customAlert("กรุณาพิมพ์ข้อความประกาศก่อนครับ", "warning");
+                    if(!room || room === '-') return customAlert("คุณไม่มีห้องประจำชั้นครับ", "error");
+
+                    const btn = this;
+                    const origTxt = btn.innerHTML;
+                    btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังส่ง...';
+                    btn.disabled = true;
+
+                    try {
+                        const payload = {
+                            action: 'sendSPBroadcast',
+                            data: {
+                                BroadcastID: 'BC-' + Date.now(),
+                                Message: msg,
+                                IsUrgent: isUrgent,
+                                TargetRoom: room,
+                                TeacherName: currentUser.FullName,
+                                Timestamp: new Date().getTime()
+                            }
+                        };
+                        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain;charset=utf-8'} });
+                        const result = await res.json();
+                        
+                        if(result.status === 'success') {
+                            customAlert("ส่งประกาศไปที่แอปของนักเรียน (SP) เรียบร้อยแล้ว!", "success");
+                            textarea.value = '';
+                            checkbox.checked = false;
+                        } else throw new Error(result.message);
+                    } catch(err) {
+                        customAlert("ข้อผิดพลาด: " + err.message, "error");
+                    } finally {
+                        btn.innerHTML = origTxt;
+                        btn.disabled = false;
+                    }
+                });
+            }
+        }, 1000);
     </script>
 </body>
 </html>
