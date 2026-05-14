@@ -263,7 +263,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg> หน้าหลัก
                             </button>
                             <button onclick="switchView('view-plan')" id="nav-view-plan" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors hidden nav-btn-role nav-role-user">ส่งแผนการสอน</button>
-                            <button onclick="switchView('view-form')" id="nav-view-form" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors hidden nav-btn-role nav-role-user">กรอกแบบบันทึก</button>
+                            <button onclick="startNewLog()" id="nav-view-form" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors hidden nav-btn-role nav-role-user">กรอกแบบบันทึก</button>
                             <button onclick="switchView('view-public')" id="nav-view-public" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors hidden nav-btn-role nav-role-user">แฟ้มสะสมงาน</button>
                             <button onclick="switchView('view-daily')" id="nav-view-daily" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors flex items-center hidden nav-btn-role nav-role-admin"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg> สรุปรายวัน</button>
                             <button onclick="switchView('view-weekly')" id="nav-view-weekly" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-white/20 transition-colors flex items-center hidden nav-btn-role nav-role-admin"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg> สรุปสัปดาห์</button>
@@ -3653,7 +3653,7 @@
             // เมนูพื้นฐาน (ยกเว้นผู้บริหารสูงสุด)
             if (!isExecutive) {
                 if(swPlan) html += `<button onclick="switchView('view-plan')" class="${btnClass} bg-gradient-to-br from-indigo-50/50 to-white"> <div class="${iconClass} bg-indigo-100">📂</div> <span class="${textClass} text-indigo-900">ส่งแผนการสอน</span> </button>`;
-                if(swLog) html += `<button onclick="switchView('view-form')" class="${btnClass}"> <div class="${iconClass} bg-emerald-100">📝</div> <span class="${textClass} text-emerald-800">กรอกแบบบันทึก</span> </button>`;
+                if(swLog) html += `<button onclick="startNewLog()" class="${btnClass}"> <div class="${iconClass} bg-emerald-100">📝</div> <span class="${textClass} text-emerald-800">กรอกแบบบันทึก</span> </button>`;
                 if(swRegSubject) html += `<button onclick="switchView('view-reg-subject'); initUserRegSubject();" class="${btnClass}"> <div class="${iconClass} bg-teal-100">📘</div> <span class="${textClass} text-teal-800">ขึ้นทะเบียนวิชา</span> </button>`;
                 if(swTimetable) html += `<button onclick="switchView('view-user-timetable'); renderUserTimetableMatrix();" class="${btnClass}"> <div class="${iconClass} bg-sky-100">🗓️</div> <span class="${textClass} text-sky-800">จัดตารางสอน</span> </button>`;
                 if(swPortfolio) html += `<button onclick="switchView('view-public')" class="${btnClass}"> <div class="${iconClass} bg-gray-100">📋</div> <span class="${textClass} text-gray-800">แฟ้มสะสมงาน</span> </button>`;
@@ -5481,6 +5481,39 @@ window.renderAdminLogsTable = function() {
         }
     });
 };
+window.deleteLog = function(logId) {
+            customConfirm("แน่ใจนะว่าจะลบบันทึกกิจกรรมนี้? ข้อมูลนี้จะถูกส่งไปโลกวิญญาณนะ (กู้คืนได้ที่ ผอ.)", async () => {
+                const btn = window.event ? window.event.currentTarget : null; 
+                if(btn) { btn.innerText = "ลบ..."; btn.disabled = true; }
+                try {
+                    const payload = { action: "deleteLog", id: logId };
+                    let response, textResult, fetchSuccess = false;
+                    for (let attempt = 1; attempt <= 3; attempt++) {
+                        try { 
+                            response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" }); 
+                            if (response.ok) { textResult = await response.text(); fetchSuccess = true; break; } 
+                        } catch (e) { 
+                            if (attempt === 3) throw new Error("Network Error"); 
+                            await new Promise(r => setTimeout(r, 1000)); 
+                        }
+                    }
+                    if (!fetchSuccess) throw new Error("เซิร์ฟเวอร์ปฏิเสธการประมวลผล");
+                    const result = JSON.parse(textResult);
+                    if(result.status === 'success') {
+                        // 💡 ลบออกจากความจำหน้าจอ และวาดตารางใหม่
+                        sessionLogs = sessionLogs.filter(l => l.id.toString() !== logId.toString());
+                        if(!document.getElementById('view-public').classList.contains('hidden')) renderPublicLogs();
+                        if(!document.getElementById('view-approve').classList.contains('hidden')) renderApproveTable();
+                        if(!document.getElementById('view-admin').classList.contains('hidden')) renderAdminLogsTable();
+                        customAlert("ลบสำเร็จ!", "success");
+                    } else throw new Error(result.message);
+                } catch(e) { 
+                    customAlert("ข้อผิดพลาด: " + e.message, "error"); 
+                } finally { 
+                    if(btn) { btn.innerText = "ลบ"; btn.disabled = false; } 
+                }
+            });
+        };
 
         window.deletePlan = function(planId) {
             customConfirm("แน่ใจว่าจะลบแผนนี้? การกระทำนี้ย้อนกลับไม่ได้", async () => {
@@ -6445,6 +6478,53 @@ window.renderAdminLogsTable = function() {
                     populateAdminPLCList();
                 }
             }
+        };
+        // 💡 ฟังก์ชันล้างความจำและเปิดฟอร์มเปล่า สำหรับการสร้างบันทึกใหม่
+        window.startNewLog = function() {
+            editingLogData = null; // ล้างสถานะว่าไม่ได้แก้ของเก่าแล้วนะ!
+            
+            const form = document.getElementById('teachingLogForm');
+            if(form) form.reset(); // ล้างตัวอักษรในฟอร์ม
+            
+            // ล้างดาว/เปอร์เซ็นต์
+            Object.keys(EVAL_CONFIG).forEach(k => {
+                const txt = document.getElementById(`obj${k}_text`); if(txt) txt.value = '';
+                const prob = document.getElementById(`prob${k}_text`); if(prob) prob.value = '';
+                const sol = document.getElementById(`sol${k}_text`); if(sol) sol.value = '';
+                const cont = document.getElementById(`obj${k}_container`); 
+                if(cont) cont.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+                window.updateChartAndData(k, 0, 0);
+            });
+
+            // ล้างคาบเรียน
+            const pCont = document.getElementById('periodCheckboxesContainer');
+            if(pCont) pCont.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+            document.getElementById('periodTimeDisplay').classList.add('hidden');
+            
+            // ล้างชื่อเด็กโดด
+            document.getElementById('truantInputsContainer').innerHTML = '';
+            document.getElementById('truantNamesSection').classList.add('hidden');
+            
+            // ล้างรูปภาพพรีวิว
+            document.getElementById('activityPreview').innerHTML = '';
+            document.getElementById('classWorkPreview').innerHTML = '';
+            document.getElementById('gradingPreview').innerHTML = '';
+            document.getElementById('homeworkPreview').innerHTML = '';
+
+            // รีเซ็ตลายเซ็น
+            if (currentUser && currentUser.SavedSignature) {
+                loadOldSignature(currentUser.SavedSignature, 'sigCanvasMain');
+            } else {
+                clearSignature('sigCanvasMain');
+            }
+            clearSignature('sigCanvasCo1');
+            clearSignature('sigCanvasCo2');
+
+            // เปลี่ยนหัวกระดาษกลับเป็นของใหม่
+            const formTitle = document.querySelector('#view-form h1');
+            if(formTitle) formTitle.innerText = "แบบบันทึกการจัดกิจกรรมการเรียนรู้";
+            
+            switchView('view-form'); // วาร์ปไปหน้าฟอร์มที่สะอาดเอี่ยม!
         };
         window.editLog = function(index) {
             const log = sessionLogs[index];
