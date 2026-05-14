@@ -3550,8 +3550,32 @@
         }
 
         window.updateChartAndData = function(key, passVal, total) {
-            // ... (โค้ดเก่าที่มีอยู่แล้ว) ...
-        }
+            const pass = parseInt(passVal) || 0;
+            const tot = parseInt(total) || 0;
+            let percent = 0;
+            
+            if (tot > 0) percent = Math.round((pass / tot) * 100);
+            
+            const display = document.getElementById(`percent${key}_display`);
+            if (display) display.innerText = `${percent}%`;
+
+            if (charts[key]) {
+                charts[key].data.datasets[0].data = [pass, Math.max(0, tot - pass)];
+                charts[key].update();
+            }
+
+            const probContainer = document.getElementById(`problemContainer_${key}`);
+            if (probContainer) {
+                // ลอจิก: ถ้าเด็กผ่านไม่ครบ 100% (pass < tot) ให้แสดงกล่องพิมพ์ปัญหา
+                if (tot > 0 && pass < tot) {
+                    probContainer.classList.remove('hidden');
+                    probContainer.classList.add('flex');
+                } else {
+                    probContainer.classList.add('hidden');
+                    probContainer.classList.remove('flex');
+                }
+            }
+        };
 
         // 🎛️ ผูก Master Switch เข้ากับตัว Generate เมนู
         window.generateDynamicMenus = function() {
@@ -5461,9 +5485,9 @@ window.renderAdminLogsTable = function() {
             });
         };
 
-        const apiKey = "ใส่_API_KEY_ของแกตรงนี้เลยไอซ์";
+        const apiKey = "AIzaSyCSA6_omYnb8Ar_A2vREv8N98j2uHYyphQ";
         async function callGemini(prompt, systemInstruction = "", useJson = false, customSchema = null) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }] }] };
             if (systemInstruction) payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             if (useJson) {
