@@ -3514,6 +3514,10 @@
                             </div>
                             <div class="h-32"><canvas id="chart${key}"></canvas></div>
                             <div id="problemContainer_${key}" class="hidden flex-col space-y-2 pt-2 border-t border-gray-200">
+                                <div class="bg-rose-50 p-2 rounded-lg border border-rose-200 mb-1">
+                                    <label class="block text-[10px] font-bold text-rose-800 mb-1">รายชื่อนักเรียนที่ไม่ผ่าน <span class="text-rose-500">*</span></label>
+                                    <div id="failStudentsInputs_${key}" class="space-y-1"></div>
+                                </div>
                                 <p class="text-xs font-bold text-rose-500">ปัญหา/แนวทาง:</p>
                                 <textarea id="prob${key}_text" rows="2" placeholder="ปัญหา..." class="w-full text-xs border border-rose-300 rounded-md bg-white p-2 outline-none focus:ring-2 focus:ring-rose-400"></textarea>
                                 <div class="relative mt-1">
@@ -3550,6 +3554,9 @@
         }
 
         window.updateChartAndData = function(key, passVal, total) {
+            const passInputEl = document.getElementById(`pass${key}_input`);
+            const isFilled = passInputEl && passInputEl.value.trim() !== ""; // 💡 เช็คว่าพิมพ์อะไรลงไปหรือยัง
+            
             const pass = parseInt(passVal) || 0;
             const tot = parseInt(total) || 0;
             let percent = 0;
@@ -3566,13 +3573,36 @@
 
             const probContainer = document.getElementById(`problemContainer_${key}`);
             if (probContainer) {
-                // ลอจิก: ถ้าเด็กผ่านไม่ครบ 100% (pass < tot) ให้แสดงกล่องพิมพ์ปัญหา
-                if (tot > 0 && pass < tot) {
+                // 💡 โชว์กล่องก็ต่อเมื่อ: พิมพ์ตัวเลขแล้ว + มีเด็กมาเรียน + เด็กผ่านน้อยกว่ามาเรียน
+                if (isFilled && tot > 0 && pass < tot) {
                     probContainer.classList.remove('hidden');
                     probContainer.classList.add('flex');
+                    
+                    // 💡 เสก Dropdown ตามจำนวนคนที่ตก
+                    const failCount = tot - pass;
+                    const failContainer = document.getElementById(`failStudentsInputs_${key}`);
+                    if (failContainer) {
+                        failContainer.innerHTML = '';
+                        const selectedRoom = document.getElementById('classroom')?.value;
+                        let studentOptions = '<option value="">-- เลือกนักเรียนที่ไม่ผ่าน --</option>';
+                        
+                        if (selectedRoom && typeof studentsDB_Global !== 'undefined') {
+                            const roomStudents = studentsDB_Global.filter(s => s.Room === selectedRoom || s.Room === selectedRoom.replace('ม.', ''));
+                            roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
+                                const fullName = `${s.FirstName} ${s.LastName}`;
+                                studentOptions += `<option value="${fullName}">เลขที่ ${s.No} - ${s.Prefix}${fullName}</option>`;
+                            });
+                        }
+
+                        for(let i=0; i<failCount; i++) {
+                            failContainer.innerHTML += `<select class="w-full rounded text-[10px] border border-rose-300 py-1.5 px-2 outline-none focus:ring-1 focus:ring-rose-500 bg-white font-bold text-rose-800 shadow-sm fail-name-input-${key} mb-1" required>${studentOptions}</select>`; 
+                        }
+                    }
                 } else {
                     probContainer.classList.add('hidden');
                     probContainer.classList.remove('flex');
+                    const failContainer = document.getElementById(`failStudentsInputs_${key}`);
+                    if (failContainer) failContainer.innerHTML = '';
                 }
             }
         };
@@ -6013,7 +6043,20 @@ window.renderAdminLogsTable = function() {
                 periodText: pText, periodIds: pIds, teachDate: new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' }),
                 images: b64Activity, classWorkImages: b64ClassWork, gradingImages: b64Grading, homeworkImages: b64Homework, 
                 sigMain: getSignatureData('sigCanvasMain'), sigCo1: getSignatureData('sigCanvasCo1'), sigCo2: getSignatureData('sigCanvasCo2'),
-                evaluations: Object.keys(EVAL_CONFIG).reduce((acc, k) => { acc[k] = { pass: document.getElementById(`pass${k}_input`)?.value||0, failMsg: document.getElementById(`prob${k}_text`)?.value||"", solution: document.getElementById(`sol${k}_text`)?.value||"" }; if(EVAL_CONFIG[k].type==='checkbox'){ acc[k].items = document.getElementById(`obj${k}_text`)?.value||""; } else { acc[k].text = document.getElementById(`obj${k}_text`)?.value||""; } return acc; }, {}),
+                evaluations: Object.keys(EVAL_CONFIG).reduce((acc, k) => { 
+                    acc[k] = { 
+                        pass: document.getElementById(`pass${k}_input`)?.value||0, 
+                        failMsg: document.getElementById(`prob${k}_text`)?.value||"", 
+                        solution: document.getElementById(`sol${k}_text`)?.value||"",
+                        failStudents: Array.from(document.querySelectorAll(`.fail-name-input-${k}`)).map(sel => sel.value).filter(v => v !== "")
+                    }; 
+                    if(EVAL_CONFIG[k].type==='checkbox'){ 
+                        acc[k].items = document.getElementById(`obj${k}_text`)?.value||""; 
+                    } else { 
+                        acc[k].text = document.getElementById(`obj${k}_text`)?.value||""; 
+                    } 
+                    return acc; 
+                }, {}),
                 studentPresent: document.getElementById('studentPresent')?.value||0, studentAbsent: document.getElementById('studentAbsent')?.value||0, studentTruant: document.getElementById('studentTruant')?.value||0,
                 truantNames: Array.from(document.querySelectorAll('.truant-name-input')).map(i=>i.value),
                 studentFeedback: document.getElementById('studentFeedback')?.value||"", homework: document.getElementById('homework')?.value||"", dueDate: document.getElementById('dueDate')?.value||"", duePeriod: document.getElementById('duePeriod')?.value||"", dueTimeOther: document.getElementById('dueTimeOther')?.value||"",
@@ -6173,8 +6216,13 @@ window.renderAdminLogsTable = function() {
                     const pct = total > 0 ? Math.round((pass/total)*100) : 0;
                     let problemHtml = '';
                     if(pass < total) {
+                        let failStudentsHtml = '';
+                        if (evalData.failStudents && evalData.failStudents.length > 0) {
+                            failStudentsHtml = `<p class="mb-1"><span class="text-rose-500 font-bold">คนที่ไม่ผ่าน:</span> ${evalData.failStudents.join(', ')}</p>`;
+                        }
                         problemHtml = `
                             <div class="mt-2 text-xs border-l-2 border-rose-300 pl-2 ml-4">
+                                ${failStudentsHtml}
                                 <p><span class="text-rose-500 font-bold">ปัญหา:</span> ${evalData.failMsg || '-'}</p>
                                 <p><span class="text-emerald-600 font-bold">แก้ไข:</span> ${evalData.solution || '-'}</p>
                             </div>`;
