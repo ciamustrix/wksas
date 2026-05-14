@@ -5517,7 +5517,7 @@ window.renderAdminLogsTable = function() {
 
         const apiKey = "AIzaSyCSA6_omYnb8Ar_A2vREv8N98j2uHYyphQ";
         async function callGemini(prompt, systemInstruction = "", useJson = false, customSchema = null) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }] }] };
             if (systemInstruction) payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             if (useJson) {
