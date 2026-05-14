@@ -253,8 +253,8 @@
                     <div class="flex items-center justify-between h-16">
                         <!-- โลโก้แอป -->
                         <div class="flex items-center flex-shrink-0 mr-4 cursor-pointer hover:opacity-80 transition-opacity" onclick="switchView('view-welcome')">
-                            <span class="font-bold text-white text-lg tracking-wide hidden sm:block">WTK Academic System</span>
-                            <span class="font-bold text-white text-lg tracking-wide sm:hidden">WTK Sys</span>
+                            <span class="font-bold text-white text-lg tracking-wide hidden sm:block">WKS Academic System</span>
+                            <span class="font-bold text-white text-lg tracking-wide sm:hidden">WKS_AS</span>
                         </div>
                         
                         <!-- เมนูกลาง -->
@@ -5461,74 +5461,7 @@ window.renderAdminLogsTable = function() {
             });
         };
 
-        window.deleteLog = function(logId) {
-            customConfirm("แน่ใจว่าจะลบบันทึกนี้? การกระทำนี้ย้อนกลับไม่ได้", async () => {
-                const btn = window.event ? window.event.currentTarget : null; 
-                if(btn) { btn.innerText = "ลบ..."; btn.disabled = true; }
-                try {
-                    customAlert("กำลังลบ...", "info");
-                    const payload = { action: "deleteLog", id: logId };
-                    let response, textResult, fetchSuccess = false;
-                    for (let attempt = 1; attempt <= 3; attempt++) {
-                        try { 
-                            response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" }); 
-                            if (response.ok) { textResult = await response.text(); fetchSuccess = true; break; } 
-                        } catch (e) { 
-                            if (attempt === 3) throw new Error("Network Error"); 
-                            await new Promise(r => setTimeout(r, 1000)); 
-                        }
-                    }
-                    if (!fetchSuccess) throw new Error("เซิร์ฟเวอร์ปฏิเสธการประมวลผล");
-                    const result = JSON.parse(textResult);
-                    if(result.status === 'success') {
-                        sessionLogs = sessionLogs.filter(l => l.id.toString() !== logId.toString());
-                        if(!document.getElementById('view-public').classList.contains('hidden')) renderPublicLogs();
-                        if(!document.getElementById('view-approve').classList.contains('hidden')) renderApproveTable();
-                        if(!document.getElementById('view-admin').classList.contains('hidden')) renderAdminLogsTable();
-                        customAlert("ลบสำเร็จ", "success");
-                    } else throw new Error(result.message);
-                } catch(e) { 
-                    customAlert("ข้อผิดพลาด: " + e.message, "error"); 
-                } finally { 
-                    if(btn) { btn.innerText = "ลบ"; btn.disabled = false; } 
-                }
-            });
-        };
-
-        window.adminResetPassword = function() {
-            const userSel = document.getElementById('adminResetUserSelect').value;
-            if(!userSel) return customAlert('กรุณาเลือกผู้ใช้งานก่อนครับ');
-            
-            customConfirm(`ยืนยันการรีเซ็ตรหัสผ่านของบัญชี ${userSel} ให้กลับเป็น "1234" ใช่หรือไม่?`, async () => {
-                const btn = document.querySelector('button[onclick="adminResetPassword()"]');
-                const origTxt = btn.innerHTML;
-                btn.innerHTML = "กำลังรีเซ็ต..."; btn.disabled = true;
-
-                try {
-                    const payload = { action: "updateProfile", Username: userSel, newPassword: "1234" };
-                    const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
-                    const textResult = await response.text();
-                    const result = JSON.parse(textResult);
-                    
-                    if(result.status === 'success') {
-                        if(currentUser.Username === userSel) {
-                            currentUser.Password = '1234';
-                            localStorage.setItem('wtk_user_session', JSON.stringify(currentUser));
-                        }
-                        customAlert(`รีเซ็ตรหัสผ่านของ ${userSel} เป็น 1234 เรียบร้อยแล้วครับ`, 'success');
-                    } else {
-                        throw new Error(result.message);
-                    }
-                } catch(e) {
-                    customAlert("เกิดข้อผิดพลาด: " + e.message);
-                } finally {
-                    btn.innerHTML = origTxt; btn.disabled = false;
-                    document.getElementById('adminResetUserSelect').value = '';
-                }
-            });
-        };
-
-        const apiKey = "";
+        const apiKey = "ใส่_API_KEY_ของแกตรงนี้เลยไอซ์";
         async function callGemini(prompt, systemInstruction = "", useJson = false, customSchema = null) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }] }] };
