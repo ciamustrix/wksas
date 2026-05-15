@@ -5515,67 +5515,52 @@ window.deleteLog = function(logId) {
             });
         };
 
-        window.deletePlan = function(planId) {
-            customConfirm("แน่ใจว่าจะลบแผนนี้? การกระทำนี้ย้อนกลับไม่ได้", async () => {
-                const btn = window.event ? window.event.currentTarget : null; 
-                if(btn) { btn.innerText = "ลบ..."; btn.disabled = true; }
-                try {
-                    const payload = { action: "deletePlan", id: planId };
-                    let response, textResult, fetchSuccess = false;
-                    for (let attempt = 1; attempt <= 3; attempt++) {
-                        try { 
-                            response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" }); 
-                            if (response.ok) { textResult = await response.text(); fetchSuccess = true; break; } 
-                        } catch (e) { 
-                            if (attempt === 3) throw new Error("Network Error"); 
-                            await new Promise(r => setTimeout(r, 1000)); 
-                        }
-                    }
-                    if (!fetchSuccess) throw new Error("เซิร์ฟเวอร์ปฏิเสธการประมวลผล");
-                    const result = JSON.parse(textResult);
-                    if(result.status === 'success') {
-                        sessionPlans = sessionPlans.filter(p => p.id.toString() !== planId.toString());
-                        if(!document.getElementById('view-public').classList.contains('hidden')) renderPublicPlans();
-                        if(!document.getElementById('view-approve').classList.contains('hidden')) renderApprovePlanTable();
-                        if(!document.getElementById('view-admin').classList.contains('hidden')) renderAdminPlansTable();
-                        customAlert("ลบสำเร็จ", "success");
-                    } else throw new Error(result.message);
-                } catch(e) { 
-                    customAlert("ข้อผิดพลาด: " + e.message, "error"); 
-                } finally { 
-                    if(btn) { btn.innerText = "ลบ"; btn.disabled = false; } 
-                }
-            });
-        };
-
-        const apiKey = "AIzaSyDx599KsEm2vNbHHLmxxDoPgRP6qLmr8WY";
+        // 💡 ลบ API Key ออกจากหน้าเว็บแล้วย้ายไปเรียกผ่าน Google Apps Script แทนเพื่อความปลอดภัย
         async function callGemini(prompt, systemInstruction = "", useJson = false, customSchema = null) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
-            if (systemInstruction) payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-            if (useJson) {
-                payload.generationConfig = { responseMimeType: "application/json" };
-                if (customSchema) { payload.generationConfig.responseSchema = customSchema; }
-            }
+            const payload = {
+                action: 'callAI',
+                data: {
+                    prompt: prompt,
+                    systemInstruction: systemInstruction,
+                    useJson: useJson,
+                    customSchema: customSchema
+                }
+            };
 
-            const delays = [1000, 2000, 4000];
             let lastError = null;
-
+            // 💡 ลองยิงรีเควส 3 ครั้งเหมือนเดิม กันเน็ตหลุด
             for (let i = 0; i < 3; i++) {
                 try {
-                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) { const errBody = await response.json().catch(() => ({})); throw new Error(`API Error ${response.status}: ${errBody.error?.message || response.statusText}`); }
-                    const result = await response.json();
-                    if (!result.candidates || result.candidates.length === 0) throw new Error("ไม่มีข้อมูลตอบกลับจาก AI");
-                    const candidate = result.candidates[0];
-                    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) throw new Error(`AI ไม่สามารถตอบกลับได้`);
-                    let text = candidate.content.parts[0].text;
-                    if (useJson) { text = text.replace(/^```json/im, '').replace(/^```/im, '').replace(/```$/m, '').trim(); return JSON.parse(text); }
-                    return text;
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        redirect: "follow"
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const textResult = await response.text();
+                    let result;
+                    try {
+                        result = JSON.parse(textResult);
+                    } catch(e) {
+                        throw new Error("หลังบ้านตอบกลับมาผิดรูปแบบ");
+                    }
+                    
+                    if (result.status === 'success') {
+                        if (useJson) {
+                            return typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+                        }
+                        return result.data;
+                    } else {
+                        throw new Error(result.message);
+                    }
                 } catch (error) {
-                    lastError = error; console.error("Gemini API Error:", error);
-                    if (error instanceof SyntaxError) throw new Error("รูปแบบข้อมูล JSON จาก AI ไม่ถูกต้อง");
-                    if (i === 2) throw lastError; await new Promise(r => setTimeout(r, delays[i]));
+                    lastError = error;
+                    console.error("AI Proxy Error:", error);
+                    if (i === 2) throw lastError;
+                    await new Promise(r => setTimeout(r, 2000)); // หน่วงเวลา 2 วิแล้วลองใหม่
                 }
             }
         }
@@ -6523,7 +6508,8 @@ window.deleteLog = function(logId) {
             // เปลี่ยนหัวกระดาษกลับเป็นของใหม่
             const formTitle = document.querySelector('#view-form h1');
             if(formTitle) formTitle.innerText = "แบบบันทึกการจัดกิจกรรมการเรียนรู้";
-            
+            // เติมบรรทัดนี้ลงไปเพื่อดึงชื่อกลับมาหลังจากโดน reset ล้างไป
+            document.getElementById('teacherName').value = currentUser.FullName;
             switchView('view-form'); // วาร์ปไปหน้าฟอร์มที่สะอาดเอี่ยม!
         };
         window.editLog = function(index) {
@@ -14808,4 +14794,3 @@ window.saveStudentDetail = async function() {
     </script>
 </body>
 </html>
- 
