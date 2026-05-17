@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03 [2026-13-05] | Dev. by Thuntathorn 😁</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.01 [May 18th, 2025] | Dev. by Thuntathorn 😁</p>
             </div>
         </div>
     </div>
@@ -1249,35 +1249,101 @@
                 <!-- ========================================== -->
                 <div id="view-hr-leave" class="app-view max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden">
                     <button onclick="switchView('view-welcome')" class="mb-4 inline-flex items-center px-4 py-2 bg-white border border-gray-100 rounded-lg shadow-sm text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors no-print">
-                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                         กลับหน้าหลัก (Dashboard)
                     </button>
                     
-                    <div class="bg-white rounded-3xl shadow-xl border border-fuchsia-200 p-6 sm:p-8">
-                        <div class="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4 border-b border-gray-200 pb-4">
+                    <div class="bg-white rounded-3xl shadow-xl border border-fuchsia-200 p-6 sm:p-8 relative overflow-hidden">
+                        <!-- แบ็กกราวด์ตกแต่ง -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-fuchsia-50 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+                        <div class="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4 border-b border-gray-200 pb-4 relative z-10">
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                    📝 บันทึกข้อมูลการลา/ไปราชการ (HR)
+                                <h2 class="text-3xl font-black text-fuchsia-900 flex items-center gap-3">
+                                    <span class="bg-fuchsia-100 p-2 rounded-xl text-2xl">📝</span> ระบบบริหารจัดการการลา (HR)
                                 </h2>
-                                <p class="text-sm text-gray-500 mt-1">ข้อมูลที่บันทึกหน้านี้ จะถูกส่งตรงไปยังศูนย์จัดสอนแทนของฝ่ายวิชาการอัตโนมัติ</p>
+                                <p class="text-sm text-gray-500 mt-2 font-medium">บันทึก ตรวจสอบ และดูสถิติข้อมูลการลา/ไปราชการของบุคลากร</p>
                             </div>
-                            <div class="flex flex-col sm:flex-row items-end gap-3">
+                        </div>
+
+                        <!-- 💡 แท็บเมนูแบบใหม่ -->
+                        <div class="flex bg-fuchsia-50/80 p-1.5 rounded-xl w-full max-w-lg mb-8 shadow-inner border border-fuchsia-100 relative z-10">
+                            <button onclick="toggleHRTab('input')" id="btn-hr-input" class="flex-1 py-2 text-sm font-bold rounded-lg bg-fuchsia-600 text-white shadow-md transition-all">1. บันทึกข้อมูลการลา</button>
+                            <button onclick="toggleHRTab('daily')" id="btn-hr-daily" class="flex-1 py-2 text-sm font-bold rounded-lg text-fuchsia-700 hover:bg-fuchsia-200 transition-all">2. ตรวจสอบรายวัน</button>
+                            <button onclick="toggleHRTab('stats')" id="btn-hr-stats" class="flex-1 py-2 text-sm font-bold rounded-lg text-fuchsia-700 hover:bg-fuchsia-200 transition-all">3. สถิติภาพรวม</button>
+                        </div>
+
+                        <!-- TAB 1: บันทึกข้อมูลการลา (ของเดิม) -->
+                        <div id="hr-content-input" class="hr-tab-content relative z-10">
+                            <div class="flex flex-col sm:flex-row justify-between items-end gap-3 mb-6 bg-fuchsia-50/50 p-4 rounded-2xl border border-fuchsia-100">
                                 <div class="w-full sm:w-80">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">เลือกวันที่ต้องการบันทึก</label>
                                     <div class="relative">
-                                        <input type="text" id="hrLeaveDateDisplay" readonly class="w-full rounded-xl border border-fuchsia-300 py-2.5 px-3 focus:ring-2 focus:ring-fuchsia-500 outline-none text-sm bg-fuchsia-50 cursor-pointer font-bold text-fuchsia-900 shadow-sm" placeholder="เลือกวันที่...">
+                                        <input type="text" id="hrLeaveDateDisplay" readonly class="w-full rounded-xl border border-fuchsia-300 py-2.5 px-3 focus:ring-2 focus:ring-fuchsia-500 outline-none text-sm bg-white cursor-pointer font-bold text-fuchsia-900 shadow-sm" placeholder="เลือกวันที่...">
                                         <input type="date" id="hrLeaveDate" required class="date-picker-cover absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateHRDateDisplay(); loadHRLeaveTable();">
                                         <div class="absolute right-4 top-2.5 pointer-events-none text-fuchsia-500 text-lg">📅</div>
                                     </div>
                                 </div>
-                                <button id="btnSaveHRLeave" onclick="saveHRLeaveData()" class="bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:scale-105 transition-transform flex items-center gap-2">
-                                    💾 บันทึกข้อมูลการลา
+                                <button id="btnSaveHRLeave" onclick="saveHRLeaveData()" class="w-full sm:w-auto bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                                    💾 บันทึกข้อมูล
                                 </button>
                             </div>
+                            <div id="hrLeavePanelContainer" class="space-y-6">
+                                <div class="text-center py-10"><div class="loader mx-auto border-4 border-fuchsia-500 border-t-transparent"></div></div>
+                            </div>
                         </div>
-                        <div id="hrLeavePanelContainer" class="space-y-6">
-                            <div class="text-center py-10"><div class="loader mx-auto border-4 border-fuchsia-500 border-t-transparent"></div></div>
+
+                        <!-- TAB 2: ตรวจสอบรายวัน -->
+                        <div id="hr-content-daily" class="hr-tab-content hidden relative z-10 animate-in fade-in zoom-in duration-300">
+                            <div class="flex flex-col sm:flex-row justify-between items-end gap-3 mb-6 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                                <div class="w-full sm:w-80">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">เลือกวันที่ต้องการตรวจสอบ</label>
+                                    <div class="relative">
+                                        <input type="text" id="hrDailyCheckDateDisplay" readonly class="w-full rounded-xl border border-purple-300 py-2.5 px-3 focus:ring-2 focus:ring-purple-500 outline-none text-sm bg-white cursor-pointer font-bold text-purple-900 shadow-sm" placeholder="เลือกวันที่...">
+                                        <input type="date" id="hrDailyCheckDate" class="date-picker-cover absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateHRDailyCheckDateDisplay(); loadHRDailyCheck();">
+                                        <div class="absolute right-4 top-2.5 pointer-events-none text-purple-500 text-lg">📅</div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-amber-200">ลาป่วย/กิจ: <span id="hrCountLeave">0</span></span>
+                                    <span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-purple-200">ไปราชการ: <span id="hrCountGov">0</span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="hrDailyGridContainer">
+                                <div class="col-span-full py-16 text-center text-gray-400 font-bold italic">กรุณาเลือกวันที่ต้องการตรวจสอบด้านบนครับ</div>
+                            </div>
                         </div>
+
+                        <!-- TAB 3: สถิติภาพรวม (สอนแทน + ลา) -->
+                        <div id="hr-content-stats" class="hr-tab-content hidden relative z-10 animate-in fade-in zoom-in duration-300">
+                            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div>
+                                    <h4 class="font-bold text-indigo-900 text-lg">📊 สถิติสะสมบุคลากร</h4>
+                                    <p class="text-xs text-indigo-600">นับยอดการลา และจำนวนคาบที่รับภารกิจสอนแทนทั้งหมดในระบบ</p>
+                                </div>
+                                <div class="relative w-full md:w-64">
+                                    <input type="text" id="hrStatsSearch" oninput="filterHRStats()" placeholder="🔍 ค้นหาชื่อครู หรือ กลุ่มสาระฯ..." class="w-full rounded-xl border border-indigo-200 py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-indigo-400">
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner">
+                                <table class="min-w-full divide-y divide-gray-200 text-sm text-center">
+                                    <thead class="bg-gradient-to-r from-slate-800 to-slate-700 text-white">
+                                        <tr>
+                                            <th class="px-4 py-3 font-bold text-left border-r border-slate-600">ชื่อ-นามสกุลบุคลากร</th>
+                                            <th class="px-4 py-3 font-bold border-r border-slate-600 text-amber-200">ลาป่วย/ลากิจ (วัน)</th>
+                                            <th class="px-4 py-3 font-bold border-r border-slate-600 text-purple-200">ไปราชการ (วัน)</th>
+                                            <th class="px-4 py-3 font-black text-emerald-300">รับสอนแทน (คาบ)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hrStatsTableBody" class="bg-white divide-y divide-gray-100">
+                                        <tr><td colspan="4" class="py-10 text-gray-400 italic">กำลังคำนวณข้อมูล...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -7381,25 +7447,31 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 updateHRDateDisplay();
             }
 
-            const selectedDate = dateInput.value;
-            const existingRecord = leaveRecordsDB_Global.find(r => {
+            // 💡 ใช้ Raw Date (YYYY-MM-DD) ดึงข้อมูลเลย ไม่ต้องแปลงเป็นไทย เพราะตอนเซฟลง HR ก็เซฟด้วยแบบนี้
+            const rawSelectedDate = dateInput.value; 
+
+            // ค้นหาการลา/ไปราชการของวันนั้น
+            const matchingRecords = leaveRecordsDB_Global.filter(r => {
                 let dbDate = r.LeaveDate || r.leavedate || r.Date || r.date;
-                if (!dbDate) return false;
-                if (dbDate === selectedDate) return true;
-                const dbD = new Date(dbDate);
-                if (!isNaN(dbD.getTime())) {
-                    const y = dbD.getFullYear();
-                    const m = String(dbD.getMonth() + 1).padStart(2, '0');
-                    const dNum = String(dbD.getDate()).padStart(2, '0');
-                    if (`${y}-${m}-${dNum}` === selectedDate) return true;
-                }
-                return false;
+                return dbDate === rawSelectedDate; 
             });
 
-            let leaveData = {};
+            // ดึง Record ล่าสุด (กรณีมีการอัปเดตหลายรอบในวันเดียวกัน)
+            const existingRecord = matchingRecords.length > 0 ? matchingRecords[matchingRecords.length - 1] : null;
+
+            let hrData = {};
             if(existingRecord) {
-                const rawData = existingRecord.Data || existingRecord.data || existingRecord.DATA || "{}";
-                try { leaveData = JSON.parse(rawData); } catch(e){}
+                let rawData = existingRecord.Data || existingRecord.data || existingRecord.DATA || "{}";
+                // 💡 แก้บั๊กเผื่อมันเป็น Object มาแล้ว หรือเป็น String ซ้อน String
+                try { 
+                    if (typeof rawData === 'string') {
+                        hrData = JSON.parse(rawData); 
+                        // ถ้า parse มาแล้วยังเป็น string อีก (ข้อมูลซ้อน) ก็ parse อีกรอบ
+                        if (typeof hrData === 'string') hrData = JSON.parse(hrData);
+                    } else {
+                        hrData = rawData;
+                    }
+                } catch(e){ console.error("Parse HR Data Error", e); }
             }
 
             container.innerHTML = '';
@@ -7510,6 +7582,214 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 } else throw new Error(result.message);
             } catch(e) { customAlert("Error: " + e.message); }
             finally { btn.innerHTML = origTxt; btn.disabled = false; }
+        };
+        // ==========================================
+        // 🧠 ส่วนขยาย HR: ระบบตรวจสอบรายวัน & สถิติ
+        // ==========================================
+        
+        // ฟังก์ชันสลับแท็บ HR
+        window.toggleHRTab = function(tabName) {
+            // ปิดเนื้อหาทั้งหมด
+            document.querySelectorAll('.hr-tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // ปลดสีปุ่มทั้งหมด
+            document.querySelectorAll('#view-hr-leave button[id^="btn-hr-"]').forEach(btn => {
+                btn.classList.remove('bg-fuchsia-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-fuchsia-700', 'bg-transparent');
+            });
+            
+            // เปิดหน้าที่เลือก
+            document.getElementById(`hr-content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-hr-${tabName}`);
+            activeBtn.classList.remove('text-fuchsia-700', 'bg-transparent');
+            activeBtn.classList.add('bg-fuchsia-600', 'text-white', 'shadow-md');
+
+            // โหลดข้อมูลอัตโนมัติตามแท็บที่กด
+            if(tabName === 'input') loadHRLeaveTable();
+            if(tabName === 'daily') {
+                const dateInput = document.getElementById('hrDailyCheckDate');
+                if(!dateInput.value) {
+                    dateInput.valueAsDate = new Date();
+                }
+                // แทรกบรรทัดนี้ลงไปเพื่อกระตุ้นให้มันแปลวันที่เป็นภาษาไทยตอนเปิดแท็บ
+                if (typeof updateHRDailyCheckDateDisplay === 'function') updateHRDailyCheckDateDisplay();
+                
+                loadHRDailyCheck();
+            }
+            if(tabName === 'stats') loadHRStats();
+        };
+
+        // ฟังก์ชันตรวจสอบรายวัน (Tab 2)
+        window.loadHRDailyCheck = function() {
+            const dateVal = document.getElementById('hrDailyCheckDate').value;
+            const container = document.getElementById('hrDailyGridContainer');
+            if(!dateVal || !container) return;
+
+            // ค้นหาข้อมูลของวันนั้นใน DB
+            const existingRecord = leaveRecordsDB_Global.find(r => {
+                let dbDate = r.LeaveDate || r.leavedate || r.Date || r.date;
+                if (!dbDate) return false;
+                if (dbDate === dateVal) return true;
+                const dbD = new Date(dbDate);
+                if (!isNaN(dbD.getTime())) {
+                    const y = dbD.getFullYear();
+                    const m = String(dbD.getMonth() + 1).padStart(2, '0');
+                    const dNum = String(dbD.getDate()).padStart(2, '0');
+                    if (`${y}-${m}-${dNum}` === dateVal) return true;
+                }
+                return false;
+            });
+
+            let leaveData = {};
+            if(existingRecord) {
+                const rawData = existingRecord.Data || existingRecord.data || existingRecord.DATA || "{}";
+                try { leaveData = JSON.parse(rawData); } catch(e){}
+            }
+
+            container.innerHTML = '';
+            let countLeave = 0;
+            let countGov = 0;
+
+            // ลูปเอาชื่อคนลามาวาดเป็นการ์ด
+            let hasLeave = false;
+            usersDB_Global.forEach(u => {
+                const uData = leaveData[u.Username];
+                if(uData && uData.status !== 'none') {
+                    hasLeave = true;
+                    
+                    if(uData.status === 'ลาป่วย/กิจ') countLeave++;
+                    if(uData.status === 'ไปราชการ') countGov++;
+
+                    const durMap = { 'full': 'เต็มวัน', 'am': 'ครึ่งเช้า', 'pm': 'ครึ่งบ่าย' };
+                    const durText = durMap[uData.dur] || 'เต็มวัน';
+                    
+                    const isGov = uData.status === 'ไปราชการ';
+                    const bgClass = isGov ? 'bg-purple-50 border-purple-200' : 'bg-amber-50 border-amber-200';
+                    const textClass = isGov ? 'text-purple-700' : 'text-amber-700';
+                    const icon = isGov ? '🏛️' : '🤒';
+
+                    // ดึงรูปลงการ์ด
+                    const fallbackImg = "https://ui-avatars.com/api/?name=" + encodeURIComponent(u.NickName || u.FirstName || "U") + "&background=d946ef&color=ffffff";
+                    const realImg = u.ProfileImage;
+                    const img = (realImg && realImg !== "null" && realImg !== "undefined" && realImg.trim() !== "") ? getEmbeddableUrl(realImg) : fallbackImg;
+
+                    container.innerHTML += `
+                        <div class="flex items-center gap-3 p-3 rounded-2xl border ${bgClass} shadow-sm hover:shadow-md transition-shadow">
+                            <img src="${img}" crossorigin="anonymous" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-inner">
+                            <div class="flex flex-col flex-grow">
+                                <span class="font-bold text-gray-800 text-sm truncate" title="${u.FullName}">${u.FullName}</span>
+                                <span class="text-[10px] text-gray-500">${u.Department || 'ไม่มีสังกัด'}</span>
+                            </div>
+                            <div class="flex flex-col items-end shrink-0">
+                                <span class="${textClass} font-black text-xs bg-white px-2 py-0.5 rounded shadow-sm mb-1">${icon} ${uData.status}</span>
+                                <span class="text-[10px] font-bold text-gray-600">${durText}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('hrCountLeave').textContent = countLeave;
+            document.getElementById('hrCountGov').textContent = countGov;
+
+            if(!hasLeave) {
+                container.innerHTML = '<div class="col-span-full py-16 text-center text-emerald-500 font-bold text-lg">✨ วันนี้ไม่มีบุคลากรลาหรือไปราชการครับ</div>';
+            }
+        };
+
+        // ฟังก์ชันคำนวณสถิติภาพรวม (Tab 3)
+        window.hrStatsDataCache = []; // เก็บตัวแปรไว้ทำ Search
+        window.loadHRStats = function() {
+            const tbody = document.getElementById('hrStatsTableBody');
+            if(!tbody) return;
+
+            let stats = {};
+            // 1. ตั้งต้นรายชื่อครูทุกคน
+            usersDB_Global.forEach(u => {
+                if(!u.Role.includes('BirdSpy') || u.Role.includes('User')) {
+                    stats[u.FullName] = { 
+                        name: u.FullName, 
+                        dept: u.Department || 'ไม่มีสังกัด', 
+                        sq: parseInt(u.Sq) || 999,
+                        leave: 0, 
+                        gov: 0, 
+                        subCount: 0 
+                    };
+                }
+            });
+
+            // 2. นับวันลา (บวกทีละ 1 หรือ 0.5 วัน)
+            leaveRecordsDB_Global.forEach(r => {
+                let data = {};
+                try { data = JSON.parse(r.Data || r.data || r.DATA || "{}"); } catch(e){}
+                for (let username in data) {
+                    const uInfo = usersDB_Global.find(u => u.Username === username);
+                    if(uInfo && stats[uInfo.FullName]) {
+                        const durValue = data[username].dur === 'full' ? 1 : 0.5;
+                        if(data[username].status === 'ลาป่วย/กิจ') stats[uInfo.FullName].leave += durValue;
+                        if(data[username].status === 'ไปราชการ') stats[uInfo.FullName].gov += durValue;
+                    }
+                }
+            });
+
+            // 3. นับคาบสอนแทน
+            substitutionsDB_Global.forEach(s => {
+                const subName = s.SubTeacher;
+                if(subName && subName !== 'Pending' && stats[subName]) {
+                    stats[subName].subCount += 1;
+                }
+            });
+
+            // 4. จัดเรียง (กลุ่มสาระฯ -> อาวุโส)
+            window.hrStatsDataCache = Object.values(stats).sort((a,b) => {
+                const indexA = typeof LEARNING_AREAS !== 'undefined' ? LEARNING_AREAS.indexOf(a.dept) : 99;
+                const indexB = typeof LEARNING_AREAS !== 'undefined' ? LEARNING_AREAS.indexOf(b.dept) : 99;
+                const sortA = indexA === -1 ? 99 : indexA;
+                const sortB = indexB === -1 ? 99 : indexB;
+                
+                if (sortA !== sortB) return sortA - sortB;
+                return a.sq - b.sq;
+            });
+
+            filterHRStats(); // โยนไปให้ฟังก์ชันวาดตาราง
+        };
+
+        // ฟังก์ชันค้นหาในหน้าสถิติ
+        window.filterHRStats = function() {
+            const term = document.getElementById('hrStatsSearch')?.value.toLowerCase() || "";
+            const tbody = document.getElementById('hrStatsTableBody');
+            if(!tbody) return;
+
+            let filtered = window.hrStatsDataCache;
+            if(term) {
+                filtered = window.hrStatsDataCache.filter(s => 
+                    s.name.toLowerCase().includes(term) || 
+                    s.dept.toLowerCase().includes(term)
+                );
+            }
+
+            tbody.innerHTML = '';
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-gray-400 italic">ไม่พบข้อมูลที่ค้นหา</td></tr>';
+                return;
+            }
+
+            filtered.forEach(s => {
+                const leaveFmt = s.leave > 0 ? `<span class="font-bold text-amber-600">${s.leave}</span>` : `<span class="text-gray-300">-</span>`;
+                const govFmt = s.gov > 0 ? `<span class="font-bold text-purple-600">${s.gov}</span>` : `<span class="text-gray-300">-</span>`;
+                const subFmt = s.subCount > 0 ? `<span class="font-black text-emerald-600 text-lg bg-emerald-50 px-3 py-0.5 rounded-lg border border-emerald-100">${s.subCount}</span>` : `<span class="text-gray-300">-</span>`;
+
+                tbody.innerHTML += `
+                <tr class="hover:bg-indigo-50/30 transition-colors">
+                    <td class="px-4 py-3 text-left border-r border-gray-100">
+                        <div class="font-bold text-gray-800 text-sm truncate" title="${s.name}">${s.name}</div>
+                        <div class="text-[10px] text-gray-500">${s.dept}</div>
+                    </td>
+                    <td class="px-4 py-3 border-r border-gray-100">${leaveFmt}</td>
+                    <td class="px-4 py-3 border-r border-gray-100">${govFmt}</td>
+                    <td class="px-4 py-3">${subFmt}</td>
+                </tr>`;
+            });
         };
 
         // ==========================================
@@ -7672,16 +7952,23 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             let excludedAM = [];
             let excludedPM = [];
 
+            // 💡 กวาดหาว่าใครถูกติ๊ก "ลา" หรือ "ราชการ" ไว้บ้างจากหน้าจอที่ดึงมาจาก HR
             usersDB_Global.forEach(u => {
                 const statusEl = document.querySelector(`input[name="status_${u.Username}"]:checked`);
                 if(!statusEl) return;
                 const status = statusEl.value;
                 if(status !== 'none') {
-                    const dur = document.querySelector(`input[name="dur_${u.Username}"]:checked`).value;
+                    // ดึงประเภท (เช้า/บ่าย/เต็มวัน)
+                    const durEl = document.querySelector(`input[name="dur_${u.Username}"]:checked`);
+                    const dur = durEl ? durEl.value : 'full';
                     absentTeachers.push({ fullName: u.FullName, type: status, duration: dur });
                 }
-                if(document.getElementById(`exAM_${u.Username}`).checked) excludedAM.push(u.FullName);
-                if(document.getElementById(`exPM_${u.Username}`).checked) excludedPM.push(u.FullName);
+                
+                // เก็บค่าคนที่ถูกติ๊ก "ละเว้น"
+                const exAM = document.getElementById(`exAM_${u.Username}`);
+                const exPM = document.getElementById(`exPM_${u.Username}`);
+                if(exAM && exAM.checked) excludedAM.push(u.FullName);
+                if(exPM && exPM.checked) excludedPM.push(u.FullName);
             });
 
             if(absentTeachers.length === 0) return customAlert("กรุณาเลือกครูที่ลา หรือไปราชการ อย่างน้อย 1 ท่านครับ", "info");
@@ -7742,8 +8029,12 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                                 }
                             });
 
+                            // 💡 สกัดคาบกิจกรรม (ถ้าไม่ใช่รหัสวิชามาตรฐาน ก-ฮ ตามด้วยเลข 5 ตัว)
+                            const isActivity = !targetSubCode.match(/^[ก-ฮ][0-9]{5}/);
+
                             let chosenSub = ""; 
-                            if(availableTeachers.length > 0) {
+                            // 💡 ถ้ามีครูว่าง และ "ไม่ใช่วิชากิจกรรม" ถึงจะให้ AI จัดให้
+                            if(availableTeachers.length > 0 && !isActivity) {
                                 availableTeachers.sort((a, b) => b.score - a.score);
                                 chosenSub = availableTeachers[0].name;
                                 dailySubCount[chosenSub] = (dailySubCount[chosenSub] || 0) + 1;
@@ -7916,7 +8207,7 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             board.classList.remove('hidden');
         };
 
-        // 🧲 ระบบฟิสิกส์ลากวางการ์ด (Physics Engine)
+        // 🧲 ระบบฟิสิกส์ลากวางการ์ด (Physics Engine - V2 Bulletproof)
         window.allowDropSubCard = function(ev) {
             ev.preventDefault();
             const zone = ev.currentTarget;
@@ -7927,7 +8218,8 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
 
         window.dragLeaveSubCard = function(ev) {
             const zone = ev.currentTarget;
-            if(zone.classList.contains('drop-zone') || zone.id === 'unassignedZone') {
+            // 💡 แก้บั๊กสีค้างตอนลากออก: เช็คคลาส unassigned-zone ให้เป๊ะ
+            if(zone.classList.contains('drop-zone') || zone.classList.contains('unassigned-zone')) {
                 zone.classList.remove('bg-indigo-200', 'border-indigo-500');
             }
         };
@@ -7946,21 +8238,35 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             dropZone.classList.remove('bg-indigo-200', 'border-indigo-500');
 
             const subObj = window.tempAISubstitutions.find(s => s.LogID === data);
+            if(!subObj) return;
 
-            // ถ้าลากกลับไปกล่องพัก (Unassigned)
-            if(dropZone.id === 'unassignedZone') {
-                subObj.SubTeacher = "";
-                if(card.parentElement && card.parentElement.classList.contains('w-[75px]')) {
-                    card.parentElement.remove();
+            // 🟢 ถ้าลากกลับไปกล่องพัก (Unassigned Zone)
+            if(dropZone.classList.contains('unassigned-zone')) {
+                const targetPeriod = dropZone.id.replace('unassignedZone_', '');
+                
+                // 💡 สกัดจุด: กันคนลากมั่วคาบ
+                if(targetPeriod !== subObj.Period) {
+                    return customAlert(`⚠️ คาบไม่ตรงกัน! กรุณาลากไปพักไว้ที่กล่อง "คาบ ${subObj.Period}" ให้ตรงกับวิชานี้ครับ`, "error");
                 }
-                const wrapper = document.createElement('div');
-                wrapper.className = "relative w-[75px] h-14";
-                wrapper.appendChild(card);
-                dropZone.appendChild(wrapper);
+
+                subObj.SubTeacher = ""; // ล้างข้อมูลคนสอนแทนออกในความจำ
+                
+                // ถ้าดึงมาจาก Matrix กล่องเดิมจะไม่มี wrapper ต้องสร้างใหม่
+                if(card.parentElement && card.parentElement.classList.contains('w-[75px]')) {
+                    // ถ้าย้ายจากกล่องพักไปกล่องพัก (ขยับเล่นๆ)
+                    const oldWrapper = card.parentElement;
+                    dropZone.appendChild(oldWrapper); 
+                } else {
+                    // ถ้าดึงมาจาก Matrix ต้องห่อด้วยกล่อง Wrapper ก่อนวางลงกล่องพัก
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "relative w-[75px] h-14";
+                    wrapper.appendChild(card);
+                    dropZone.appendChild(wrapper);
+                }
                 return;
             }
 
-            // ถ้าลากลงตาราง Matrix
+            // 🟢 ถ้าลากลงตาราง Matrix
             if(dropZone.classList.contains('drop-zone')) {
                 const targetPeriod = dropZone.dataset.period;
                 
@@ -7973,10 +8279,15 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 
                 // ถือว่าผ่านเกณฑ์
                 subObj.SubTeacher = dropZone.dataset.teacher;
+                
+                // ลอจิกย้ายการ์ดแบบปลอดภัย 100% (DOM Hierarchy Safety)
                 if(card.parentElement && card.parentElement.classList.contains('w-[75px]')) {
-                    card.parentElement.remove();
+                    const oldWrapper = card.parentElement;
+                    dropZone.appendChild(card); // ย้ายการ์ดมาก่อน
+                    oldWrapper.remove(); // ค่อยลบซากกล่องเดิมทิ้งทีหลัง
+                } else {
+                    dropZone.appendChild(card); // ย้ายข้ามช่อง Matrix
                 }
-                dropZone.appendChild(card);
             }
         };
 
@@ -7988,28 +8299,34 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
 
         window.assignedSubDataCache = []; // เก็บความจำชั่วคราวไว้ใช้วาดหน้าสรุป
 
-        // 💾 อัปเกรดปุ่ม Save (V.Smart Message: แยกแยะระหว่าง "บันทึกใหม่" กับ "อัปเดต")
+        // 💾 อัปเกรดปุ่ม Save (V.Smart Message & Anti-Bloat: กันขยะล้น DB)
         window.saveAISub = async function() {
-            const finalData = window.tempAISubstitutions.map(s => {
+            // 1. อัปเดตสถานะในตัวแปรชั่วคราวก่อน 
+            window.tempAISubstitutions.forEach(s => {
                 if (!s.SubTeacher || s.SubTeacher.trim() === '') {
                     s.SubTeacher = 'Pending';
                     s.Status = 'Pending';
                 } else {
                     s.Status = 'Assigned';
                 }
-                return s;
             });
 
-            if (finalData.length === 0) return customAlert("ไม่มีข้อมูลให้บันทึก", "info");
+            // 2. 💡 ลอจิกสกัดขยะ: เลือกเซฟเฉพาะ "คาบที่จัดคนแล้ว" หรือ "คาบเดิมที่เคยมีในระบบ (เพื่ออัปเดตกลับเป็น Pending)"
+            const dataToSave = window.tempAISubstitutions.filter(item => {
+                const isExisting = (substitutionsDB_Global || []).some(db => db.LogID === item.LogID);
+                return item.Status === 'Assigned' || isExisting;
+            });
 
-            // 💡 ตรรกะวิเคราะห์: เช็คว่าในฐานข้อมูลจริงมี LogID นี้อยู่หรือยัง
-            const existingCount = finalData.filter(item => 
+            if (dataToSave.length === 0) return customAlert("ยังไม่มีการจัดครูสอนแทนครับ (ไม่มีข้อมูลใหม่ให้บันทึก)", "info");
+
+            // 3. ตรรกะวิเคราะห์ (นับเฉพาะตัวที่จะเซฟจริงๆ ให้ตัวเลขแม่นยำ 100%)
+            const existingCount = dataToSave.filter(item => 
                 (substitutionsDB_Global || []).some(db => db.LogID === item.LogID)
             ).length;
-            const newCount = finalData.length - existingCount;
+            const newCount = dataToSave.length - existingCount;
 
             let loadingMsg = "";
-            if (existingCount > 0 && newCount > 0) loadingMsg = `เพิ่มข้อมูลใหม่ ${newCount} รายการ และอัปเดตทับของเดิม ${existingCount} รายการ`;
+            if (existingCount > 0 && newCount > 0) loadingMsg = `เพิ่มข้อมูลใหม่ ${newCount} รายการ และอัปเดต ${existingCount} รายการ`;
             else if (existingCount > 0) loadingMsg = `อัปเดตทับข้อมูลเดิม ${existingCount} รายการ`;
             else loadingMsg = `บันทึกข้อมูลใหม่ ${newCount} รายการ`;
 
@@ -8021,7 +8338,8 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             });
 
             try {
-                const payload = { action: 'batchSubmitHandover', data: finalData };
+                // ส่งเฉพาะตัวที่ผ่านการกรองแล้วไปเซฟ
+                const payload = { action: 'batchSubmitHandover', data: dataToSave };
                 const response = await fetch(SCRIPT_URL, { 
                     method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow'
                 });
@@ -8029,7 +8347,8 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 
                 if(result.status === 'success') {
                     Swal.close();
-                    window.assignedSubDataCache = finalData.filter(s => s.SubTeacher !== 'Pending'); 
+                    // หน้าสรุปให้ดึงเฉพาะตัวที่จัดแล้ว (Assigned) ไปโชว์
+                    window.assignedSubDataCache = dataToSave.filter(s => s.SubTeacher !== 'Pending'); 
                     document.getElementById('aiDragDropBoard').classList.add('hidden'); 
                     if(typeof updateMasterSubDateDisplay === 'function') updateMasterSubDateDisplay();
                     renderSubSummary(); 
@@ -8182,8 +8501,15 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             if (btn) { btn.innerHTML = "กำลังสร้างไฟล์รูปภาพ..."; btn.disabled = true; }
 
             try {
-                // 1. ลอจิกเรียงลำดับ ก-ฮ
-                let sortedData = [...window.assignedSubDataCache];
+                // 1. ลอจิกเรียงลำดับ ก-ฮ และ กรองคาบที่ยังไม่ได้จัดคน (Pending) ทิ้งไป
+                let sortedData = window.assignedSubDataCache.filter(item => item.Status !== 'Pending' && !item.SubTeacher.includes('Pending'));
+
+                // 💡 ดักจับ: ถ้ากรองแล้วไม่เหลือใครเลย (แปลว่ายังไม่ได้จัดคนสักคาบ) ให้เด้งเตือน
+                if (sortedData.length === 0) {
+                    if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+                    return customAlert("ไม่มีข้อมูลที่ถูกจัดสอนแทนเรียบร้อยแล้ว ให้สร้างประกาศครับ", "error");
+                }
+
                 const stripPrefix = (name) => {
                     if (!name) return "";
                     return String(name).replace(/^(นาย|นางสาว|นาง|ว่าที่ร้อยตรีหญิง|ว่าที่ร้อยตรี|ว่าที่ ร\.ต\. หญิง|ว่าที่ ร\.ต\.|Mr\.|Mrs\.|Ms\.)\s*/gi, '').trim();
@@ -11753,16 +12079,25 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
             } catch(e) { console.warn("Fetch DBs Error:", e); }
         };
 
-        // 🧠 แก้บั๊กสัปดาห์ที่ (คำนวณเป๊ะๆ 100%)
+        // 🧠 แก้บั๊กสัปดาห์ที่ (คำนวณเป๊ะๆ 100% ลบปัญหาเศษเสี้ยวเวลา และตั้งต้นที่วันจันทร์เสมอ)
         window.calculateWeekString = function(targetDateStr) {
             if (!targetDateStr || !currentStartDate) return "";
             const d = new Date(targetDateStr);
             const startD = new Date(currentStartDate);
-            d.setHours(0,0,0,0); startD.setHours(0,0,0,0);
+            
+            // 💡 ทริคแก้ปัญหาสัปดาห์เพี้ยน: บังคับถอยวันเปิดเทอมไปหา "วันจันทร์" ของสัปดาห์นั้น
+            // เช่น ถ้าเปิดเทอม 16 พ.ค. (เสาร์) ระบบจะถอยไปเริ่มนับสัปดาห์ 1 ตั้งแต่ 11 พ.ค. (จันทร์) ให้เป๊ะๆ
+            const day = startD.getDay(); 
+            const diffToMonday = day === 0 ? 6 : day - 1; // 0 คือวันอาทิตย์
+            startD.setDate(startD.getDate() - diffToMonday);
+            
+            // 💡 ตั้งเวลาไว้ตอนเที่ยงตรง ป้องกันบั๊ก Timezone ปัดวันเพี้ยน
+            d.setHours(12,0,0,0); 
+            startD.setHours(12,0,0,0);
             
             const diffTime = d.getTime() - startD.getTime();
             if (diffTime >= 0) {
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                 const weekNum = Math.floor(diffDays / 7) + 1;
                 return ` (สัปดาห์ที่ ${weekNum})`;
             }
@@ -11781,7 +12116,7 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 window.currentSubWeekStr = weekStr; // จำไว้ใช้ตอน Export รูป
             } else if (displayInput) displayInput.value = "";
         };
-
+        // ฟังก์ชันแปลงวันที่ภาษาไทยสำหรับหน้าบันทึกการลา (Tab 1)
         window.updateHRDateDisplay = function() {
             const dateInput = document.getElementById('hrLeaveDate');
             const displayInput = document.getElementById('hrLeaveDateDisplay');
@@ -11789,8 +12124,20 @@ const response = await fetch(SCRIPT_URL + "?action=getSettings&t=" + new Date().
                 const d = new Date(dateInput.value);
                 const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
                 const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                const weekStr = calculateWeekString(dateInput.value);
-                displayInput.value = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}${weekStr}`;
+                displayInput.value = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
+            } else if (displayInput) displayInput.value = "";
+        };
+
+        // ฟังก์ชันแปลงวันที่ภาษาไทยสำหรับหน้าตรวจสอบรายวัน
+        window.updateHRDailyCheckDateDisplay = function() {
+            const dateInput = document.getElementById('hrDailyCheckDate');
+            const displayInput = document.getElementById('hrDailyCheckDateDisplay');
+            if (dateInput && displayInput && dateInput.value) {
+                const d = new Date(dateInput.value);
+                const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+                const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                // ฟอร์แมต วัน...ที่...พ.ศ... (ไม่มีสัปดาห์ที่)
+                displayInput.value = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
             } else if (displayInput) displayInput.value = "";
         };
 
