@@ -6758,7 +6758,7 @@ window.deleteLog = function(logId) {
             const target = document.getElementById('dailyReportPrintTarget');
             
             // ดึง Log เฉพาะวันนั้นและอนุมัติแล้ว
-            const dailyLogs = sessionLogs.filter(l => l.teachDate === selectedDate && l.status === 'Approved');
+            const dailyLogs = sessionLogs.filter(l => l.teachDate === selectedDate);
             
             // จัดกลุ่มตาม CLASSROOMS_LIST ให้มีโครงครบทุกห้อง
             const groupedByClass = {};
@@ -6862,9 +6862,11 @@ window.deleteLog = function(logId) {
             target.innerHTML = '<div class="text-center py-10"><div class="loader loader-white mx-auto border-4 border-sky-500 border-t-transparent"></div></div>';
 
             setTimeout(() => {
-                // 1. ดึง Log เฉพาะสัปดาห์นี้และต้องอนุมัติแล้วเท่านั้น
+                // 1. ดึง Log เฉพาะสัปดาห์นี้ (ถอดตัวกรอง Approved ออกแล้ว)
                 const weekLogs = sessionLogs.filter(l => {
-                    if(l.status !== 'Approved') return false;
+                    // 💡 ลบหรือคอมเมนต์บรรทัดนี้ทิ้งไปเลย เพื่อให้ดึงมาโชว์ทั้งหมด
+                    // if(l.status !== 'Approved') return false; 
+                    
                     const logDate = new Date(l.timestamp);
                     return logDate >= weekInfo.start && logDate <= weekInfo.end;
                 });
