@@ -15416,20 +15416,37 @@ window.saveStudentDetail = async function() {
             tbody.innerHTML = html;
         };
 
-        // 💡 สมองกลสำหรับปุ่มล็อกทั้งแถว (วัน)
-        window.toggleExclusionRow = function(day) {
-            const checkboxes = document.querySelectorAll(`.adv-exc-cb[data-day="${day}"]`);
-            // เช็คว่าติ๊กครบหมดหรือยัง ถ้าครบแล้วแปลว่าคำสั่งต่อไปคือ "ปลดล็อก" ถ้ายังไม่ครบคือ "ล็อกทั้งหมด"
-            const targetState = !Array.from(checkboxes).every(cb => cb.checked); 
-            checkboxes.forEach(cb => {
-                cb.checked = targetState;
-                const display = cb.parentElement.querySelector('.cell-display');
+        // 💡 สมองกลสำหรับคลิกเลือกทีละช่อง (เซลล์คาบเรียน)
+        window.toggleAdvExcCell = function(td) {
+            const cb = td.querySelector('.adv-exc-cb');
+            const display = td.querySelector('.cell-display');
+            cb.checked = !cb.checked;
+            
+            if(cb.checked) {
+                display.className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                display.innerText = "🚫";
+            } else {
+                display.className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
+                display.innerText = "ว่าง";
+            }
+        };
+        // 💡 สมองกลสำหรับปุ่มล็อกทั้งแถว (คลิกที่หัวแถว)
+        window.toggleExclusionRow = function(btn) {
+            const row = btn.closest('tr');
+            const checkboxes = row.querySelectorAll('.adv-exc-cb');
+            const displays = row.querySelectorAll('.cell-display');
+            
+            // เช็คสถานะปัจจุบันจากตัวแรกในแถว
+            const isAnyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            
+            checkboxes.forEach((cb, index) => {
+                cb.checked = !isAnyChecked;
                 if(cb.checked) {
-                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
-                    display.innerText = "🚫";
+                    displays[index].className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                    displays[index].innerText = "🚫";
                 } else {
-                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
-                    display.innerText = "ว่าง";
+                    displays[index].className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
+                    displays[index].innerText = "ว่าง";
                 }
             });
         };
