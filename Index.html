@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.01 [May 18th, 2025] | Dev. by Thuntathorn 😁</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.02 [June 6th, 2025] | Dev. by Thuntathorn 😁</p>
             </div>
         </div>
     </div>
@@ -1963,6 +1963,14 @@
                             <p class="text-[10px] text-gray-500 mt-1">ตั้งค่าเทอม, ละเว้นครู, Master Switch</p>
                         </div>
 
+                        <!-- 🛡️ Card 4.5: Advanced Exclusions (EmpPngn Only) -->
+                        <div onclick="switchAdminTab('admin-sec-exclusions'); initAdvExclusions();" id="card-adv-exclusions" class="admin-card-btn glass-panel p-6 rounded-3xl border border-rose-500/50 hover:border-rose-400 transition-all cursor-pointer group shadow-2xl relative overflow-hidden bg-slate-900/40 hidden">
+                            <div class="w-14 h-14 bg-gradient-to-br from-rose-400 to-red-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg border border-rose-300">
+                                <span class="text-3xl text-white">🛡️</span>
+                            </div>
+                            <h4 class="font-black text-rose-400 text-lg">ละเว้นจัดสอนแทน</h4>
+                            <p class="text-[10px] text-rose-200/60 mt-1">กำหนดตารางแบล็กลิสต์รายวัน/รายคาบ</p>
+                        </div>
                         <!-- 👑 Card 5: Emperor Command (EmpPngn Only) ดึงเข้ามาอยู่ใน Grid -->
                         <div onclick="switchAdminTab('admin-sec-godmode')" id="card-godmode" class="admin-card-btn glass-panel p-6 rounded-3xl border border-amber-500/50 hover:border-amber-400 transition-all cursor-pointer group shadow-2xl relative overflow-hidden bg-slate-900/40 hidden">
                             <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg border border-amber-300">
@@ -2224,17 +2232,57 @@
                                 </div> <!-- ปิด Grid 3 คอลัมน์ตรงนี้ -->
                                 <button onclick="adminUpdateSettings()" class="w-full py-3 bg-rose-600 text-white font-bold rounded-xl shadow-lg hover:bg-rose-700 transition-colors mt-4">⚙️ บันทึกการตั้งค่ามิติเวลา</button>
                             </div> <!-- ปิดการ์ดที่ 1 (ตั้งค่ามิติเวลา) ตรงนี้ -->
-                            
-                            <!-- แยกการ์ดที่ 2 ออกมาให้ตีคู่กันใน grid-cols-2 -->
-                            <div id="exclusionAdminSection" class="bg-white rounded-3xl p-8 shadow-xl border border-rose-100">
-                                <h3 class="text-xl font-bold text-rose-800 mb-4 flex items-center gap-2">🚫 รายชื่อละเว้นจัดสอนแทนถาวร</h3>
-                                <div class="flex gap-2 mb-4"><select id="adminExclusionSelect" class="flex-grow rounded-xl border-gray-300 p-3 text-sm outline-none"></select><button onclick="adminAddExclusion()" class="bg-rose-100 text-rose-600 px-4 rounded-xl font-bold">เพิ่ม</button></div>
-                                <ul id="adminExclusionList" class="space-y-2 max-h-32 overflow-y-auto pr-2"></ul>
-                                <button onclick="adminSaveExclusions(event)" class="w-full mt-4 py-2.5 bg-gray-800 text-white font-bold rounded-xl">💾 บันทึกบัญชีดำถาวร</button>
-                            </div>
                         </div>
                     </div> <!-- 💡 ปิดแค่ admin-sec-config พอ! อย่าปิดเกิน! -->
 
+                <!-- [6] 🛡️ SECTION: ADVANCED EXCLUSIONS (EmpPngn ONLY) -->
+                    <div id="admin-sec-exclusions" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div class="bg-white rounded-3xl shadow-xl border-t-8 border-rose-600 p-8">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-200 pb-4 gap-4">
+                                <div>
+                                    <h3 class="text-2xl font-black text-rose-800 flex items-center gap-2">🛡️ ตั้งค่าละเว้นการจัดสอนแทนรายคาบ</h3>
+                                    <p class="text-sm text-gray-500 mt-1">กำหนดคาบที่ไม่ต้องการให้ AI ส่งครูท่านนี้ไปสอนแทนแบบถาวร</p>
+                                </div>
+                                <div class="w-full md:w-72">
+                                    <select id="advExcTeacherSelect" onchange="loadAdvExclusionsForTeacher()" class="w-full rounded-xl border border-gray-300 p-3 text-sm font-bold bg-rose-50 text-rose-900 outline-none focus:ring-2 focus:ring-rose-500 shadow-sm"></select>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner mb-6 relative">
+                                <div id="advExcOverlay" class="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center text-rose-600 font-black text-xl">
+                                    กรุณาเลือกรายชื่อครูเพื่อตั้งค่า
+                                </div>
+                                <table class="min-w-full divide-y divide-gray-200 text-sm text-center select-none border-separate border-spacing-0">
+                                    <thead class="bg-gradient-to-r from-rose-800 to-red-800 text-white shadow-md">
+                                        <tr>
+                                            <th class="px-2 py-3 font-bold w-36 border-r border-rose-700/50 align-middle sticky top-0">
+                                                <button onclick="toggleAllExclusionsMatrix()" class="flex items-center justify-center gap-2 w-full bg-rose-950/40 hover:bg-rose-900 text-rose-100 px-3 py-2 rounded-lg shadow-inner border border-rose-600/50 transition-all font-black text-xs group" title="คลิกเพื่อสลับสถานะทั้งตาราง">
+                                                    <span class="group-hover:rotate-180 transition-transform duration-300">🔄</span> ล็อกยกแผง
+                                                </button>
+                                            </th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(1)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 1 ทุกวัน">คาบ 1<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(2)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 2 ทุกวัน">คาบ 2<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(3)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 3 ทุกวัน">คาบ 3<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(4)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 4 ทุกวัน">คาบ 4<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(5)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 5 ทุกวัน">คาบ 5<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(6)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 6 ทุกวัน">คาบ 6<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(7)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 7 ทุกวัน">คาบ 7<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(8)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 8 ทุกวัน">คาบ 8<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                            <th class="px-1 py-2 sticky top-0"><button onclick="toggleExclusionCol(9)" class="w-full bg-rose-900/40 hover:bg-amber-500 hover:text-rose-900 text-rose-100 rounded-lg py-1.5 text-xs font-bold border border-rose-700/50 transition-all shadow-sm" title="ล็อกคาบ 9 ทุกวัน">คาบ 9<br><span class="text-[8px] opacity-70">▼</span></button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="advExcMatrixBody" class="bg-white divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <p class="text-[10px] font-bold text-gray-400">* ติ๊ก <span class="text-rose-500">สีแดง</span> เพื่อละเว้นไม่ให้จัดสอนแทนในคาบนั้นๆ</p>
+                                <button onclick="saveAdvExclusions(event)" class="px-8 py-3.5 bg-rose-600 text-white font-black rounded-xl shadow-lg hover:bg-rose-700 hover:scale-105 transition-all">
+                                    💾 บันทึกตารางละเว้น
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
                     <div id="admin-sec-godmode" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -8072,7 +8120,18 @@ window.deleteLog = function(logId) {
                                 if (absentTeachers.some(a => a.fullName === sub_tt.TeacherName)) return;
                                 if (i <= 4 && excludedAM.includes(sub_tt.TeacherName)) return;
                                 if (i >= 5 && excludedPM.includes(sub_tt.TeacherName)) return;
-                                if (typeof persistentExclusions !== 'undefined' && persistentExclusions.includes(sub_tt.TeacherName)) return;
+                                
+                                // 💡 อัปเกรดด่านสกัด "ละเว้นถาวร" ให้รองรับแบบ Advanced (รายวัน/รายคาบ)
+                                if (typeof persistentExclusions !== 'undefined') {
+                                    // เคส 1: รูปแบบเก่า (Array ธรรมดา) = ละเว้นทั้งยวง
+                                    if (Array.isArray(persistentExclusions) && persistentExclusions.includes(sub_tt.TeacherName)) return;
+                                    
+                                    // เคส 2: รูปแบบใหม่ (Object JSON) = เจาะจง วัน และ คาบ
+                                    if (!Array.isArray(persistentExclusions) && typeof persistentExclusions === 'object') {
+                                        const tExc = persistentExclusions[sub_tt.TeacherName];
+                                        if (tExc && tExc[targetDayName] && tExc[targetDayName].includes(i)) return; 
+                                    }
+                                }
                                 if ((dailySubCount[sub_tt.TeacherName] || 0) >= 3) return;
                                 if (window.tempAISubstitutions.some(temp => temp.SubTeacher === sub_tt.TeacherName && temp.Period === i.toString())) return;
 
@@ -8174,18 +8233,44 @@ window.deleteLog = function(logId) {
                 // 💡 จุดปรับปรุงที่ 1: ดึงห้องประจำชั้นมาต่อท้ายกลุ่มสาระฯ
                 const advisorText = (t.AdvisorRoom && t.AdvisorRoom !== '-' && t.AdvisorRoom.trim() !== '') ? ` | ประจำชั้น${t.AdvisorRoom}` : '';
 
+                // 🧮 คำนวณภาระงาน (คาบปกติ + คาบสอนแทน)
+                let baseLoad = 0;
+                for(let i=1; i<=9; i++) { if(tt && tt[`Period${i}`] && tt[`Period${i}`].trim() !== '') baseLoad++; }
+                let subLoad = window.tempAISubstitutions.filter(s => s.SubTeacher === t.FullName).length;
+                let totalLoad = baseLoad + subLoad;
+                
+                // 🔴 แจ้งเตือนถ้าเกิน 6 คาบ
+                let loadWarningHtml = '';
+                if(totalLoad > 6) {
+                    loadWarningHtml = `<div class="mt-1 text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-200 rounded px-1 py-0.5 animate-pulse">⚠️ รวม ${totalLoad} คาบ! (ตรวจสอบด่วน)</div>`;
+                } else {
+                    loadWarningHtml = `<div class="mt-1 text-[9px] text-gray-400">สอนรวม: ${totalLoad} คาบ</div>`;
+                }
+
                 let rowHtml = `<tr class="hover:bg-purple-50/30 transition-colors border-b border-gray-200">
-                    <td class="p-2 font-bold text-gray-700 text-left sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10 w-40 truncate border-r border-gray-200">
+                    <td class="p-2 font-bold text-gray-700 text-left sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10 w-48 truncate border-r border-gray-200">
                         <div class="text-xs truncate" title="${t.FullName}">${t.FullName}</div>
-                        <div class="text-[9px] text-gray-400 truncate" title="${t.Department||''}${advisorText}">${t.Department||''}${advisorText}</div>
+                        <div class="text-[9px] text-gray-400 truncate mt-0.5" title="${t.Department||''}${advisorText}">${t.Department||''}${advisorText}</div>
+                        ${loadWarningHtml}
                     </td>`;
                     
                 for(let i=1; i<=9; i++) {
                     let state = 'empty'; 
                     let pData = tt ? tt[`Period${i}`] : "";
                     
+                    // 💡 เช็คสถานะละเว้นถาวรแบบ Advanced
+                    let isExcluded = false;
+                    if (typeof persistentExclusions !== 'undefined') {
+                        if (Array.isArray(persistentExclusions) && persistentExclusions.includes(t.FullName)) isExcluded = true;
+                        else if (!Array.isArray(persistentExclusions) && typeof persistentExclusions === 'object') {
+                            const tExc = persistentExclusions[t.FullName];
+                            // เช็คว่าใน Object ของครูคนนี้ มีข้อมูลของวันนี้ และมีคาบนี้(i) ระบุไว้ให้ละเว้นหรือไม่
+                            if (tExc && tExc[targetDayName] && tExc[targetDayName].includes(i)) isExcluded = true;
+                        }
+                    }
+
                     if ((i<=4 && isAbsentAM) || (i>=5 && isAbsentPM)) state = 'absent';
-                    else if (persistentExclusions.includes(t.FullName) || (i<=4 && excludedAM.includes(t.FullName)) || (i>=5 && excludedPM.includes(t.FullName))) state = 'excluded';
+                    else if (isExcluded || (i<=4 && excludedAM.includes(t.FullName)) || (i>=5 && excludedPM.includes(t.FullName))) state = 'excluded';
                     else if (pData && pData.trim() !== '') state = 'busy';
 
                     if (state === 'absent') {
@@ -8387,6 +8472,19 @@ window.deleteLog = function(logId) {
             });
 
             if (dataToSave.length === 0) return customAlert("ยังไม่มีการจัดครูสอนแทนครับ (ไม่มีข้อมูลใหม่ให้บันทึก)", "info");
+            // 🛑 กฎเหล็ก: ต้องมีคาบพักกลางวัน (คาบ 4 หรือ 5 ต้องว่างอย่างน้อย 1 คาบ)
+            const assignedTeachers = [...new Set(dataToSave.map(s => s.SubTeacher).filter(name => name !== 'Pending'))];
+            for (let tName of assignedTeachers) {
+                const tt = timetableDB_Global.find(x => x.TeacherName === tName && x.Day === window._lastTargetDayName);
+                
+                // เช็คว่าคาบ 4 และ 5 โดนจองด้วยคาบปกติ หรือ โดนจัดสอนแทนไปแล้วใช่ไหม?
+                const isP4Busy = (tt && tt.Period4 && tt.Period4.trim() !== '') || dataToSave.some(s => s.SubTeacher === tName && s.Period == 4);
+                const isP5Busy = (tt && tt.Period5 && tt.Period5.trim() !== '') || dataToSave.some(s => s.SubTeacher === tName && s.Period == 5);
+                
+                if (isP4Busy && isP5Busy) {
+                    return customAlert(`❌ บันทึกไม่ได้! ครู "${tName}" ถูกจัดตารางจนไม่มีคาบพักกลางวัน (คาบ 4 และ 5 ไม่ว่างเลย) กรุณาจัดใหม่ครับ`, "error");
+                }
+            }
 
             // 3. ตรรกะวิเคราะห์ (นับเฉพาะตัวที่จะเซฟจริงๆ ให้ตัวเลขแม่นยำ 100%)
             const existingCount = dataToSave.filter(item => 
@@ -13330,11 +13428,12 @@ window.deleteLog = function(logId) {
                 if(adminGrid) { adminGrid.classList.remove('lg:grid-cols-5'); adminGrid.classList.add('lg:grid-cols-4'); }
             }
 
-            // 2. รายชื่อละเว้นจัดสอนแทนถาวร (Persistent Exclusions)
-            const excSec = document.getElementById('exclusionAdminSection');
-            if (excSec) {
-                if (isEmpPngn) excSec.classList.remove('hidden', '!hidden');
-                else excSec.classList.add('hidden', '!hidden'); 
+            // 2. เมนูละเว้นจัดสอนแทนรายคาบ (Advanced Exclusions - EmpPngn Only)
+            const excCard = document.getElementById('card-adv-exclusions');
+            if (isEmpPngn) {
+                if(excCard) excCard.classList.remove('hidden', '!hidden');
+            } else {
+                if(excCard) excCard.classList.add('hidden', '!hidden'); 
             }
 
             // 3. ระบบสวมรอย (Impersonation)
@@ -14022,8 +14121,8 @@ window.saveStudentDetail = async function() {
         
         // 🕹️ ฟังก์ชันควบคุมแผงบริหาร (Admin Tab Controller - Ultimate Version)
         window.switchAdminTab = function(secId) {
-            // 💡 สกัดจุดขั้นสูงสุด: ถ้าไม่ใช่ EmpPngn ห้ามแอบเปิดแท็บ God Mode เด็ดขาด!
-            if (secId === 'admin-sec-godmode' && !(currentUser && currentUser.Role && currentUser.Role.includes('EmpPngn'))) {
+            // 💡 สกัดจุดขั้นสูงสุด: ถ้าไม่ใช่ EmpPngn ห้ามแอบเปิดแท็บ God Mode และแท็บละเว้นเด็ดขาด!
+            if ((secId === 'admin-sec-godmode' || secId === 'admin-sec-exclusions') && !(currentUser && currentUser.Role && currentUser.Role.includes('EmpPngn'))) {
                 return customAlert("🛑 สิทธิ์ถูกระงับ! พื้นที่นี้สงวนไว้สำหรับผู้ดูแลระบบระดับสูงสุด (EmpPngn) เท่านั้น", "error");
             }
 
@@ -15249,6 +15348,209 @@ window.saveStudentDetail = async function() {
                 });
             }
         }, 1000);
+    // ==========================================
+        // 🛡️ Advanced Exclusions Logic (The Grid Master)
+        // ==========================================
+        window.initAdvExclusions = function() {
+            const select = document.getElementById('advExcTeacherSelect');
+            if(select && typeof usersDB_Global !== 'undefined') {
+                select.innerHTML = '<option value="">-- เลือกรายชื่อครู --</option>';
+                
+                const validTeachers = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User'));
+
+                // 💡 สร้างหมวดหมู่ (OptGroup) รอไว้ตามลำดับ LEARNING_AREAS
+                const groups = {};
+                LEARNING_AREAS.forEach(dept => {
+                    const grp = document.createElement('optgroup');
+                    grp.label = `📁 กลุ่มสาระฯ ${dept}`;
+                    groups[dept] = grp;
+                });
+                const grpNone = document.createElement('optgroup');
+                grpNone.label = `📁 ไม่มีสังกัด`;
+
+                // 💡 จัดเรียงคน: กลุ่มสาระฯ -> ลำดับ Sq
+                const sortedUsers = [...validTeachers].sort((a, b) => {
+                    const iA = LEARNING_AREAS.indexOf(a.Department) !== -1 ? LEARNING_AREAS.indexOf(a.Department) : 99;
+                    const iB = LEARNING_AREAS.indexOf(b.Department) !== -1 ? LEARNING_AREAS.indexOf(b.Department) : 99;
+                    if (iA !== iB) return iA - iB;
+                    return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
+                });
+
+                // 💡 ยัดรายชื่อใส่หมวดหมู่ที่เตรียมไว้
+                sortedUsers.forEach(u => {
+                    const opt = new Option(u.FullName, u.FullName);
+                    if (u.Department && groups[u.Department]) {
+                        groups[u.Department].appendChild(opt);
+                    } else {
+                        grpNone.appendChild(opt);
+                    }
+                });
+
+                // 💡 เอาหมวดหมู่ที่มีคน ไปโชว์ใน Dropdown
+                LEARNING_AREAS.forEach(dept => {
+                    if(groups[dept].children.length > 0) select.appendChild(groups[dept]);
+                });
+                if(grpNone.children.length > 0) select.appendChild(grpNone);
+            }
+            
+            // วาดตารางเปล่าๆ รอไว้ (ปรับปุ่มแถวแนวนอนให้ชัดขึ้น)
+            const tbody = document.getElementById('advExcMatrixBody');
+            const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
+            let html = '';
+            days.forEach(day => {
+                html += `<tr class="hover:bg-rose-50/40 transition-colors">
+                    <td class="p-2 border-r border-gray-200 align-middle">
+                        <button onclick="toggleExclusionRow('${day}')" class="w-full flex justify-between items-center font-bold text-rose-800 bg-rose-50 hover:bg-rose-600 hover:text-white px-3 py-2.5 rounded-lg transition-all shadow-sm text-xs border border-rose-100 group" title="คลิกเพื่อล็อก/ปลดล็อก ${day} ทั้งวัน">
+                            <span>${day}</span> <span class="opacity-40 text-[10px] group-hover:translate-x-1 transition-transform">▶▶</span>
+                        </button>
+                    </td>`;
+                for(let i=1; i<=9; i++) {
+                    html += `
+                    <td class="border-r border-gray-100 p-1.5 cursor-pointer transition-colors hover:bg-rose-100 group" onclick="toggleAdvExcCell(this)">
+                        <input type="checkbox" id="exc_${day}_${i}" data-day="${day}" data-period="${i}" class="adv-exc-cb hidden">
+                        <div class="cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all">ว่าง</div>
+                    </td>`;
+                }
+                html += '</tr>';
+            });
+            tbody.innerHTML = html;
+        };
+
+        // 💡 สมองกลสำหรับปุ่มล็อกทั้งแถว (วัน)
+        window.toggleExclusionRow = function(day) {
+            const checkboxes = document.querySelectorAll(`.adv-exc-cb[data-day="${day}"]`);
+            // เช็คว่าติ๊กครบหมดหรือยัง ถ้าครบแล้วแปลว่าคำสั่งต่อไปคือ "ปลดล็อก" ถ้ายังไม่ครบคือ "ล็อกทั้งหมด"
+            const targetState = !Array.from(checkboxes).every(cb => cb.checked); 
+            checkboxes.forEach(cb => {
+                cb.checked = targetState;
+                const display = cb.parentElement.querySelector('.cell-display');
+                if(cb.checked) {
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                    display.innerText = "🚫";
+                } else {
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
+                    display.innerText = "ว่าง";
+                }
+            });
+        };
+
+        // 💡 สมองกลสำหรับปุ่มล็อกคอลัมน์ (คาบ)
+        window.toggleExclusionCol = function(period) {
+            const checkboxes = document.querySelectorAll(`.adv-exc-cb[data-period="${period}"]`);
+            const targetState = !Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => {
+                cb.checked = targetState;
+                const display = cb.parentElement.querySelector('.cell-display');
+                if(cb.checked) {
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                    display.innerText = "🚫";
+                } else {
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
+                    display.innerText = "ว่าง";
+                }
+            });
+        };
+
+        // 💡 สมองกลสำหรับปุ่มล็อกตารางยกแผง
+        window.toggleAllExclusionsMatrix = function() {
+            const checkboxes = document.querySelectorAll('.adv-exc-cb');
+            const targetState = !Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => {
+                cb.checked = targetState;
+                const display = cb.parentElement.querySelector('.cell-display');
+                if(cb.checked) {
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                    display.innerText = "🚫";
+                } else {
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
+                    display.innerText = "ว่าง";
+                }
+            });
+        };
+
+        window.loadAdvExclusionsForTeacher = function() {
+            const teacher = document.getElementById('advExcTeacherSelect').value;
+            const overlay = document.getElementById('advExcOverlay');
+            
+            // เคลียร์ตารางเป็นว่างหมดก่อน
+            document.querySelectorAll('.adv-exc-cb').forEach(cb => {
+                cb.checked = false;
+                const display = cb.parentElement.querySelector('.cell-display');
+                display.className = "cell-display w-full h-8 rounded border-2 border-gray-200 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-300 transition-all";
+                display.innerText = "ว่าง";
+            });
+
+            if (!teacher) { overlay.classList.remove('hidden'); return; }
+            overlay.classList.add('hidden');
+
+            // 💡 แปลง Array เก่า เป็น Object ใหม่บน RAM อัตโนมัติ (Backward Compatibility)
+            if (Array.isArray(persistentExclusions)) {
+                let newObj = {};
+                persistentExclusions.forEach(tName => {
+                    // ถ้าโดนแบนแบบเก่า คือแบนทุกวัน ทุกคาบ
+                    newObj[tName] = { "จันทร์": [1,2,3,4,5,6,7,8,9], "อังคาร": [1,2,3,4,5,6,7,8,9], "พุธ": [1,2,3,4,5,6,7,8,9], "พฤหัสบดี": [1,2,3,4,5,6,7,8,9], "ศุกร์": [1,2,3,4,5,6,7,8,9] };
+                });
+                persistentExclusions = newObj;
+            }
+
+            // โหลดข้อมูลลง Grid
+            const tExc = persistentExclusions[teacher];
+            if (tExc) {
+                Object.keys(tExc).forEach(day => {
+                    tExc[day].forEach(period => {
+                        const cb = document.getElementById(`exc_${day}_${period}`);
+                        if (cb) {
+                            cb.checked = true;
+                            const display = cb.parentElement.querySelector('.cell-display');
+                            display.className = "cell-display w-full h-8 rounded border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                            display.innerText = "🚫";
+                        }
+                    });
+                });
+            }
+        };
+
+        window.saveAdvExclusions = async function(event) {
+            const teacher = document.getElementById('advExcTeacherSelect').value;
+            if(!teacher) return customAlert("กรุณาเลือกรายชื่อครูก่อนบันทึกครับ", "error");
+
+            const btn = event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = "กำลังบันทึก..."; btn.disabled = true;
+
+            try {
+                // แพ็คข้อมูลจากหน้าจอ
+                let myExc = {};
+                document.querySelectorAll('.adv-exc-cb:checked').forEach(cb => {
+                    const d = cb.getAttribute('data-day');
+                    const p = parseInt(cb.getAttribute('data-period'));
+                    if(!myExc[d]) myExc[d] = [];
+                    myExc[d].push(p);
+                });
+
+                // ยัดลง Global Object
+                if (Array.isArray(persistentExclusions)) persistentExclusions = {}; // กันเหนียว
+                
+                if (Object.keys(myExc).length === 0) {
+                    delete persistentExclusions[teacher]; // ถ้าล้างออกหมด ก็ลบ Key ทิ้งเลย DB จะได้ไม่บวม
+                } else {
+                    persistentExclusions[teacher] = myExc;
+                }
+
+                // ส่งไป Save (API ตัวเดิมเลย มันรับ Object ได้สบาย)
+                const payload = { action: "updateExclusions", list: persistentExclusions, updater: currentUser.FullName };
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    customAlert(`บันทึกตารางละเว้นของ ${teacher} เรียบร้อย!`, "success");
+                } else throw new Error(result.message);
+            } catch(e) {
+                customAlert("ข้อผิดพลาด: " + e.message, "error");
+            } finally {
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
     </script>
 </body>
 </html>
