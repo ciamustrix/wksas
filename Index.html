@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.02 [June 6th, 2025] | Dev. by Thuntathorn 😁</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.1 [June 8th, 2025] | TESTING-FxSupervision | Dev. by Thuntathorn 😁</p>
             </div>
         </div>
     </div>
@@ -1944,7 +1944,14 @@
                             <h4 class="font-black text-gray-800 text-lg">ฐานข้อมูล & ทะเบียน</h4>
                             <p class="text-[10px] text-gray-500 mt-1">อัปโหลด Excel, วิชา, ตารางสอน</p>
                         </div>
-
+                        <!-- Card 2.5: PLC Admin -->
+                        <div onclick="switchAdminTab('admin-sec-plc')" id="card-admin-plc" class="admin-card-btn glass-panel p-6 rounded-3xl border border-fuchsia-100 hover:border-fuchsia-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden hidden">
+                            <div class="w-14 h-14 bg-fuchsia-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <span class="text-3xl">🎓</span>
+                            </div>
+                            <h4 class="font-black text-gray-800 text-lg">แผงบริหาร PLC</h4>
+                            <p class="text-[10px] text-gray-500 mt-1">จัดการสมาชิก, ยุบกลุ่ม, โหมด Auto</p>
+                        </div>
                         <!-- Card 3: Global Archive (คลังเอกสารรวม) -->
                         <div onclick="switchAdminTab('admin-sec-academic')" class="admin-card-btn glass-panel p-6 rounded-3xl border border-purple-100 hover:border-purple-300 transition-all cursor-pointer group shadow-sm hover:shadow-md relative overflow-hidden">
                             <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -1970,6 +1977,14 @@
                             </div>
                             <h4 class="font-black text-rose-400 text-lg">ละเว้นจัดสอนแทน</h4>
                             <p class="text-[10px] text-rose-200/60 mt-1">กำหนดตารางแบล็กลิสต์รายวัน/รายคาบ</p>
+                        </div>
+                        <!-- 👁️ Card 4.8: Supervision Control (HOA, LttPngn, EmpPngn) -->
+                        <div onclick="switchAdminTab('admin-sec-sup-control'); initSupControlPanel();" id="card-sup-control" class="admin-card-btn glass-panel p-6 rounded-3xl border border-rose-500/50 hover:border-rose-400 transition-all cursor-pointer group shadow-2xl relative overflow-hidden bg-slate-900/40 hidden">
+                            <div class="w-14 h-14 bg-gradient-to-br from-rose-400 to-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg border border-rose-300">
+                                <span class="text-3xl text-white">👁️</span>
+                            </div>
+                            <h4 class="font-black text-rose-400 text-lg">บริหารงานนิเทศ</h4>
+                            <p class="text-[10px] text-rose-200/60 mt-1">ตั้งกติกา, โควตากรรมการ, เนตรวงแหวน</p>
                         </div>
                         <!-- 👑 Card 5: Emperor Command (EmpPngn Only) ดึงเข้ามาอยู่ใน Grid -->
                         <div onclick="switchAdminTab('admin-sec-godmode')" id="card-godmode" class="admin-card-btn glass-panel p-6 rounded-3xl border border-amber-500/50 hover:border-amber-400 transition-all cursor-pointer group shadow-2xl relative overflow-hidden bg-slate-900/40 hidden">
@@ -2007,9 +2022,6 @@
             <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
                 <option value="">-- ทุกห้อง --</option>
             </select>
-            <select id="adminSearchRoom" onchange="searchAdminStudents()" class="w-full sm:w-40 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-gray-700">
-    <option value="">-- ทุกห้อง --</option>
-</select>
             <input type="text" id="adminSearchStudent" oninput="searchAdminStudents()" placeholder="พิมพ์ชื่อ, รหัส หรือห้องเรียน..." class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
     </div>
@@ -2187,8 +2199,12 @@
                             </div>
                         </div>
 
+                       </div> <!-- ปิดแท็บ คลังเอกสารรวม -->
+
+                    <!-- [3.5] SECTION: PLC ADMIN -->
+                    <div id="admin-sec-plc" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                        <!-- 💡 ติดป้าย id="plcAdminSection" ตรงนี้แหละ! สมองกลจะได้หาเจอ -->
-                        <div id="plcAdminSection" class="bg-white rounded-3xl p-8 shadow-xl border border-purple-100">
+                        <div id="plcAdminSection" class="bg-white rounded-3xl p-8 shadow-xl border border-fuchsia-100">
                             <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b border-purple-100 pb-4">
                                 <h3 class="text-xl font-bold text-purple-800 flex items-center gap-2">🎓 แผงบริหารกลุ่ม PLC</h3>
                                 <div class="flex items-center gap-3 bg-purple-50 px-4 py-2 rounded-xl border border-purple-200 shadow-sm mt-3 sm:mt-0">
@@ -2281,6 +2297,100 @@
                                     💾 บันทึกตารางละเว้น
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                <!-- [7] 👁️ SECTION: SUPERVISION CONTROL (HOA, LttPngn, EmpPngn ONLY) -->
+                    <div id="admin-sec-sup-control" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div class="bg-white rounded-3xl shadow-xl border-t-8 border-rose-600 p-8">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-200 pb-4 gap-4">
+                                <div>
+                                    <h3 class="text-2xl font-black text-rose-800 flex items-center gap-2">👁️ แผงควบคุมระบบนิเทศการสอน (Supervision Control)</h3>
+                                    <p class="text-sm text-gray-500 mt-1">กำหนดกติกา ช่วงเวลา โควตากรรมการ และตรวจสอบความคืบหน้าทั้งโรงเรียน</p>
+                                </div>
+                                <button onclick="saveSupConfig(event)" class="px-8 py-3.5 bg-rose-600 text-white font-black rounded-xl shadow-lg hover:bg-rose-700 hover:scale-105 transition-all w-full md:w-auto flex items-center justify-center gap-2">
+                                    💾 บันทึกการตั้งค่า
+                                </button>
+                            </div>
+
+                            <!-- แท็บย่อยในแผงควบคุม -->
+                            <div class="flex bg-rose-50/50 p-1.5 rounded-xl w-full mb-6 shadow-inner border border-rose-100 max-w-lg">
+                                <button onclick="toggleSupControlTab('config')" id="btn-supc-config" class="flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all">⚙️ ตั้งค่ากติกา</button>
+                                <button onclick="toggleSupControlTab('matrix')" id="btn-supc-matrix" class="flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all">👁️ โหมดเนตรวงแหวน</button>
+                            </div>
+
+                            <!-- Tab 1: Config -->
+                            <div id="supc-tab-config" class="space-y-6">
+                                <!-- วงรอบนิเทศ -->
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                        <h4 class="font-bold text-rose-800 mb-3 border-b border-gray-300 pb-2">รอบที่ 1: ขอรับการนิเทศเอง</h4>
+                                        <div class="space-y-3">
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label><input type="date" id="supc_r1_start" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label><input type="date" id="supc_r1_end" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบประเมิน</label><select id="supc_r1_form" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"><option value="formA">ฟอร์ม A (เตรียมความพร้อม)</option><option value="formB">ฟอร์ม B (ประเมินผลเข้มข้น)</option></select></div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                        <h4 class="font-bold text-rose-800 mb-3 border-b border-gray-300 pb-2">รอบที่ 2: ขอรับการนิเทศเอง</h4>
+                                        <div class="space-y-3">
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label><input type="date" id="supc_r2_start" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label><input type="date" id="supc_r2_end" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบประเมิน</label><select id="supc_r2_form" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"><option value="formA">ฟอร์ม A (เตรียมความพร้อม)</option><option value="formB">ฟอร์ม B (ประเมินผลเข้มข้น)</option></select></div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-rose-50 p-5 rounded-2xl border border-rose-200 shadow-sm">
+                                        <h4 class="font-bold text-rose-900 mb-3 border-b border-rose-300 pb-2">รอบที่ 3: ระบบจัดตั้งกรรมการ</h4>
+                                        <div class="space-y-3">
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label><input type="date" id="supc_r3_start" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label><input type="date" id="supc_r3_end" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
+                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบประเมิน</label><select id="supc_r3_form" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"><option value="formA">ฟอร์ม A (เตรียมความพร้อม)</option><option value="formB" selected>ฟอร์ม B (ประเมินผลเข้มข้น)</option></select></div>
+                                            <div><label class="block text-xs font-bold text-rose-700 mt-2">โควตากรรมการ/สัปดาห์</label><input type="number" id="supc_quota" class="w-full text-sm p-2 rounded-lg border border-rose-300 outline-none font-bold" value="5" placeholder="คาบ/สัปดาห์"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                    <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 text-gray-300 shadow-inner">
+                                        <h4 class="font-bold text-amber-400 mb-2 border-b border-gray-600 pb-2 flex items-center gap-2">🚫 ล็อกวันห้ามนิเทศ (Blackout Dates)</h4>
+                                        <p class="text-[10px] text-gray-400 mb-3">ระบบจะบล็อกไม่ให้ครูกดขอนิเทศในวันเหล่านี้ (คั่นด้วยลูกน้ำ)</p>
+                                        <textarea id="supc_blackout" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-gray-300 outline-none focus:border-amber-500 resize-none" placeholder="เช่น 2026-06-15, 2026-06-16"></textarea>
+                                    </div>
+                                    <div class="bg-rose-950 p-5 rounded-2xl border border-rose-800 text-rose-200 shadow-inner flex flex-col justify-between">
+                                        <div>
+                                            <h4 class="font-bold text-rose-400 mb-2 border-b border-rose-800 pb-2 flex items-center gap-2">⏳ สวิตช์ประหาร (Auto-Penalty)</h4>
+                                            <p class="text-[10px] text-rose-300/70 mb-4">หากหมดเขตแล้วยังไม่ขอรับการนิเทศ ระบบจะประทับตรา "ขาดการนิเทศ" ทันที</p>
+                                        </div>
+                                        <button onclick="executeSupervisionPenalty()" class="w-full bg-rose-700 hover:bg-rose-600 text-white font-black py-3 rounded-xl shadow-[0_0_15px_rgba(225,29,72,0.4)] transition-colors tracking-widest text-sm uppercase">
+                                            ประหารรอบที่หมดเขตทันที!
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Matrix View (โหมดเนตรวงแหวน) -->
+                            <div id="supc-tab-matrix" class="hidden">
+                                <div class="flex justify-between items-center mb-4">
+                                    <p class="text-sm font-bold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg">สถานะ: 🟢 ผ่านแล้ว | 🟡 รอประเมิน | 🔴 ยังไม่เริ่ม</p>
+                                    <button onclick="renderSupMatrixView()" class="text-xs bg-indigo-100 text-indigo-700 px-4 py-2 rounded-xl font-bold border border-indigo-200 hover:bg-indigo-200 transition-colors shadow-sm">🔄 ดึงข้อมูลล่าสุด</button>
+                                </div>
+                                <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner max-h-[500px] custom-scrollbar">
+                                    <table class="min-w-full divide-y divide-gray-200 text-sm text-center relative">
+                                        <thead class="bg-slate-800 text-white sticky top-0 z-20 shadow-md">
+                                            <tr>
+                                                <th class="px-4 py-3 font-bold text-left w-56 sticky left-0 bg-slate-800 border-r border-slate-600 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">รายชื่อครูผู้สอน</th>
+                                                <th class="px-4 py-3 font-bold border-r border-slate-600">กลุ่มสาระฯ</th>
+                                                <th class="px-4 py-3 font-bold text-rose-300 border-r border-slate-600">รอบที่ 1</th>
+                                                <th class="px-4 py-3 font-bold text-rose-300 border-r border-slate-600">รอบที่ 2</th>
+                                                <th class="px-4 py-3 font-bold text-amber-300">รอบที่ 3 (วิชาการ)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="supcMatrixBody" class="bg-white divide-y divide-gray-100">
+                                            <!-- JS จะรันใส่ตรงนี้ -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
@@ -13417,7 +13527,13 @@ window.deleteLog = function(logId) {
             // 👑 ตรวจสอบว่าเป็นราชาเพนกวิ้นหรือไม่
             const isEmpPngn = currentUser && currentUser.Role && currentUser.Role.includes('EmpPngn');
             const adminGrid = document.getElementById('adminCardsContainer');
-            
+            // 🎓 เช็คสิทธิ์ HOA สำหรับเปิดการ์ด PLC
+            const isHOA = currentUser && currentUser.Role && currentUser.Role.includes('HOA');
+            const plcCard = document.getElementById('card-admin-plc');
+            if(plcCard) {
+                if(isEmpPngn || isHOA) plcCard.classList.remove('hidden', '!hidden');
+                else plcCard.classList.add('hidden', '!hidden');
+            }
             // 1. ศูนย์บัญชาการสูงสุด (God Mode)
             const godCard = document.getElementById('card-godmode');
             if (isEmpPngn) {
@@ -13427,7 +13543,13 @@ window.deleteLog = function(logId) {
                 if(godCard) godCard.classList.add('hidden', '!hidden'); // บังคับซ่อนขั้นเด็ดขาด
                 if(adminGrid) { adminGrid.classList.remove('lg:grid-cols-5'); adminGrid.classList.add('lg:grid-cols-4'); }
             }
-
+            // 👁️ เมนูบริหารงานนิเทศ (ให้ HOA, LttPngn, EmpPngn เห็นได้)
+            const isSupAdmin = currentUser && currentUser.Role && currentUser.Role.split(',').some(r => ['HOA', 'LttPngn', 'EmpPngn'].includes(r.trim()));
+            const supCard = document.getElementById('card-sup-control');
+            if (supCard) {
+                if(isSupAdmin) supCard.classList.remove('hidden', '!hidden');
+                else supCard.classList.add('hidden', '!hidden');
+            }
             // 2. เมนูละเว้นจัดสอนแทนรายคาบ (Advanced Exclusions - EmpPngn Only)
             const excCard = document.getElementById('card-adv-exclusions');
             if (isEmpPngn) {
@@ -13581,13 +13703,10 @@ window.deleteLog = function(logId) {
                 // 1. จัดกลุ่มตามหมวด
                 const grouped = {};
                usersDB_Global.forEach(u => {
-                // 💡 แก้บั๊ก: เปลี่ยนชื่อ Query ให้ตรงกับ HTML ปัจจุบัน (เอาคำว่า hr_ ออก)
-                const statusEl = document.querySelector(`input[name="status_${u.Username}"]:checked`);
-                if(statusEl && statusEl.value !== 'none') {
-                    const durEl = document.querySelector(`input[name="dur_${u.Username}"]:checked`);
-                    leaveData[u.Username] = { status: statusEl.value, dur: durEl ? durEl.value : 'full' };
-                }
-            });
+                    const dept = u.Department || 'ไม่มีสังกัด';
+                    if (!grouped[dept]) grouped[dept] = [];
+                    grouped[dept].push(u);
+                });
 
                 // 2. เรียงชื่อหมวด
                 const sortedDepts = Object.keys(grouped).sort();
@@ -14152,8 +14271,10 @@ window.saveStudentDetail = async function() {
                 if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') initRegistrarPanel();
                 if (secId === 'admin-sec-godmode' && typeof renderMasterSwitchPanel === 'function') renderMasterSwitchPanel();
                 if (secId === 'admin-sec-academic') {
-                    if (typeof populateAdminPLCList === 'function') populateAdminPLCList(); 
                     if (typeof renderAdminLogsTable === 'function') renderAdminLogsTable();
+                }
+                if (secId === 'admin-sec-plc') {
+                    if (typeof populateAdminPLCList === 'function') populateAdminPLCList(); 
                 }
             }
         };
@@ -14223,18 +14344,44 @@ window.saveStudentDetail = async function() {
             }
         };
 
+        // 🧠 สมองส่วนกลาง: เมื่อเปลี่ยนชื่อ Model Teacher ให้รีเซ็ตและโหลดข้อมูลวิชาใหม่ (V. Fuzzy Match กันเหนียว)
         window.handleSLCModelChange = function() {
             if(typeof loadBuddiesFromPLC === 'function') loadBuddiesFromPLC(); 
             
             const modelVal = document.getElementById('slc_model').value;
-            // 💡 แก้บั๊กสมองกล: ค้นหาจาก FullName เพื่อหารหัส Username ไปใช้ต่อ
             const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
             const slcSubj = document.getElementById('slc_subject');
             
             if(slcSubj && subjectsDB_Global && modelInfo) {
-                const mySubs = subjectsDB_Global.filter(s => s.TeacherName === modelInfo.FullName);
-                slcSubj.innerHTML = '<option value="">-- เลือกรายวิชา --</option>' + 
-                    mySubs.map(s => `<option value="${s.SubjectCode}">${s.SubjectCode} ${s.SubjectName}</option>`).join('');
+                // 💡 ลอจิกควานหาชื่อวิชาแบบยืดหยุ่น (แก้บั๊กคอลัมน์เปลี่ยนชื่อ)
+                const getFuzzyVal = (obj, searchStr) => {
+                    const key = Object.keys(obj).find(k => k.trim().toLowerCase() === searchStr.toLowerCase());
+                    return key ? obj[key] : undefined;
+                };
+                const normalizeName = (name) => name ? String(name).trim().replace(/\s+/g, ' ') : "";
+                const targetNameClean = normalizeName(modelInfo.FullName);
+
+                const mySubs = subjectsDB_Global.filter(s => {
+                    const tName = getFuzzyVal(s, 'teachername') || getFuzzyVal(s, 'ชื่อผู้สอน');
+                    return normalizeName(tName) === targetNameClean;
+                });
+
+                let optionsHtml = '<option value="">-- เลือกรายวิชา --</option>';
+                mySubs.forEach(s => {
+                    let code = getFuzzyVal(s, 'subjectcode') || getFuzzyVal(s, 'รหัสวิชา') || "";
+                    let name = getFuzzyVal(s, 'subjectname') || getFuzzyVal(s, 'ชื่อวิชา') || "";
+                    
+                    // สกัดค่า undefined
+                    code = (code === undefined || String(code).toLowerCase() === 'undefined' || code === null) ? "" : String(code).trim();
+                    name = (name === undefined || String(name).toLowerCase() === 'undefined' || name === null) ? "ไม่มีชื่อวิชา" : String(name).trim();
+                    
+                    const displayText = code ? `${code} ${name}` : name;
+                    const valText = code || name; // ใช้รหัสวิชาเป็น value หลัก ถ้าไม่มีก็ใช้ชื่อวิชา
+                    
+                    optionsHtml += `<option value="${valText}">${displayText}</option>`;
+                });
+                slcSubj.innerHTML = optionsHtml;
+
             } else if (slcSubj) {
                 slcSubj.innerHTML = '<option value="">-- เลือกรายวิชา --</option>';
             }
@@ -15430,23 +15577,23 @@ window.saveStudentDetail = async function() {
                 display.innerText = "ว่าง";
             }
         };
-        // 💡 สมองกลสำหรับปุ่มล็อกทั้งแถว (คลิกที่หัวแถว)
-        window.toggleExclusionRow = function(btn) {
-            const row = btn.closest('tr');
-            const checkboxes = row.querySelectorAll('.adv-exc-cb');
-            const displays = row.querySelectorAll('.cell-display');
+        // 💡 สมองกลสำหรับปุ่มล็อกทั้งแถว (แก้บั๊กให้รับค่าเป็น 'ชื่อวัน' แล้วกวาดหาช่องทั้งหมด)
+        window.toggleExclusionRow = function(day) {
+            // ควานหา checkbox ทุกอันในหน้าจอ ที่มี data-day ตรงกับวันนั้นๆ (เช่น 'จันทร์')
+            const checkboxes = document.querySelectorAll(`.adv-exc-cb[data-day="${day}"]`);
             
-            // เช็คสถานะปัจจุบันจากตัวแรกในแถว
-            const isAnyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            // เช็คว่าติ๊กครบ 9 คาบแล้วหรือยัง? (ถ้าครบแล้ว กดอีกทีคือปลดล็อก, ถ้ายังไม่ครบ กดปุ๊บคือล็อกเหมา)
+            const targetState = !Array.from(checkboxes).every(cb => cb.checked);
             
-            checkboxes.forEach((cb, index) => {
-                cb.checked = !isAnyChecked;
+            checkboxes.forEach(cb => {
+                cb.checked = targetState;
+                const display = cb.parentElement.querySelector('.cell-display');
                 if(cb.checked) {
-                    displays[index].className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
-                    displays[index].innerText = "🚫";
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-rose-500 bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 transition-all shadow-inner";
+                    display.innerText = "🚫";
                 } else {
-                    displays[index].className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
-                    displays[index].innerText = "ว่าง";
+                    display.className = "cell-display w-full h-10 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-400 group-hover:border-rose-400 group-hover:bg-white group-hover:text-rose-400 transition-all";
+                    display.innerText = "ว่าง";
                 }
             });
         };
@@ -15567,6 +15714,116 @@ window.saveStudentDetail = async function() {
             } finally {
                 btn.innerHTML = origTxt; btn.disabled = false;
             }
+        };
+        // ==========================================
+        // 👁️ Supervision Master Control Logic (The Eye of Sauron)
+        // ==========================================
+
+        window.toggleSupControlTab = function(tabName) {
+            document.getElementById('supc-tab-config').classList.toggle('hidden', tabName !== 'config');
+            document.getElementById('supc-tab-matrix').classList.toggle('hidden', tabName !== 'matrix');
+            
+            document.getElementById('btn-supc-config').className = tabName === 'config' ? 'flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all' : 'flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all';
+            document.getElementById('btn-supc-matrix').className = tabName === 'matrix' ? 'flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all' : 'flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all';
+            
+            if(tabName === 'matrix') renderSupMatrixView();
+        };
+
+        // ดึงค่าการตั้งค่าจาก Global Config มายัดใส่ช่อง
+        window.initSupControlPanel = function() {
+            // แอบซ่อนอยู่ใน masterSwitches_Global เพื่อไม่ให้เปลืองฐานข้อมูล
+            const conf = masterSwitches_Global['SupConfig'] || {};
+            
+            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+            
+            setVal('supc_r1_start', conf.r1_start); setVal('supc_r1_end', conf.r1_end); setVal('supc_r1_form', conf.r1_form || 'formA');
+            setVal('supc_r2_start', conf.r2_start); setVal('supc_r2_end', conf.r2_end); setVal('supc_r2_form', conf.r2_form || 'formA');
+            setVal('supc_r3_start', conf.r3_start); setVal('supc_r3_end', conf.r3_end); setVal('supc_r3_form', conf.r3_form || 'formB');
+            setVal('supc_quota', conf.quota || 5);
+            setVal('supc_blackout', conf.blackout || '');
+        };
+
+        // บันทึกการตั้งค่ากลับขึ้น Google Sheets
+        window.saveSupConfig = async function(e) {
+            const btn = e.currentTarget;
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังบันทึก...'; 
+            btn.disabled = true;
+
+            try {
+                const conf = {
+                    r1_start: document.getElementById('supc_r1_start').value,
+                    r1_end: document.getElementById('supc_r1_end').value,
+                    r1_form: document.getElementById('supc_r1_form').value,
+                    r2_start: document.getElementById('supc_r2_start').value,
+                    r2_end: document.getElementById('supc_r2_end').value,
+                    r2_form: document.getElementById('supc_r2_form').value,
+                    r3_start: document.getElementById('supc_r3_start').value,
+                    r3_end: document.getElementById('supc_r3_end').value,
+                    r3_form: document.getElementById('supc_r3_form').value,
+                    quota: document.getElementById('supc_quota').value,
+                    blackout: document.getElementById('supc_blackout').value
+                };
+                
+                masterSwitches_Global['SupConfig'] = conf;
+                
+                // ใช้ API updateMasterSwitch ส่งไปเซฟเงียบๆ
+                const payload = { action: 'updateMasterSwitch', switches: masterSwitches_Global };
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                
+                customAlert("บันทึกกติการะบบนิเทศเรียบร้อยแล้วครับ", "success");
+            } catch(err) { 
+                customAlert("เกิดข้อผิดพลาด: " + err.message, "error"); 
+            } finally { 
+                btn.innerHTML = origText; btn.disabled = false; 
+            }
+        };
+
+        // วาดตารางโหมดเนตรวงแหวน (กวาดข้อมูลครูทั้งโรงเรียนว่าผ่านรอบไหนแล้วบ้าง)
+        window.renderSupMatrixView = function() {
+            const tbody = document.getElementById('supcMatrixBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            // กรองเอาเฉพาะ User ทั่วไป
+            let validTeachers = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User'));
+            
+            // เรียงลำดับ กลุ่มสาระฯ -> อาวุโส Sq
+            validTeachers.sort((a,b) => {
+                const iA = LEARNING_AREAS.indexOf(a.Department) !== -1 ? LEARNING_AREAS.indexOf(a.Department) : 99;
+                const iB = LEARNING_AREAS.indexOf(b.Department) !== -1 ? LEARNING_AREAS.indexOf(b.Department) : 99;
+                if (iA !== iB) return iA - iB;
+                return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
+            });
+
+            validTeachers.forEach(u => {
+                // หางานนิเทศของครูคนนี้ทั้งหมด และเรียงจากเก่าไปใหม่
+                const mySups = supervisionDB_Global.filter(s => s.TeacherName === u.FullName).sort((a,b) => new Date(a.ReqDate) - new Date(b.ReqDate));
+                
+                // สมองกลเสกสถานะ (ดึงตัวที่ 0, 1, 2 ตามลำดับรอบ)
+                const getStatusHtml = (index) => {
+                    const s = mySups[index];
+                    if(!s) return `<div class="bg-rose-50 text-rose-500 font-bold px-2 py-1 rounded text-xs border border-rose-100 w-max mx-auto">🔴 ยังไม่เริ่ม</div>`;
+                    if(s.Status === 'Evaluated') return `<div class="bg-emerald-50 text-emerald-600 font-bold px-2 py-1 rounded text-xs border border-emerald-100 w-max mx-auto shadow-sm">🟢 ผ่านแล้ว</div>`;
+                    return `<div class="bg-amber-50 text-amber-500 font-bold px-2 py-1 rounded text-xs border border-amber-100 w-max mx-auto animate-pulse">🟡 รอประเมิน</div>`;
+                };
+
+                tbody.innerHTML += `
+                <tr class="hover:bg-rose-50/50 transition-colors border-b border-gray-100">
+                    <td class="px-4 py-3 font-bold text-gray-800 text-left sticky left-0 bg-white border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate max-w-[150px]" title="${u.FullName}">${u.FullName}</td>
+                    <td class="px-4 py-3 text-[10px] text-gray-500 font-bold border-r border-gray-100">${u.Department||'ไม่มีสังกัด'}</td>
+                    <td class="px-4 py-3 border-r border-gray-100 bg-gray-50/50">${getStatusHtml(0)}</td>
+                    <td class="px-4 py-3 border-r border-gray-100 bg-white">${getStatusHtml(1)}</td>
+                    <td class="px-4 py-3 border-r border-gray-100 bg-gray-50/50">${getStatusHtml(2)}</td>
+                </tr>`;
+            });
+        };
+
+        // ปุ่มสวิตช์ประหาร (โชว์ Alert เฉยๆ ก่อน ไว้เชื่อม API หลังบ้านทีหลัง)
+        window.executeSupervisionPenalty = function() {
+            customConfirm("⚠️ ยืนยันการรันระบบตรวจสอบและลงโทษอัตโนมัติ? (ครูที่ไม่ส่งคำขอในรอบที่หมดเวลาไปแล้ว จะถูกประทับตราว่า 'ขาดการนิเทศ')", () => {
+                customAlert("🚀 รันสวิตช์ประหารเรียบร้อย! ระบบกำลังสแกนประวัติครูทั้งโรงเรียน...", "success");
+            });
         };
     </script>
 </body>
