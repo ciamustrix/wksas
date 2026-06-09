@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.1 [June 8th, 2025] | TESTING-FxSupervision</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03 [June 8th, 2025] | FxSupervision</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -2317,39 +2317,40 @@
                             <div class="flex bg-rose-50/50 p-1.5 rounded-xl w-full mb-6 shadow-inner border border-rose-100 max-w-lg">
                                 <button onclick="toggleSupControlTab('config')" id="btn-supc-config" class="flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all">⚙️ ตั้งค่ากติกา</button>
                                 <button onclick="toggleSupControlTab('matrix')" id="btn-supc-matrix" class="flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all">👁️ โหมดเนตรวงแหวน</button>
+                                <button onclick="toggleSupControlTab('rubric')" id="btn-supc-rubric" class="flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all">📝 สร้างแบบประเมิน</button>
                             </div>
 
                             <!-- Tab 1: Config -->
                             <div id="supc-tab-config" class="space-y-6">
-                                <!-- วงรอบนิเทศ -->
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
-                                        <h4 class="font-bold text-rose-800 mb-3 border-b border-gray-300 pb-2">รอบที่ 1: ขอรับการนิเทศเอง</h4>
-                                        <div class="space-y-3">
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label><input type="date" id="supc_r1_start" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label><input type="date" id="supc_r1_end" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบประเมิน</label><select id="supc_r1_form" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"><option value="formA">ฟอร์ม A (เตรียมความพร้อม)</option><option value="formB">ฟอร์ม B (ประเมินผลเข้มข้น)</option></select></div>
+                                <!-- คอนเทนเนอร์สำหรับเรนเดอร์รอบการนิเทศแบบ Dynamic -->
+                                <div id="dynamicRoundsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
+                                
+                                <button onclick="addNewSupervisionRound()" class="mt-4 px-6 py-3 bg-rose-50 text-rose-700 font-black rounded-xl border-2 border-dashed border-rose-300 hover:bg-rose-100 hover:border-rose-400 transition-all text-sm flex items-center justify-center gap-2 w-full lg:w-auto">
+                                    ➕ เพิ่มรอบการนิเทศใหม่ในภาคเรียนนี้
+                                </button>
+                                
+                                <div class="bg-white p-5 rounded-2xl border border-rose-200 shadow-sm mt-6 mb-6">
+                                    <h4 class="font-black text-rose-800 mb-4 border-b border-rose-200 pb-2 flex items-center gap-2">🎯 กำหนดโควตากรรมการนิเทศ (สูงสุดคาบ/สัปดาห์)</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-inner">
+                                            <label class="block text-xs font-bold text-blue-800 mb-1">1) ทีมบริหาร (ผอ., รองฯ)</label>
+                                            <input type="number" id="supc_q_exec" class="w-full text-sm p-2 rounded-lg border border-blue-200 outline-none font-bold text-blue-900 focus:ring-2 focus:ring-blue-400" placeholder="เช่น 5">
                                         </div>
-                                    </div>
-                                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
-                                        <h4 class="font-bold text-rose-800 mb-3 border-b border-gray-300 pb-2">รอบที่ 2: ขอรับการนิเทศเอง</h4>
-                                        <div class="space-y-3">
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label><input type="date" id="supc_r2_start" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label><input type="date" id="supc_r2_end" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบประเมิน</label><select id="supc_r2_form" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"><option value="formA">ฟอร์ม A (เตรียมความพร้อม)</option><option value="formB">ฟอร์ม B (ประเมินผลเข้มข้น)</option></select></div>
+                                        <div class="bg-fuchsia-50 p-3 rounded-xl border border-fuchsia-100 shadow-inner">
+                                            <label class="block text-xs font-bold text-fuchsia-800 mb-1">2) วิชาการ (HOA, EmpPngn)</label>
+                                            <input type="number" id="supc_q_acad" class="w-full text-sm p-2 rounded-lg border border-fuchsia-200 outline-none font-bold text-fuchsia-900 focus:ring-2 focus:ring-fuchsia-400" placeholder="เช่น 5">
                                         </div>
-                                    </div>
-                                    <div class="bg-rose-50 p-5 rounded-2xl border border-rose-200 shadow-sm">
-                                        <h4 class="font-bold text-rose-900 mb-3 border-b border-rose-300 pb-2">รอบที่ 3: ระบบจัดตั้งกรรมการ</h4>
-                                        <div class="space-y-3">
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label><input type="date" id="supc_r3_start" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label><input type="date" id="supc_r3_end" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"></div>
-                                            <div><label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบประเมิน</label><select id="supc_r3_form" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none"><option value="formA">ฟอร์ม A (เตรียมความพร้อม)</option><option value="formB" selected>ฟอร์ม B (ประเมินผลเข้มข้น)</option></select></div>
-                                            <div><label class="block text-xs font-bold text-rose-700 mt-2">โควตากรรมการ/สัปดาห์</label><input type="number" id="supc_quota" class="w-full text-sm p-2 rounded-lg border border-rose-300 outline-none font-bold" value="5" placeholder="คาบ/สัปดาห์"></div>
+                                        <div class="bg-amber-50 p-3 rounded-xl border border-amber-100 shadow-inner">
+                                            <label class="block text-xs font-bold text-amber-800 mb-1">3) หัวหน้า/รองฯ กลุ่มสาระ</label>
+                                            <input type="number" id="supc_q_head" class="w-full text-sm p-2 rounded-lg border border-amber-200 outline-none font-bold text-amber-900 focus:ring-2 focus:ring-amber-400" placeholder="เช่น 3">
+                                        </div>
+                                        <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 shadow-inner">
+                                            <label class="block text-xs font-bold text-emerald-800 mb-1">4) ครูผู้สอน (Sq สูง/เชี่ยวชาญ)</label>
+                                            <input type="number" id="supc_q_teacher" class="w-full text-sm p-2 rounded-lg border border-emerald-200 outline-none font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-400" placeholder="เช่น 2">
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                                     <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 text-gray-300 shadow-inner">
                                         <h4 class="font-bold text-amber-400 mb-2 border-b border-gray-600 pb-2 flex items-center gap-2">🚫 ล็อกวันห้ามนิเทศ (Blackout Dates)</h4>
@@ -2377,12 +2378,9 @@
                                 <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner max-h-[500px] custom-scrollbar">
                                     <table class="min-w-full divide-y divide-gray-200 text-sm text-center relative">
                                         <thead class="bg-slate-800 text-white sticky top-0 z-20 shadow-md">
-                                            <tr>
-                                                <th class="px-4 py-3 font-bold text-left w-56 sticky left-0 bg-slate-800 border-r border-slate-600 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">รายชื่อครูผู้สอน</th>
-                                                <th class="px-4 py-3 font-bold border-r border-slate-600">กลุ่มสาระฯ</th>
-                                                <th class="px-4 py-3 font-bold text-rose-300 border-r border-slate-600">รอบที่ 1</th>
-                                                <th class="px-4 py-3 font-bold text-rose-300 border-r border-slate-600">รอบที่ 2</th>
-                                                <th class="px-4 py-3 font-bold text-amber-300">รอบที่ 3 (วิชาการ)</th>
+                                            <!-- 💡 ติดป้าย id ให้สมองกลมาวาดหัวตารางแบบ Dynamic -->
+                                            <tr id="supcMatrixHeaderRow">
+                                                <!-- JS จะมาวาด <th> ตรงนี้ทั้งหมด -->
                                             </tr>
                                         </thead>
                                         <tbody id="supcMatrixBody" class="bg-white divide-y divide-gray-100">
@@ -2390,6 +2388,27 @@
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                            <!-- Tab 3: Rubric Builder (สร้างแบบประเมิน) -->
+                            <div id="supc-tab-rubric" class="hidden space-y-6">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-rose-50 p-5 rounded-2xl border border-rose-200 shadow-sm gap-4">
+                                    <div>
+                                        <h4 class="font-black text-rose-900 text-lg flex items-center gap-2">📋 เครื่องมือสร้างแบบประเมิน (Rubric Builder)</h4>
+                                        <p class="text-xs text-rose-700/80 mt-1">กำหนดหมวดหมู่และข้อประเมิน (ระบบจะแปลงเป็นคะแนน 1-5 และให้เขียนจุดเด่น/จุดด้อยในหน้าใช้งานจริงให้อัตโนมัติ)</p>
+                                    </div>
+                                    <select id="rubric_form_selector" onchange="loadRubricEditor()" class="p-2.5 rounded-xl border-2 border-rose-300 font-black text-rose-700 outline-none focus:ring-2 focus:ring-rose-500 bg-white shadow-md w-full sm:w-auto cursor-pointer">
+                                        <option value="formA">✏️ แก้ไข: ฟอร์ม A (เตรียมความพร้อม)</option>
+                                        <option value="formB">✏️ แก้ไข: ฟอร์ม B (ประเมินผลเข้มข้น)</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="rubric_editor_container" class="space-y-6">
+                                    <!-- สมองกลจะวาดกล่องหมวดหมู่ที่นี่ -->
+                                </div>
+
+                                <button onclick="addRubricCategory()" class="w-full py-4 border-2 border-dashed border-rose-400 bg-rose-50/50 rounded-2xl text-rose-600 font-black hover:bg-rose-100 hover:border-rose-500 transition-all flex justify-center items-center gap-2 shadow-sm">
+                                    ➕ เพิ่มหมวดหมู่การประเมินใหม่
+                                </button>
                             </div>
 
                         </div>
@@ -15724,27 +15743,264 @@ window.saveStudentDetail = async function() {
             document.getElementById('supc-tab-config').classList.toggle('hidden', tabName !== 'config');
             document.getElementById('supc-tab-matrix').classList.toggle('hidden', tabName !== 'matrix');
             
-            document.getElementById('btn-supc-config').className = tabName === 'config' ? 'flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all' : 'flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all';
-            document.getElementById('btn-supc-matrix').className = tabName === 'matrix' ? 'flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all' : 'flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all';
+            const rubricTab = document.getElementById('supc-tab-rubric');
+            if(rubricTab) rubricTab.classList.toggle('hidden', tabName !== 'rubric');
+            
+            const activeClass = 'flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all';
+            const inactiveClass = 'flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all';
+            
+            document.getElementById('btn-supc-config').className = tabName === 'config' ? activeClass : inactiveClass;
+            document.getElementById('btn-supc-matrix').className = tabName === 'matrix' ? activeClass : inactiveClass;
+            
+            const btnRubric = document.getElementById('btn-supc-rubric');
+            if(btnRubric) btnRubric.className = tabName === 'rubric' ? activeClass : inactiveClass;
             
             if(tabName === 'matrix') renderSupMatrixView();
+            if(tabName === 'rubric') loadRubricEditor();
         };
 
-        // ดึงค่าการตั้งค่าจาก Global Config มายัดใส่ช่อง
+        // 📅 สมองกลคำนวณสัปดาห์และวันที่ภาษาไทยฉบับสมบูรณ์ (Centralized Date Engine)
+        window.getSchoolWeek = function(targetDateStr) {
+            // วันเปิดภาคเรียนอ้างอิง (เดี๋ยวเฟสหลังเราค่อยทำที่ตั้งค่าให้ดึงจาก DB ตอนนี้ล็อกเป็น 18 พ.ค. ก่อน)
+            const termStartStr = masterSwitches_Global['termStart'] || '2026-05-18'; 
+            const startDate = new Date(termStartStr);
+            const targetDate = new Date(targetDateStr);
+            if(isNaN(startDate) || isNaN(targetDate)) return 0;
+            const diffDays = Math.floor((targetDate - startDate) / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) return 0; // ถ้าก่อนเปิดเทอม
+            return Math.floor(diffDays / 7) + 1;
+        };
+
+        window.formatThaiDateFull = function(dateStr) {
+            if(!dateStr) return "ยังไม่ได้เลือกวันที่";
+            const d = new Date(dateStr);
+            if(isNaN(d)) return "รูปแบบวันที่ไม่ถูกต้อง";
+            const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+            const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            return `วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543} (สัปดาห์ที่ ${getSchoolWeek(dateStr)})`;
+        };
+
+        // 🧠 สมองกลวาดหน้าต่างรอบการนิเทศแบบ Dynamic (อัปเกรดวิชามาร CSS บังคับปฏิทินเด้ง)
         window.initSupControlPanel = function() {
-            // แอบซ่อนอยู่ใน masterSwitches_Global เพื่อไม่ให้เปลืองฐานข้อมูล
-            const conf = masterSwitches_Global['SupConfig'] || {};
+            const container = document.getElementById('dynamicRoundsContainer');
+            if(!container) return;
             
-            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+            // ถ้า DB ยังว่างเปล่า ให้เสกโครงสร้าง JSON แบบใหม่ขึ้นมา
+            if(!masterSwitches_Global['SupervisionMaster']) {
+                masterSwitches_Global['SupervisionMaster'] = {
+                    rounds: [
+                        { id: "R1", name: "รอบที่ 1: ขอรับการนิเทศเอง", type: "self", start: "", end: "", formTemplate: "formA" },
+                        { id: "R2", name: "รอบที่ 2: ระบบจัดตั้งกรรมการอัตโนมัติ", type: "auto", start: "", end: "", formTemplate: "formB" }
+                    ],
+                    settings: { quota: 5, blackout: "" }
+                };
+            }
             
-            setVal('supc_r1_start', conf.r1_start); setVal('supc_r1_end', conf.r1_end); setVal('supc_r1_form', conf.r1_form || 'formA');
-            setVal('supc_r2_start', conf.r2_start); setVal('supc_r2_end', conf.r2_end); setVal('supc_r2_form', conf.r2_form || 'formA');
-            setVal('supc_r3_start', conf.r3_start); setVal('supc_r3_end', conf.r3_end); setVal('supc_r3_form', conf.r3_form || 'formB');
-            setVal('supc_quota', conf.quota || 5);
-            setVal('supc_blackout', conf.blackout || '');
+            const conf = masterSwitches_Global['SupervisionMaster'];
+            
+            // 💡 วิชามาร CSS: ถ่างไอคอนปฏิทินให้คลุมทั้งกล่องแล้วทำให้โปร่งใส
+            let html = `
+            <style>
+                .click-anywhere-date { position: relative; }
+                .click-anywhere-date::-webkit-calendar-picker-indicator {
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+                }
+            </style>`;
+            
+            conf.rounds.forEach((r, index) => {
+                const isAuto = r.type === 'auto';
+                const bgClass = isAuto ? 'bg-rose-50 border-rose-200' : 'bg-gray-50 border-gray-200';
+                const titleColor = isAuto ? 'text-rose-900 border-rose-300' : 'text-rose-800 border-gray-300';
+                
+                html += `
+                <div class="${bgClass} p-5 rounded-2xl border shadow-sm relative group animate-in fade-in zoom-in duration-300" data-round-index="${index}">
+                    <button onclick="removeSupervisionRound(${index})" class="absolute top-4 right-4 text-rose-300 hover:text-red-600 hidden group-hover:block transition-colors" title="ลบรอบนี้ทิ้ง">❌</button>
+                    <h4 class="font-bold ${titleColor} mb-3 border-b pb-2 flex items-center gap-2">
+                        <input type="text" value="${r.name}" onchange="updateRoundData(${index}, 'name', this.value)" class="bg-transparent border-none outline-none w-full font-bold focus:ring-2 focus:ring-rose-200 rounded px-1" placeholder="ตั้งชื่อรอบการนิเทศ...">
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบการจัด</label>
+                            <select onchange="updateRoundData(${index}, 'type', this.value)" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none bg-white">
+                                <option value="self" ${r.type === 'self' ? 'selected' : ''}>ครูขอรับการนิเทศเอง (ประเมินแบบกัลยาณมิตร)</option>
+                                <option value="auto" ${r.type === 'auto' ? 'selected' : ''}>ระบบจัดตั้งอัตโนมัติ (กรรมการประเมินผล)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label>
+                            <input type="date" value="${r.start}" onchange="updateRoundData(${index}, 'start', this.value)" class="click-anywhere-date w-full text-sm p-2 rounded-lg border border-gray-300 outline-none cursor-pointer hover:border-rose-400 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors">
+                            <p id="date_display_${index}_start" class="text-[10px] text-emerald-600 font-bold mt-1">${formatThaiDateFull(r.start)}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label>
+                            <input type="date" value="${r.end}" onchange="updateRoundData(${index}, 'end', this.value)" class="click-anywhere-date w-full text-sm p-2 rounded-lg border border-gray-300 outline-none cursor-pointer hover:border-rose-400 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors">
+                            <p id="date_display_${index}_end" class="text-[10px] text-emerald-600 font-bold mt-1">${formatThaiDateFull(r.end)}</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบฟอร์มประเมิน</label>
+                            <select onchange="updateRoundData(${index}, 'formTemplate', this.value)" class="w-full text-sm p-2 rounded-lg border border-gray-300 outline-none bg-white">
+                                <option value="formA" ${r.formTemplate === 'formA' ? 'selected' : ''}>ฟอร์ม A (เตรียมความพร้อม)</option>
+                                <option value="formB" ${r.formTemplate === 'formB' ? 'selected' : ''}>ฟอร์ม B (ประเมินผลเข้มข้น)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            
+            container.innerHTML = html;
+            
+            // ดึงค่าโควตาและวันแบล็กลิสต์ (อัปเกรดดึงข้อมูลแยก 4 กลุ่ม)
+            const q = conf.settings.quota;
+            const setQ = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+            
+            if(typeof q === 'object' && q !== null) {
+                setQ('supc_q_exec', q.exec || 5);
+                setQ('supc_q_acad', q.acad || 5);
+                setQ('supc_q_head', q.head || 3);
+                setQ('supc_q_teacher', q.teacher || 2);
+            } else {
+                // Migration: แปลงระบบเก่าที่เป็นตัวเลขเดี่ยวๆ เข้า 4 กลุ่มอัตโนมัติ
+                const oldQ = q || 5;
+                setQ('supc_q_exec', oldQ); setQ('supc_q_acad', oldQ); setQ('supc_q_head', 3); setQ('supc_q_teacher', 2);
+            }
+            
+            const blackEl = document.getElementById('supc_blackout');
+            if(blackEl) blackEl.value = conf.settings.blackout || '';
         };
 
-        // บันทึกการตั้งค่ากลับขึ้น Google Sheets
+        // 📝 สมองกลอัปเดตข้อมูลรายจุด (Real-time update)
+        window.updateRoundData = function(index, key, value) {
+            masterSwitches_Global['SupervisionMaster'].rounds[index][key] = value;
+            if(key === 'start' || key === 'end') {
+                const displayEl = document.getElementById(`date_display_${index}_${key}`);
+                if(displayEl) displayEl.innerText = formatThaiDateFull(value);
+            }
+        };
+
+        // ➕ สมองกลเพิ่มรอบใหม่
+        window.addNewSupervisionRound = function() {
+            const conf = masterSwitches_Global['SupervisionMaster'];
+            const newIndex = conf.rounds.length + 1;
+            conf.rounds.push({ id: "R"+newIndex, name: `รอบที่ ${newIndex}: รอบพิเศษ`, type: "self", start: "", end: "", formTemplate: "formA" });
+            initSupControlPanel(); // วาดใหม่
+        };
+
+        // ❌ สมองกลลบรอบ
+        window.removeSupervisionRound = function(index) {
+            customConfirm("⚠️ ยืนยันการลบรอบการนิเทศนี้ออกจากระบบ?", () => {
+                masterSwitches_Global['SupervisionMaster'].rounds.splice(index, 1);
+                initSupControlPanel();
+            });
+        };
+        // ==========================================
+        // 📋 Rubric Builder Logic (เฟส 3)
+        // ==========================================
+
+        window.loadRubricEditor = function() {
+            // สร้างโครงร่าง JSON เริ่มต้น (Migration) ถ้ายังไม่เคยมีใน DB
+            if(!masterSwitches_Global['SupervisionMaster']) masterSwitches_Global['SupervisionMaster'] = {};
+            if(!masterSwitches_Global['SupervisionMaster'].rubrics) {
+                masterSwitches_Global['SupervisionMaster'].rubrics = {
+                    formA: [ { name: "หมวดที่ 1: การเตรียมความพร้อม", items: ["ความพร้อมของแผนการสอน", "ความพร้อมของสื่อ"] } ],
+                    formB: [ { name: "หมวดที่ 1: การจัดกิจกรรมเรียนรู้", items: ["ขั้นนำเข้าสู่บทเรียน (Warm-up)", "การใช้คำถามกระตุ้นคิด", "การประเมินผลระหว่างเรียน"] } ]
+                };
+            }
+
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            const rubrics = masterSwitches_Global['SupervisionMaster'].rubrics[currentForm] || [];
+            const container = document.getElementById('rubric_editor_container');
+            let html = '';
+
+            rubrics.forEach((cat, catIndex) => {
+                let itemsHtml = '';
+                cat.items.forEach((item, itemIndex) => {
+                    itemsHtml += `
+                    <div class="flex items-center gap-2 mb-2 animate-in slide-in-from-left-2">
+                        <span class="text-gray-300 text-lg">▪</span>
+                        <input type="text" value="${item}" onchange="updateRubricItem(${catIndex}, ${itemIndex}, this.value)" class="flex-1 bg-white border border-gray-200 p-2 rounded-lg text-sm outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400" placeholder="ระบุประเด็นประเมิน...">
+                        <button onclick="removeRubricItem(${catIndex}, ${itemIndex})" class="text-red-300 hover:text-red-500 font-bold px-2 rounded-lg bg-red-50 hover:bg-red-100 transition-colors" title="ลบข้อนี้">❌</button>
+                    </div>`;
+                });
+
+                html += `
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm relative group">
+                    <div class="absolute top-4 right-4 flex gap-2">
+                        <button onclick="generateAIRubricItems(${catIndex})" class="bg-indigo-50 text-indigo-600 border border-indigo-200 text-xs font-black px-3 py-1.5 rounded-lg hover:bg-indigo-100 hover:scale-105 transition-all shadow-sm flex items-center gap-1">✨ AI ช่วยคิด</button>
+                        <button onclick="removeRubricCategory(${catIndex})" class="text-gray-300 hover:text-red-500 transition-colors" title="ลบหมวดหมู่นี้">🗑️</button>
+                    </div>
+                    
+                    <div class="mb-4 w-[80%]">
+                        <label class="block text-[10px] font-bold text-rose-500 mb-1 uppercase tracking-wider">ชื่อหมวดหมู่</label>
+                        <input type="text" value="${cat.name}" onchange="updateRubricCategory(${catIndex}, this.value)" class="w-full text-lg font-black text-gray-800 border-b-2 border-gray-200 focus:border-rose-500 outline-none pb-1 bg-transparent placeholder-gray-300" placeholder="พิมพ์ชื่อหมวดหมู่ (เช่น ด้านสื่อการสอน)...">
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <p class="text-[10px] font-bold text-gray-400 mb-3 uppercase">ประเด็นที่ต้องประเมิน (Likert 1-5)</p>
+                        ${itemsHtml}
+                        <button onclick="addRubricItem(${catIndex})" class="mt-2 text-xs font-bold text-rose-600 hover:text-rose-800 flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 hover:border-rose-300 transition-colors">
+                            + เพิ่มประเด็นประเมิน
+                        </button>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html || '<div class="text-center py-8 text-gray-400 font-bold bg-white rounded-2xl border border-dashed">ยังไม่มีหมวดหมู่การประเมินในฟอร์มนี้</div>';
+        };
+
+        // ฟังก์ชันจัดการ JSON Array ของ Rubric
+        window.updateRubricCategory = function(catIndex, val) {
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            masterSwitches_Global['SupervisionMaster'].rubrics[currentForm][catIndex].name = val;
+        };
+        window.updateRubricItem = function(catIndex, itemIndex, val) {
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            masterSwitches_Global['SupervisionMaster'].rubrics[currentForm][catIndex].items[itemIndex] = val;
+        };
+        window.addRubricCategory = function() {
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            masterSwitches_Global['SupervisionMaster'].rubrics[currentForm].push({ name: "หมวดหมู่ใหม่", items: ["ประเด็นที่ 1"] });
+            loadRubricEditor();
+        };
+        window.removeRubricCategory = function(catIndex) {
+            customConfirm("ลบหมวดหมู่นี้ทิ้งใช่หรือไม่?", () => {
+                const currentForm = document.getElementById('rubric_form_selector').value;
+                masterSwitches_Global['SupervisionMaster'].rubrics[currentForm].splice(catIndex, 1);
+                loadRubricEditor();
+            });
+        };
+        window.addRubricItem = function(catIndex) {
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            masterSwitches_Global['SupervisionMaster'].rubrics[currentForm][catIndex].items.push("");
+            loadRubricEditor();
+        };
+        window.removeRubricItem = function(catIndex, itemIndex) {
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            masterSwitches_Global['SupervisionMaster'].rubrics[currentForm][catIndex].items.splice(itemIndex, 1);
+            loadRubricEditor();
+        };
+
+        // 🤖 ฟังก์ชัน AI ช่วยคิด (Gimmick วิเคราะห์จากคีย์เวิร์ดชื่อหมวด)
+        window.generateAIRubricItems = function(catIndex) {
+            const currentForm = document.getElementById('rubric_form_selector').value;
+            const rubrics = masterSwitches_Global['SupervisionMaster'].rubrics[currentForm];
+            const catName = rubrics[catIndex].name || "";
+            
+            customAlert("🤖 AI กำลังวิเคราะห์คีย์เวิร์ดจากหมวดหมู่...", "success");
+            
+            setTimeout(() => {
+                let generated = ["ความชัดเจนของเป้าหมาย", "ความสอดคล้องของเนื้อหา", "การมีส่วนร่วมของนักเรียน"];
+                
+                // ถอดรหัสคีย์เวิร์ดแบบง่ายๆ (Rule-based AI Mockup)
+                if(catName.includes("สื่อ") || catName.includes("เทคโนโลยี")) generated = ["ความน่าสนใจของสื่อ", "ความพร้อมของอุปกรณ์", "สื่อส่งเสริมการคิดวิเคราะห์"];
+                if(catName.includes("เวลา") || catName.includes("คุม")) generated = ["แบ่งเวลาแต่ละช่วงได้เหมาะสม", "ความลื่นไหลของกิจกรรม", "การควบคุมชั้นเรียนเชิงบวก"];
+                if(catName.includes("วัด") || catName.includes("ประเมิน")) generated = ["ใช้วิธีการวัดผลที่หลากหลาย", "สอดคล้องกับจุดประสงค์", "ให้ Feedback นักเรียนทันที"];
+                
+                generated.forEach(g => rubrics[catIndex].items.push(g));
+                loadRubricEditor();
+                customAlert("✨ AI สร้างประเด็นประเมินให้เรียบร้อยแล้ว!", "success");
+            }, 1200);
+        };
+        // 💾 สมองกลบันทึกข้อมูลแพ็คเกจใหญ่ขึ้น Google Sheets (อัปเดตระบบโควตา 4 กลุ่ม)
         window.saveSupConfig = async function(e) {
             const btn = e.currentTarget;
             const origText = btn.innerHTML;
@@ -15752,27 +16008,22 @@ window.saveStudentDetail = async function() {
             btn.disabled = true;
 
             try {
-                const conf = {
-                    r1_start: document.getElementById('supc_r1_start').value,
-                    r1_end: document.getElementById('supc_r1_end').value,
-                    r1_form: document.getElementById('supc_r1_form').value,
-                    r2_start: document.getElementById('supc_r2_start').value,
-                    r2_end: document.getElementById('supc_r2_end').value,
-                    r2_form: document.getElementById('supc_r2_form').value,
-                    r3_start: document.getElementById('supc_r3_start').value,
-                    r3_end: document.getElementById('supc_r3_end').value,
-                    r3_form: document.getElementById('supc_r3_form').value,
-                    quota: document.getElementById('supc_quota').value,
-                    blackout: document.getElementById('supc_blackout').value
+                // รวบรวมค่า Settings นอกรอบการนิเทศ (แพ็คโควตาทั้ง 4 กลุ่มเป็น JSON)
+                masterSwitches_Global['SupervisionMaster'].settings.quota = {
+                    exec: document.getElementById('supc_q_exec').value || 5,
+                    acad: document.getElementById('supc_q_acad').value || 5,
+                    head: document.getElementById('supc_q_head').value || 3,
+                    teacher: document.getElementById('supc_q_teacher').value || 2
                 };
+                masterSwitches_Global['SupervisionMaster'].settings.blackout = document.getElementById('supc_blackout').value;
                 
-                masterSwitches_Global['SupConfig'] = conf;
-                
-                // ใช้ API updateMasterSwitch ส่งไปเซฟเงียบๆ
                 const payload = { action: 'updateMasterSwitch', switches: masterSwitches_Global };
-                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                const result = await res.json();
                 
-                customAlert("บันทึกกติการะบบนิเทศเรียบร้อยแล้วครับ", "success");
+                if(result.status === 'success') {
+                    customAlert("บันทึกกติกาและโควตากรรมการเรียบร้อยแล้วครับ!", "success");
+                } else throw new Error("บันทึกไม่สำเร็จ");
             } catch(err) { 
                 customAlert("เกิดข้อผิดพลาด: " + err.message, "error"); 
             } finally { 
@@ -15780,16 +16031,34 @@ window.saveStudentDetail = async function() {
             }
         };
 
-        // วาดตารางโหมดเนตรวงแหวน (กวาดข้อมูลครูทั้งโรงเรียนว่าผ่านรอบไหนแล้วบ้าง)
+        // 👁️ สมองกลวาดตารางโหมดเนตรวงแหวน (V.Dynamic Columns อัปเกรดนับคอลัมน์ตามรอบจริง)
         window.renderSupMatrixView = function() {
             const tbody = document.getElementById('supcMatrixBody');
-            if(!tbody) return;
+            const theadRow = document.getElementById('supcMatrixHeaderRow');
+            if(!tbody || !theadRow) return;
+            
             tbody.innerHTML = '';
             
-            // กรองเอาเฉพาะ User ทั่วไป
+            // 🧠 1. ดึงข้อมูลรอบทั้งหมดจาก Config ของแก
+            const roundsConfig = masterSwitches_Global['SupervisionMaster']?.rounds || [];
+            
+            // 🧠 2. วาดหัวตารางแบบ Dynamic
+            let headHtml = `
+                <th class="px-4 py-3 font-bold text-left w-56 sticky left-0 bg-slate-800 border-r border-slate-600 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">รายชื่อครูผู้สอน</th>
+                <th class="px-4 py-3 font-bold border-r border-slate-600">กลุ่มสาระฯ</th>
+                <th class="px-4 py-3 font-bold text-indigo-300 border-r border-slate-600 w-32">บทบาท / โควตา</th>
+            `;
+            // ลูปสร้างหัวคอลัมน์รอบการนิเทศตามที่มีจริง
+            roundsConfig.forEach((r, idx) => {
+                const color = r.type === 'auto' ? 'text-amber-300' : 'text-rose-300';
+                const shortName = r.name.split(':')[0] || `รอบที่ ${idx + 1}`; // ดึงชื่อสั้นๆ มาโชว์
+                headHtml += `<th class="px-4 py-3 font-bold ${color} border-r border-slate-600">${shortName}</th>`;
+            });
+            theadRow.innerHTML = headHtml;
+
+            // 🧠 3. จัดการข้อมูลครูและวาดเนื้อหาตาราง
             let validTeachers = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User'));
             
-            // เรียงลำดับ กลุ่มสาระฯ -> อาวุโส Sq
             validTeachers.sort((a,b) => {
                 const iA = LEARNING_AREAS.indexOf(a.Department) !== -1 ? LEARNING_AREAS.indexOf(a.Department) : 99;
                 const iB = LEARNING_AREAS.indexOf(b.Department) !== -1 ? LEARNING_AREAS.indexOf(b.Department) : 99;
@@ -15797,11 +16066,23 @@ window.saveStudentDetail = async function() {
                 return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
             });
 
+            const getQuotaLimit = (cat) => {
+                const q = masterSwitches_Global['SupervisionMaster']?.settings?.quota;
+                if(typeof q === 'object' && q !== null) return q[cat] || 2;
+                return q || 2; 
+            };
+            
+            const determineSupRole = (u) => {
+                const r = u.Role || "";
+                if(r.includes('Dir') || r.includes('DepDir') || r.includes('AsstDir')) return { cat: 'exec', name: 'ทีมบริหาร', limit: getQuotaLimit('exec'), color: 'blue' };
+                if(r.includes('EmpPngn') || r.includes('HOA')) return { cat: 'acad', name: 'วิชาการ', limit: getQuotaLimit('acad'), color: 'fuchsia' };
+                if(r.includes('Head') || r.includes('DepHead')) return { cat: 'head', name: 'หัวหน้าสาระฯ', limit: getQuotaLimit('head'), color: 'amber' };
+                return { cat: 'teacher', name: 'ครูผู้สอน', limit: getQuotaLimit('teacher'), color: 'emerald' };
+            };
+
             validTeachers.forEach(u => {
-                // หางานนิเทศของครูคนนี้ทั้งหมด และเรียงจากเก่าไปใหม่
                 const mySups = supervisionDB_Global.filter(s => s.TeacherName === u.FullName).sort((a,b) => new Date(a.ReqDate) - new Date(b.ReqDate));
                 
-                // สมองกลเสกสถานะ (ดึงตัวที่ 0, 1, 2 ตามลำดับรอบ)
                 const getStatusHtml = (index) => {
                     const s = mySups[index];
                     if(!s) return `<div class="bg-rose-50 text-rose-500 font-bold px-2 py-1 rounded text-xs border border-rose-100 w-max mx-auto">🔴 ยังไม่เริ่ม</div>`;
@@ -15809,23 +16090,206 @@ window.saveStudentDetail = async function() {
                     return `<div class="bg-amber-50 text-amber-500 font-bold px-2 py-1 rounded text-xs border border-amber-100 w-max mx-auto animate-pulse">🟡 รอประเมิน</div>`;
                 };
 
-                tbody.innerHTML += `
+                const roleInfo = determineSupRole(u);
+                const roleBadge = `<div class="bg-${roleInfo.color}-50 text-${roleInfo.color}-700 border border-${roleInfo.color}-200 px-2 py-1 rounded-lg text-[10px] font-bold w-full text-center shadow-sm">${roleInfo.name}<br><span class="text-xs opacity-80">โควตา: ${roleInfo.limit}/สัปดาห์</span></div>`;
+
+                // เริ่มวาดแถวของครูคนนั้น (ล็อก 3 คอลัมน์แรก)
+                let rowHtml = `
                 <tr class="hover:bg-rose-50/50 transition-colors border-b border-gray-100">
                     <td class="px-4 py-3 font-bold text-gray-800 text-left sticky left-0 bg-white border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate max-w-[150px]" title="${u.FullName}">${u.FullName}</td>
-                    <td class="px-4 py-3 text-[10px] text-gray-500 font-bold border-r border-gray-100">${u.Department||'ไม่มีสังกัด'}</td>
-                    <td class="px-4 py-3 border-r border-gray-100 bg-gray-50/50">${getStatusHtml(0)}</td>
-                    <td class="px-4 py-3 border-r border-gray-100 bg-white">${getStatusHtml(1)}</td>
-                    <td class="px-4 py-3 border-r border-gray-100 bg-gray-50/50">${getStatusHtml(2)}</td>
-                </tr>`;
+                    <td class="px-4 py-3 text-[10px] text-gray-500 font-bold border-r border-gray-100 align-middle">${u.Department||'ไม่มีสังกัด'}</td>
+                    <td class="px-2 py-3 border-r border-gray-100 bg-white align-middle">${roleBadge}</td>
+                `;
+
+                // ลูปวาดคอลัมน์สถานะตามจำนวนรอบที่มีจริง!
+                roundsConfig.forEach((r, idx) => {
+                    const bgStr = idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'; // สลับสีพื้นหลังให้ดูง่าย
+                    rowHtml += `<td class="px-4 py-3 border-r border-gray-100 ${bgStr} align-middle">${getStatusHtml(idx)}</td>`;
+                });
+
+                rowHtml += `</tr>`;
+                tbody.innerHTML += rowHtml;
             });
         };
-
         // ปุ่มสวิตช์ประหาร (โชว์ Alert เฉยๆ ก่อน ไว้เชื่อม API หลังบ้านทีหลัง)
         window.executeSupervisionPenalty = function() {
             customConfirm("⚠️ ยืนยันการรันระบบตรวจสอบและลงโทษอัตโนมัติ? (ครูที่ไม่ส่งคำขอในรอบที่หมดเวลาไปแล้ว จะถูกประทับตราว่า 'ขาดการนิเทศ')", () => {
                 customAlert("🚀 รันสวิตช์ประหารเรียบร้อย! ระบบกำลังสแกนประวัติครูทั้งโรงเรียน...", "success");
             });
         };
+        // ==========================================
+        // 🧠 Supervision Evaluation Brain (เฟส 4)
+        // ==========================================
+
+        window.openSupervisionModal = function(teacherName, formTemplateId) {
+            document.getElementById('supEvalSubtitle').innerText = `ผู้รับการนิเทศ: ${teacherName} | ฟอร์ม: ${formTemplateId === 'formA' ? 'A (เตรียมความพร้อม)' : 'B (ประเมินผลเข้มข้น)'}`;
+            
+            // ดึง JSON จากที่เราตั้งค่าไว้ในเฟส 3 มาวาด
+            const rubrics = masterSwitches_Global?.SupervisionMaster?.rubrics?.[formTemplateId] || [];
+            const container = document.getElementById('dynamicEvaluationFormContainer');
+            
+            let html = '';
+            let totalItems = 0;
+
+            if(rubrics.length === 0) {
+                html = `<div class="text-center py-8 text-gray-400 font-bold bg-white rounded-2xl border border-dashed">ยังไม่มีข้อประเมินในฟอร์มนี้ (กรุณาไปตั้งค่าที่แผงควบคุม)</div>`;
+            } else {
+                rubrics.forEach((cat, cIdx) => {
+                    html += `
+                    <div class="mb-6 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm animate-in slide-in-from-bottom-4" style="animation-delay: ${cIdx * 100}ms">
+                        <h5 class="font-black text-rose-700 border-b border-gray-100 pb-2 mb-4 flex items-center gap-2"><span class="bg-rose-100 text-rose-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">${cIdx+1}</span> ${cat.name}</h5>
+                        <div class="space-y-3">`;
+
+                    cat.items.forEach((item, iIdx) => {
+                        totalItems++;
+                        html += `
+                        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100 hover:border-rose-200 transition-colors">
+                            <div class="flex-1 text-sm font-bold text-gray-700 pl-2 border-l-4 border-rose-400">${item}</div>
+                            <div class="flex gap-2 justify-center xl:justify-end rubric-radios">
+                                ${[1,2,3,4,5].map(score => `
+                                    <label class="cursor-pointer flex flex-col items-center group relative">
+                                        <input type="radio" name="rubric_${cIdx}_${iIdx}" value="${score}" class="peer sr-only" onchange="calculateSupervisionScore()">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-gray-300 peer-checked:border-rose-500 peer-checked:bg-rose-500 peer-checked:text-white peer-checked:shadow-[0_0_10px_rgba(225,29,72,0.4)] hover:border-rose-400 bg-white transition-all text-sm font-black text-gray-400">
+                                            ${score}
+                                        </div>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                });
+
+                // แผงสรุปคะแนน Real-time
+                html += `
+                <div class="bg-gradient-to-r from-rose-800 to-rose-600 text-white p-5 rounded-2xl flex justify-between items-center shadow-lg mt-6">
+                    <div>
+                        <div class="font-black text-lg">📊 สรุปคะแนนรวม</div>
+                        <div class="text-xs text-rose-200">เลือกคะแนนให้ครบทุกข้อเพื่อความสมบูรณ์</div>
+                    </div>
+                    <div class="text-4xl font-black drop-shadow-md"><span id="sup_total_score">0</span><span class="text-xl text-rose-300"> / ${totalItems * 5}</span></div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            
+            // ล้างช่องสรุปผล
+            ['sup_strength', 'sup_weakness', 'sup_development'].forEach(id => document.getElementById(id).value = '');
+            
+            document.getElementById('supervisionEvalModal').classList.remove('hidden');
+        };
+
+        window.closeSupervisionModal = function() {
+            document.getElementById('supervisionEvalModal').classList.add('hidden');
+        };
+
+        window.calculateSupervisionScore = function() {
+            let total = 0;
+            const radios = document.querySelectorAll('#dynamicEvaluationFormContainer input[type="radio"]:checked');
+            radios.forEach(r => total += parseInt(r.value));
+            const scoreEl = document.getElementById('sup_total_score');
+            if(scoreEl) scoreEl.innerText = total;
+        };
+
+        // 🤖 ฟังก์ชัน AI ช่วยวิเคราะห์ผล (คำนวณจากคะแนนดิบ)
+        window.generateAISupervisionSummary = function() {
+            const radiosChecked = document.querySelectorAll('#dynamicEvaluationFormContainer input[type="radio"]:checked');
+            const totalGroups = document.querySelectorAll('#dynamicEvaluationFormContainer .rubric-radios').length;
+            
+            if(radiosChecked.length < totalGroups && totalGroups > 0) {
+                customAlert("⚠️ กรุณาประเมินให้ครบทุกข้อก่อนให้ AI ช่วยสรุปผลครับ", "warning");
+                return;
+            }
+
+            customAlert("🤖 AI กำลังวิเคราะห์ผลคะแนนเพื่อเขียนสรุป...", "success");
+            
+            setTimeout(() => {
+                const totalScoreEl = document.getElementById('sup_total_score');
+                const total = totalScoreEl ? parseInt(totalScoreEl.innerText) : 0;
+                const percent = totalGroups > 0 ? (total / (totalGroups * 5)) * 100 : 0;
+                
+                let str = "ครูผู้สอนมีความตั้งใจในการจัดการเรียนรู้ สื่อสารได้ชัดเจน และควบคุมชั้นเรียนได้ดี";
+                let weak = "การบริหารเวลาในบางช่วงอาจยังไม่กระชับ และควรเพิ่มการมีส่วนร่วมของนักเรียนให้มากขึ้น";
+                let dev = "ควรปรับเวลาการทำกิจกรรมให้สั้นลง และเพิ่มคำถามกระตุ้นคิด (Active Learning) ให้กระจายทั่วถึงทั้งห้อง";
+
+                if (percent >= 85) {
+                    str = "การจัดกิจกรรมทำได้อย่างยอดเยี่ยม สื่อการสอนมีความน่าสนใจ ดึงดูดความสนใจของผู้เรียนได้ตลอดคาบ และบรรลุวัตถุประสงค์การเรียนรู้ครบถ้วน";
+                    weak = "พบจุดที่ต้องพัฒนาเพียงเล็กน้อย เช่น การขยายประเด็นคำถามเชิงลึก (Higher-order thinking) ในบางจังหวะ";
+                    dev = "สามารถต่อยอดโดยการให้ผู้เรียนเป็นผู้นำในการตั้งคำถาม สรุปบทเรียนด้วยตนเอง และประยุกต์ใช้ความรู้กับสถานการณ์จริง";
+                } else if (percent < 65) {
+                    str = "ครูผู้สอนมีการเตรียมความพร้อมเบื้องต้นได้ดี เนื้อหามีความถูกต้องตามหลักสูตร และมีบุคลิกภาพที่ดีในการสอน";
+                    weak = "ยังขาดการใช้สื่อที่น่าสนใจ รูปแบบการสอนยังเน้นการบรรยายเป็นหลัก (Teacher-centered) และขาดการประเมินผลระหว่างเรียน";
+                    dev = "ควรปรับรูปแบบเป็น Active Learning ให้ผู้เรียนได้ลงมือปฏิบัติจริง ใช้สื่อเทคโนโลยีเข้ามาช่วย และเพิ่มการประเมินผลย่อยเพื่อเช็คความเข้าใจ";
+                }
+
+                document.getElementById('sup_strength').value = str;
+                document.getElementById('sup_weakness').value = weak;
+                document.getElementById('sup_development').value = dev;
+
+                customAlert("✨ AI สรุปผลให้เรียบร้อยแล้ว! ไอซ์สามารถปรับแก้ข้อความได้ตามต้องการเลย", "success");
+            }, 1500);
+        };
+
+        window.saveSupervisionEvaluation = function() {
+            customConfirm("ยืนยันการบันทึกผลการนิเทศใช่หรือไม่?", () => {
+                // อนาคตเราจะเขียนโค้ดผูก API ส่งข้อมูลนี้ขึ้น Google Sheets
+                customAlert("💾 บันทึกข้อมูลเรียบร้อยแล้ว! (จำลองการทำงานสำเร็จ)", "success");
+                closeSupervisionModal();
+            });
+        };
+        
     </script>
+    <!-- 🎯 [เฟส 4] หน้าต่างประเมินการนิเทศ (Supervision Evaluation Modal) -->
+    <div id="supervisionEvalModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSupervisionModal()"></div>
+        <div class="relative bg-white rounded-3xl w-11/12 max-w-4xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-300">
+            <!-- Header -->
+            <div class="p-6 border-b border-rose-100 flex justify-between items-center bg-rose-50 rounded-t-3xl">
+                <div>
+                    <h3 class="text-xl font-black text-rose-800 flex items-center gap-2">📋 บันทึกผลการนิเทศการสอน</h3>
+                    <p id="supEvalSubtitle" class="text-xs font-bold text-rose-600 mt-1">ผู้รับการนิเทศ: - | ฟอร์มที่ใช้: -</p>
+                </div>
+                <button onclick="closeSupervisionModal()" class="text-rose-400 hover:text-red-600 font-bold text-2xl transition-colors leading-none">✖</button>
+            </div>
+            
+            <!-- Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-slate-50">
+                <!-- คอนเทนเนอร์วาดฟอร์ม Likert -->
+                <div id="dynamicEvaluationFormContainer"></div>
+
+                <!-- ส่วน AI สรุปผล -->
+                <div class="mt-8 bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-indigo-400"></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                        <h4 class="font-black text-indigo-900 flex items-center gap-2">📝 สรุปผลและข้อเสนอแนะ</h4>
+                        <button type="button" onclick="generateAISupervisionSummary()" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-5 py-2.5 rounded-xl font-black hover:scale-105 transition-all shadow-md flex items-center gap-2 text-sm w-full sm:w-auto justify-center">
+                            ✨ AI ช่วยวิเคราะห์และสรุปผล
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-emerald-600 mb-1">🟢 จุดเด่น</label>
+                            <textarea id="sup_strength" rows="2" class="w-full bg-emerald-50/30 border border-emerald-200 rounded-xl p-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-emerald-300"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-amber-600 mb-1">🟡 จุดที่ควรพัฒนา</label>
+                            <textarea id="sup_weakness" rows="2" class="w-full bg-amber-50/30 border border-amber-200 rounded-xl p-3 text-sm outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder-amber-300"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-indigo-600 mb-1">🔵 แนวทางพัฒนา</label>
+                            <textarea id="sup_development" rows="2" class="w-full bg-indigo-50/30 border border-indigo-200 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-indigo-300"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-white rounded-b-3xl">
+                <button onclick="closeSupervisionModal()" class="px-6 py-2.5 rounded-xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">ยกเลิก</button>
+                <button onclick="saveSupervisionEvaluation()" class="px-8 py-2.5 rounded-xl font-black text-white bg-rose-600 hover:bg-rose-700 shadow-[0_4px_15px_rgba(225,29,72,0.3)] hover:shadow-[0_6px_20px_rgba(225,29,72,0.4)] transition-all">💾 ยืนยันการประเมิน</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
