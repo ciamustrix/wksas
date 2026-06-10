@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03 [June 8th, 2025] | FxSupervision</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.1 [June 8th, 2025] | TESTING-FxSupervision</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -10434,54 +10434,81 @@ window.deleteLog = function(logId) {
                 }
             }
         };
-
-        // 🧠 สมองส่วนกลาง: เมื่อเปลี่ยนชื่อ Model Teacher ให้รีเซ็ตทุกอย่าง
-        window.handleSLCModelChange = function() {
-            if(typeof loadBuddiesForOpenClass === 'function') loadBuddiesForOpenClass(); // โหลด Buddy หน้า Open Class
-            
-            const modelUser = document.getElementById('slc_model').value;
-            const modelInfo = usersDB_Global.find(u => u.Username === modelUser);
-            const slcSubj = document.getElementById('slc_subject');
-            
-            // กรองวิชาให้ตรงกับ Model Teacher
-            if(slcSubj && subjectsDB_Global && modelInfo) {
-                const mySubs = subjectsDB_Global.filter(s => s.TeacherName === modelInfo.FullName);
-                slcSubj.innerHTML = '<option value="">-- เลือกรายวิชา --</option>' + 
-                    mySubs.map(s => `<option value="${s.SubjectCode}">${s.SubjectCode} ${s.SubjectName}</option>`).join('');
-            } else if (slcSubj) {
-                slcSubj.innerHTML = '<option value="">-- เลือกรายวิชา --</option>';
-            }
-            
-            loadMediaForSLC(); // โหลดสื่อตามไปด้วย
-        };
-
-        // 🧠 สมองส่วนกรองสื่อ: กรองตาม Model และ วิชา
+        // 🧠 สมองกลโหลดคลังสื่อสำหรับหน้า SLC (V. Smart Sorting)
         window.loadMediaForSLC = function() {
-            const modelUser = document.getElementById('slc_model').value;
-            const selectedSubject = document.getElementById('slc_subject').value;
-            const slcMedia = document.getElementById('slc_media');
-            
-            if(!slcMedia) return;
-            
-            slcMedia.innerHTML = '<option value="">-- ไม่ใช้สื่อ / หรือสร้างใหม่ --</option>';
-            if (!modelUser) return;
-            
-            const modelInfo = usersDB_Global.find(u => u.Username === modelUser);
-            if(!modelInfo) return;
+            // เช็ค ID ของ Dropdown (ถ้าแกใช้ชื่ออื่น อย่าลืมเปลี่ยนตรง 'slc_media' นี้นะ)
+            const slcMedia = document.getElementById('slc_media'); 
+            if (!slcMedia || !mediaDB_Global || !usersDB_Global) return;
 
-            // 1. กรองเอาเฉพาะสื่อที่ Model Teacher คนนี้เป็นคนอัปโหลด
-            let filteredMedia = mediaDB_Global.filter(m => m.TeacherName === modelInfo.FullName);
-            
-            // 2. ถ้าเลือกวิชาแล้ว ให้กรองให้ตรงกับวิชานั้นด้วย
-            if (selectedSubject) {
-                filteredMedia = filteredMedia.filter(m => m.SubjectCode === selectedSubject);
-            }
-            
-            // ยัดลง Dropdown
-            filteredMedia.forEach(m => {
-                const mediaIcon = m.MediaType === 'Digital' ? '🌐' : '📦';
-                slcMedia.add(new Option(`${mediaIcon} ${m.MediaTitle}`, m.MediaID));
+            // ดึงชื่อครูผู้สอน (Model Teacher) ที่กำลังเลือกอยู่
+            const modelVal = document.getElementById('slc_model') ? document.getElementById('slc_model').value : "";
+            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const targetNameClean = modelInfo ? String(modelInfo.FullName).trim() : "";
+
+            // ฟังก์ชันช่วยดึงข้อมูลครูเจ้าของสื่อ (เพื่อเอาไปเช็คกลุ่มสาระและ Sq)
+            const getOwnerInfo = (ownerName) => {
+                const cleanName = ownerName ? String(ownerName).trim() : "";
+                return usersDB_Global.find(u => String(u.FullName).trim() === cleanName) || {};
+            };
+
+            // ก๊อปปี้ array สื่อทั้งหมดมา (กรองเอาเฉพาะอันที่มีชื่อสื่อ)
+            let sortedMedia = [...mediaDB_Global].filter(m => m.MediaName && String(m.MediaName).trim() !== "");
+
+            // 🎯 ลอจิกการจัดเรียงขั้นสูง (3-Layer Sorting)
+            sortedMedia.sort((a, b) => {
+                // รองรับหัวคอลัมน์ทั้ง TeacherName และ Owner
+                const ownerA = String(a.TeacherName || a.Owner || "").trim(); 
+                const ownerB = String(b.TeacherName || b.Owner || "").trim();
+
+                // 1. กฎเหล็ก: สื่อของ User คนนั้นต้องขึ้นก่อนเสมอ
+                if (ownerA === targetNameClean && ownerB !== targetNameClean) return -1;
+                if (ownerB === targetNameClean && ownerA !== targetNameClean) return 1;
+
+                // 2. ถ้าไม่ใช่สื่อของตัวเอง ให้เรียงตาม "กลุ่มสาระ"
+                const infoA = getOwnerInfo(ownerA);
+                const infoB = getOwnerInfo(ownerB);
+                
+                const deptA = infoA.Department || "";
+                const deptB = infoB.Department || "";
+                
+                // แปลงกลุ่มสาระเป็นตัวเลขลำดับ (ถ้ามีตัวแปร LEARNING_AREAS)
+                const indexA = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(deptA) !== -1) ? LEARNING_AREAS.indexOf(deptA) : 99;
+                const indexB = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(deptB) !== -1) ? LEARNING_AREAS.indexOf(deptB) : 99;
+
+                if (indexA !== indexB) return indexA - indexB; 
+
+                // 3. ถ้าอยู่กลุ่มสาระเดียวกัน ให้เรียงตาม Sq (ค่าน้อย = อาวุโส/เชี่ยวชาญกว่า = ขึ้นก่อน)
+                const sqA = parseInt(infoA.Sq) || 9999;
+                const sqB = parseInt(infoB.Sq) || 9999;
+                return sqA - sqB;
             });
+
+            // 🎨 วาด UI สร้าง Dropdown แบบแยกหมวดหมู่
+            let optionsHtml = '<option value="">-- ไม่ใช้สื่อ / หรือสร้างใหม่ --</option>';
+            let optGroupUser = '';
+            let optGroupOthers = '';
+
+            sortedMedia.forEach(m => {
+                const ownerName = String(m.TeacherName || m.Owner || "").trim();
+                const mediaName = m.MediaName;
+                const mediaCode = m.MediaCode || "";
+                const displayTitle = mediaCode ? `[${mediaCode}] ${mediaName}` : mediaName;
+                
+                if (ownerName === targetNameClean && targetNameClean !== "") {
+                    // ตะกร้าที่ 1: สื่อของฉัน
+                    optGroupUser += `<option value="${mediaName}">${displayTitle}</option>`;
+                } else {
+                    // ตะกร้าที่ 2: สื่อคนอื่น (วงเล็บบอกชื่อและกลุ่มสาระไว้ให้ด้วย)
+                    const dept = getOwnerInfo(ownerName).Department || "ทั่วไป";
+                    optGroupOthers += `<option value="${mediaName}">${displayTitle} (โดย: ${ownerName} - ${dept})</option>`;
+                }
+            });
+
+            // ประกอบร่าง HTML
+            if (optGroupUser) optionsHtml += `<optgroup label="🌟 สื่อของ ${targetNameClean}">${optGroupUser}</optgroup>`;
+            if (optGroupOthers) optionsHtml += `<optgroup label="📚 สื่อจากคลังส่วนกลาง">${optGroupOthers}</optgroup>`;
+
+            slcMedia.innerHTML = optionsHtml;
         };
         
         // 6. ทับฟังก์ชันดึงรายชื่อ Buddy (ยัดสมองกล Dropdown Multi-select + Tags)
@@ -11106,52 +11133,6 @@ window.deleteLog = function(logId) {
             
             closeEvidenceModal();
             customAlert("บันทึกพฤติกรรมลงผังห้องเรียบร้อย", "success");
-        };
-                window.finishSLCObservation = async function() {
-            if (Object.keys(observationData).length === 0) {
-                return customAlert("ยังไม่มีการบันทึกพฤติกรรมเด็กคนไหนเลยครับ", "info");
-            }
-
-            const modelUser = document.getElementById('slc_model').value;
-            if (!modelUser) return customAlert("กรุณาเลือก Model Teacher ด้วยครับ");
-
-            const modelInfo = usersDB_Global.find(u => u.Username === modelUser);
-
-            customConfirm("ยืนยันการส่งผลการสังเกตการณ์ใช่หรือไม่? (ส่งแล้วข้อมูลจะถูกรวมเข้าสู่รายงานเปิดชั้นเรียน)", async () => {
-                const btn = document.getElementById('btnFinishObserve');
-                const origTxt = btn.innerHTML;
-                btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังอัปโหลด...'; 
-                btn.disabled = true;
-
-                try {
-                    const payload = {
-                        action: 'submitSLCObservation',
-                        data: {
-                            ModelTeacher: modelInfo.FullName,
-                            Observer: currentUser.FullName, // ชื่อคนบันทึก (Buddy)
-                            ObservationData: observationData
-                        }
-                    };
-
-                    const res = await fetch(SCRIPT_URL, {
-                        method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow"
-                    });
-                    const result = await res.json();
-
-                    if (result.status === 'success') {
-                        customAlert(result.message, "success");
-                        observationData = {}; // เคลียร์ความจำ
-                        document.querySelectorAll('.evidence-badge').forEach(b => b.remove()); // ล้างเข็มกลัดบนจอ
-                    } else {
-                        throw new Error(result.message);
-                    }
-                } catch(e) {
-                    customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
-                } finally {
-                    btn.innerHTML = origTxt; 
-                    btn.disabled = false;
-                }
-            });
         };
         // ฟังก์ชันติดเข็มกลัดให้เด็กที่โดนจดพฤติกรรมแล้ว
         function renderEvidenceBadge(stuCard, data) {
@@ -14407,29 +14388,6 @@ window.saveStudentDetail = async function() {
             }
             loadMediaForSLC(); 
         };
-
-        window.loadMediaForSLC = function() {
-            const modelVal = document.getElementById('slc_model').value;
-            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
-            const slcMedia = document.getElementById('slc_media');
-            
-            if(!slcMedia) return;
-            slcMedia.innerHTML = '<option value="">-- ไม่ใช้สื่อ / หรือสร้างใหม่ --</option>';
-            if (!modelInfo) return;
-
-            let filteredMedia = mediaDB_Global.filter(m => m.TeacherName === modelInfo.FullName);
-            const selectedSubject = document.getElementById('slc_subject').value;
-            if (selectedSubject) {
-                filteredMedia = filteredMedia.filter(m => m.SubjectCode === selectedSubject);
-            }
-            
-            filteredMedia.forEach(m => {
-                const mediaIcon = m.MediaType === 'Digital' ? '🌐' : '📦';
-                slcMedia.add(new Option(`${mediaIcon} ${m.MediaTitle}`, m.MediaID));
-            });
-        };
-
-        
 
         window.finishSLCObservation = async function() {
             if (Object.keys(observationData).length === 0) {
