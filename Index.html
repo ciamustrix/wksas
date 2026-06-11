@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.2 [June 11th, 2025 - 12:44] | TESTING-f(SLC)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.3 [June 11th, 2025 - 14:52] | TESTING-f(SLC)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -9315,12 +9315,17 @@ window.deleteLog = function(logId) {
                     </td>
                     <td class="px-4 py-3 text-xs font-bold text-indigo-700">${s.SubjectData} <br><span class="text-gray-500 font-normal">คาบ ${s.Period}</span></td>
                     <td class="px-4 py-3 space-y-1">
-                        <select id="sup1_${s.SupID}" class="w-full text-[10px] p-1 border border-gray-300 rounded outline-none">${teacherOpts}</select>
-                        <select id="sup2_${s.SupID}" class="w-full text-[10px] p-1 border border-gray-300 rounded outline-none">${teacherOpts}</select>
-                        <select id="sup3_${s.SupID}" class="w-full text-[10px] p-1 border border-gray-300 rounded outline-none">${teacherOpts}</select>
+                        <select id="sup1_${s.SupID}" class="w-full text-[10px] p-1.5 border border-gray-300 rounded-lg outline-none bg-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500">${teacherOpts}</select>
+                        <select id="sup2_${s.SupID}" class="w-full text-[10px] p-1.5 border border-gray-300 rounded-lg outline-none bg-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500">${teacherOpts}</select>
+                        <select id="sup3_${s.SupID}" class="w-full text-[10px] p-1.5 border border-gray-300 rounded-lg outline-none bg-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500">${teacherOpts}</select>
                     </td>
-                    <td class="px-4 py-3 text-center align-middle">
-                        <button onclick="saveSupMapping('${s.SupID}')" class="bg-rose-600 text-white px-3 py-1.5 rounded text-xs font-bold shadow hover:bg-rose-700">บันทึก</button>
+                    <td class="px-4 py-3 text-center align-middle space-y-2">
+                        <button onclick="autoAssignSupervisors('${s.SupID}', '${s.TeacherName}')" class="w-full bg-amber-100 text-amber-700 border border-amber-300 px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm hover:bg-amber-200 transition-colors flex items-center justify-center gap-1">
+                            🤖 AI จัดให้
+                        </button>
+                        <button onclick="saveSupMapping('${s.SupID}')" class="w-full bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow hover:bg-rose-700 transition-colors flex items-center justify-center gap-1">
+                            💾 บันทึก
+                        </button>
                     </td>
                 </tr>`;
                 
@@ -9332,7 +9337,97 @@ window.deleteLog = function(logId) {
                 }, 50);
             });
         };
+        // 🤖 สมองกลจัดกรรมการอัตโนมัติ (V.2 สมบูรณ์แบบ: เช็คตารางสอน + โควตา + กลุ่มสาระฯ)
+        window.autoAssignSupervisors = function(supId, requestingTeacher) {
+            // 1. ดึงข้อมูลคำขอ เพื่อเอา วันที่ คาบ และวิชา
+            const req = supervisionDB_Global.find(s => s.SupID === supId);
+            if(!req) return customAlert("ไม่พบข้อมูลคำขอ", "error");
 
+            const reqTeacherInfo = usersDB_Global.find(u => u.FullName === requestingTeacher) || {};
+            const reqDept = reqTeacherInfo.Department;
+            const targetDay = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"][new Date(req.TargetDate).getDay()];
+            const targetPeriod = req.Period;
+
+            // 2. ฟังก์ชันเช็คโควตากรรมการ (ดึงจากที่แอดมินตั้งค่าไว้)
+            const getQuotaLimit = (cat) => {
+                const q = masterSwitches_Global['SupervisionMaster']?.settings?.quota;
+                if(typeof q === 'object' && q !== null) return q[cat] || 2;
+                return 2; 
+            };
+            const determineSupRole = (u) => {
+                const r = u.Role || "";
+                if(r.includes('Dir') || r.includes('DepDir') || r.includes('AsstDir')) return { cat: 'exec', limit: getQuotaLimit('exec') };
+                if(r.includes('EmpPngn') || r.includes('HOA')) return { cat: 'acad', limit: getQuotaLimit('acad') };
+                if(r.includes('Head') || r.includes('DepHead')) return { cat: 'head', limit: getQuotaLimit('head') };
+                return { cat: 'teacher', limit: getQuotaLimit('teacher') };
+            };
+
+            // 3. คำนวณภาระงานนิเทศปัจจุบันของครูทุกคน
+            let workloadMap = {};
+            usersDB_Global.forEach(t => workloadMap[t.FullName] = 0);
+            supervisionDB_Global.forEach(s => {
+                if(s.Status === 'Assigned' || s.Status === 'Evaluated') {
+                    try {
+                        let sups = JSON.parse(s.Supervisors || "[]");
+                        sups.forEach(name => { if(workloadMap[name] !== undefined) workloadMap[name]++; });
+                    } catch(e){}
+                }
+            });
+
+            // 4. ให้คะแนนความเหมาะสม (The Scoring System)
+            let scoredTeachers = [];
+            let eligibleTeachers = usersDB_Global.filter(u => u.FullName !== requestingTeacher && (!u.Role.includes('BirdSpy') || u.Role.includes('User')));
+
+            eligibleTeachers.forEach(t => {
+                let score = 0;
+                let rejectReason = null;
+
+                // กรองด่านที่ 1: โควตาเต็มหรือยัง?
+                const roleInfo = determineSupRole(t);
+                if(workloadMap[t.FullName] >= roleInfo.limit) rejectReason = "โควตาเต็ม";
+
+                // กรองด่านที่ 2: ตารางสอนว่างไหม? (เจาะทะลุ TimetableDB)
+                if(!rejectReason) {
+                    const tt = timetableDB_Global.find(x => x.TeacherName === t.FullName && x.Day === targetDay);
+                    if(tt && tt[`Period${targetPeriod}`] && tt[`Period${targetPeriod}`].trim() !== '') {
+                        rejectReason = "ติดสอน";
+                    }
+                }
+
+                // ถ้าผ่านด่านมาได้ ให้มาคำนวณคะแนน!
+                if(!rejectReason) {
+                    // แต้มต่อ 1: อยู่หมวดเดียวกัน (+50 คะแนน)
+                    if(t.Department === reqDept) score += 50;
+
+                    // แต้มต่อ 2: โควตายิ่งเหลือเยอะ ยิ่งได้คะแนน (+10 ต่อโควตาที่เหลือ)
+                    score += (roleInfo.limit - workloadMap[t.FullName]) * 10;
+
+                    // แต้มต่อ 3: สุ่ม (+0 ถึง 5) เพื่อกันกรณีคะแนนเท่ากัน แล้วดึงแต่คนชื่อ ก.ไก่ ตลอด
+                    score += Math.random() * 5;
+
+                    scoredTeachers.push({ name: t.FullName, score: score });
+                }
+            });
+
+            // 5. คัดเอา 3 อันดับแรกที่คะแนนสูงสุด
+            scoredTeachers.sort((a,b) => b.score - a.score);
+            const top3 = scoredTeachers.slice(0, 3);
+
+            // 6. อัปเดต Dropdown บนหน้าเว็บ
+            const resetDropdown = (id) => {
+                const el = document.getElementById(id);
+                if(el) { el.value = ""; el.classList.remove('bg-emerald-50', 'border-emerald-400'); }
+            };
+            resetDropdown(`sup1_${supId}`); resetDropdown(`sup2_${supId}`); resetDropdown(`sup3_${supId}`);
+
+            if(top3.length === 0) return customAlert("❌ ไม่มีครูท่านใดที่ตารางว่างหรือโควตาเหลือในคาบนี้เลยครับ", "error");
+
+            if(top3[0]) { const el = document.getElementById(`sup1_${supId}`); el.value = top3[0].name; el.classList.add('bg-emerald-50', 'border-emerald-400'); }
+            if(top3[1]) { const el = document.getElementById(`sup2_${supId}`); el.value = top3[1].name; el.classList.add('bg-emerald-50', 'border-emerald-400'); }
+            if(top3[2]) { const el = document.getElementById(`sup3_${supId}`); el.value = top3[2].name; el.classList.add('bg-emerald-50', 'border-emerald-400'); }
+
+            customAlert(`🤖 จัดกรรมการเรียบร้อย! (ระบบเช็คตารางสอนและกลุ่มสาระฯ ให้แล้ว)`, "success");
+        };
         window.saveSupMapping = async function(supId) {
             const s1 = document.getElementById(`sup1_${supId}`).value;
             const s2 = document.getElementById(`sup2_${supId}`).value;
@@ -10452,26 +10547,30 @@ window.deleteLog = function(logId) {
         };
 
         window.initSLCSystem = function() {
-            switchSLCTab('tab-slc-public'); // 💡 เปลี่ยนตรงนี้ให้เปิดกระดานเป็นหน้าแรก!
+            switchSLCTab('tab-slc-public');
             if(typeof toggleLayoutOptions === 'function') toggleLayoutOptions();
 
-            // 1. กวาดล้าง <select> เก่าที่ซ้ำซ้อนทั้งหมด แล้วแปลงเป็น <input> อัตโนมัติ
-            document.querySelectorAll('#slc_model').forEach(el => {
-                if (el.tagName === 'SELECT') {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.id = 'slc_model';
-                    input.readOnly = true;
-                    input.className = "w-full rounded-lg border border-indigo-200 p-2 text-sm outline-none bg-indigo-50 text-indigo-900 font-bold cursor-not-allowed shadow-inner";
-                    el.parentNode.replaceChild(input, el);
-                }
-            });
-
-            // 2. ยัดชื่อจริงลงช่อง
+            // 💡 คืนชีพ <select> แต่สั่งล็อกกุญแจไว้ (แก้บั๊ก Buddy หาชื่อครูไม่เจอ)
             const slcModel = document.getElementById('slc_model');
             if(slcModel && currentUser) {
-                slcModel.value = currentUser.FullName;
-                handleSLCModelChange(); // สั่งให้สมองกลโหลดข้อมูลต่อทันที
+                if(slcModel.tagName === 'SELECT') {
+                    for(let opt of slcModel.options) {
+                        // เทียบทั้ง Username และ FullName เผื่อฐานข้อมูลใช้แบบไหน
+                        if(opt.value === currentUser.Username || opt.value === currentUser.FullName || opt.text === currentUser.FullName) {
+                            slcModel.value = opt.value;
+                            break;
+                        }
+                    }
+                } else {
+                    slcModel.value = currentUser.FullName;
+                }
+                
+                // ล็อกไม่ให้เปลี่ยนชื่อ และทำสีเทาๆ
+                slcModel.setAttribute('disabled', 'true');
+                slcModel.classList.add('bg-gray-100', 'cursor-not-allowed', 'opacity-80');
+                
+                // สะกิดให้สมองกลดึงรายชื่อ Buddy และตารางสอนต่อ!
+                if(typeof handleSLCModelChange === 'function') handleSLCModelChange();
             }
         };
 
@@ -10866,6 +10965,21 @@ window.deleteLog = function(logId) {
             const slotVal = document.getElementById('slc_timetable_slot').value;
             if(!dateVal || !slotVal) return customAlert("กรุณาเลือกคาบและวันที่เปิดชั้นเรียนก่อนครับ", "error");
 
+            const parts = slotVal.split('|');
+            const targetSubject = parts[1] || '';
+            const physicalRoom = parts[2] || ''; 
+            let targetClassGroup = parts[3] || ''; 
+            const targetPeriod = parts[4] || '';
+
+            if (targetClassGroup && !targetClassGroup.startsWith('ม.')) targetClassGroup = 'ม.' + targetClassGroup;
+            if (!targetClassGroup && physicalRoom.includes('/')) targetClassGroup = physicalRoom.startsWith('ม.') ? physicalRoom : 'ม.' + physicalRoom;
+
+            // 💡 พระเอกอยู่ตรงนี้: แพ็ก "ชั้นเรียน" คู่กับ "ห้องตึก"
+            let finalRoomString = targetClassGroup;
+            if (physicalRoom && physicalRoom !== targetClassGroup && !targetClassGroup.includes(physicalRoom)) {
+                finalRoomString = `${targetClassGroup} (${physicalRoom})`;
+            }
+
             const checkedBuddies = Array.from(document.querySelectorAll('input[name="slc_buddy_cb"]:checked')).map(cb => cb.value);
             const buddyNames = checkedBuddies.map(username => {
                 const uInfo = usersDB_Global.find(u => u.Username === username);
@@ -10881,7 +10995,7 @@ window.deleteLog = function(logId) {
             const btns = document.querySelectorAll('button[onclick^="saveSeatingChart"]');
             btns.forEach(btn => {
                 btn.dataset.origTxt = btn.innerHTML;
-                btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> บันทึก...';
+                btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle w-4 h-4"></div> บันทึก...';
                 btn.disabled = true;
             });
 
@@ -10891,13 +11005,13 @@ window.deleteLog = function(logId) {
                     SessionID: 'SLC-' + Date.now(),
                     Date: dateVal,
                     ModelTeacher: currentUser.FullName,
-                    SubjectCode: document.getElementById('slc_hidden_subject').value,
-                    Room: document.getElementById('slc_hidden_room').value,
-                    Period: slotVal.split('|')[4], // 💡 แก้บั๊ก: ดึงเลขคาบจากท่อนที่ 5 (index 4) มาใช้เป๊ะๆ!
+                    SubjectCode: targetSubject,
+                    Room: finalRoomString, // 👈 ส่งไปแบบแพ็กคู่ เช่น "ม.6/1 (0107)"
+                    Period: targetPeriod,
                     BuddyTeachers: JSON.stringify(buddyNames),
                     LayoutMode: modeType,
                     LayoutHTML: gridHtml,
-                    MediaID: document.getElementById('slc_media').value,
+                    MediaID: document.getElementById('slc_media')?.value || '',
                     Status: 'Active',
                     ObservationLogs: JSON.stringify({})
                 }
@@ -10906,9 +11020,8 @@ window.deleteLog = function(logId) {
             try {
                 const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
                 const result = await res.json();
-                
                 if(result.status === 'success') {
-                    customAlert("สร้างห้องเปิดชั้นเรียนสำเร็จ! ข้อมูลขึ้นกระดานแล้วครับ", "success");
+                    customAlert("สร้างห้องเปิดชั้นเรียนสำเร็จ!", "success");
                     slcSessionsDB_Global.unshift(payload.data); 
                     switchSLCTab('tab-slc-public'); 
                 } else throw new Error(result.message);
@@ -11154,16 +11267,15 @@ window.deleteLog = function(logId) {
         };
 
         // 🚪 Buddy กดเข้าห้องสังเกตการณ์จากหน้ากระดาน (Tab 4 -> Tab 3)
-        let activeSLC_SessionData = null; // จำว่ากำลังส่องห้องใคร
+        let activeSLC_SessionData = null; 
 
         window.enterObservationRoom = function(sessionId) {
             const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
             if(!session) return customAlert("ไม่พบข้อมูลห้องเรียนนี้", "error");
 
             activeSLC_SessionData = session;
-            observationData = {}; // เคลียร์กระดานจด
+            observationData = {}; 
 
-            // ดึงข้อมูลเก่าของตัวเองกลับมา (ถ้าเคยจดค้างไว้)
             try {
                 const allLogs = JSON.parse(session.ObservationLogs || "{}");
                 if (allLogs[currentUser.FullName]) observationData = allLogs[currentUser.FullName];
@@ -11171,16 +11283,15 @@ window.deleteLog = function(logId) {
 
             document.getElementById('obs_status_badge').classList.remove('hidden');
             
-            // 💡 อัปเกรด 1: แปลงรหัสวิชาเป็นชื่อเต็ม (ดักจับ undefined ด้วย)
             const sInfo = subjectsDB_Global.find(sub => sub.SubjectCode === session.SubjectCode) || {};
             const subjectName = sInfo.SubjectName ? `${session.SubjectCode} ${sInfo.SubjectName}` : session.SubjectCode;
-            document.getElementById('obs_subtitle').textContent = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${subjectName} (ห้อง ${session.Room})`;
+            // โชว์ป้ายชื่อห้องให้เห็นครบๆ ไปเลย
+            document.getElementById('obs_subtitle').textContent = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${subjectName} (ชั้น ${session.Room})`;
 
             const gridView = document.getElementById('observation_grid_view');
             const listView = document.getElementById('observation_list_view');
             const listContainer = document.getElementById('obs_list_container');
             
-            // วาดแบบ Grid (ผังที่นั่ง)
             if (session.LayoutMode === 'normal' && session.LayoutHTML) {
                 gridView.innerHTML = session.LayoutHTML;
                 gridView.className = 'flex-1 relative w-full h-full mt-4 p-2 overflow-y-auto no-scrollbar pb-20 bg-white rounded-xl shadow-inner border border-gray-200 flex items-center justify-center'; 
@@ -11203,17 +11314,18 @@ window.deleteLog = function(logId) {
                 gridView.innerHTML = '<div class="text-center text-gray-500 font-bold py-10">ห้องนี้ไม่ได้จัดผังที่นั่ง กรุณาดูแบบรายชื่อครับ</div>';
             }
 
-            // 💡 อัปเกรด 2: สมองกลดึงรายชื่อแบบทะลวงช่องว่าง (ลบ 'ม.' แล้วเทียบให้เป๊ะ)
+            // 💡 พระเอกจุดที่ 2: หั่นเอาแค่ข้อความก้อนแรกก่อนเว้นวรรค (เอาแค่ "ม.6/1") มาใช้ค้นหาเด็ก
             listContainer.innerHTML = '';
-            const targetRoomClean = String(session.Room).replace('ม.', '').trim();
+            const actualClassGroup = String(session.Room).split(' ')[0]; // แยก "ม.6/1 (0107)" เป็น ["ม.6/1", "(0107)"] แล้วเอาตัวแรก
+            const targetRoomClean = actualClassGroup.replace('ม.', '').trim();
+            
             const roomStudents = studentsDB_Global.filter(s => {
                 const dbRoomClean = String(s.Room).replace('ม.', '').trim();
                 return dbRoomClean === targetRoomClean;
             });
             
-            // ดักจับกรณีหาเด็กไม่เจอ (เช่นบั๊กวันที่โผล่มาแทนชื่อห้อง)
             if (roomStudents.length === 0) {
-                 listContainer.innerHTML = `<div class="col-span-full py-10 text-center text-rose-500 font-bold bg-white rounded-xl border border-rose-200 shadow-sm">ไม่พบรายชื่อนักเรียนห้อง ${targetRoomClean} ในระบบ! <br><span class="text-xs text-gray-500 font-normal">*(หากกำลังทดสอบระบบ ให้ไปลบข้อมูลทดสอบเก่าทิ้งใน Google Sheets ก่อนครับ)*</span></div>`;
+                 listContainer.innerHTML = `<div class="col-span-full py-10 text-center text-rose-500 font-bold bg-white rounded-xl border border-rose-200 shadow-sm">ไม่พบรายชื่อนักเรียนชั้น ${targetRoomClean} ในระบบ!</div>`;
             }
 
             roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
@@ -11231,7 +11343,6 @@ window.deleteLog = function(logId) {
                 </div>`;
             });
 
-            // เปิด Tab 3 และสลับเป็นโหมดที่เหมาะสม
             switchSLCTab('tab-slc-observe');
             toggleObserveMode(session.LayoutMode === 'normal' ? 'grid' : 'list');
         };
