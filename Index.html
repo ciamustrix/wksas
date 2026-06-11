@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.3 [June 11th, 2025 - 16:53] | TESTING-f(SLC)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.4 [June 11th, 2025 - 17:13] | TESTING-f(นิเทศฯ)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -16616,7 +16616,15 @@ window.saveStudentDetail = async function() {
         // 🧠 Supervision Evaluation Brain (เฟส 4)
         // ==========================================
 
-        window.openSupervisionModal = function(teacherName, formTemplateId) {
+        window.currentEvalSupID = null;
+
+        // 💡 ทับฟังก์ชันเก่า: เชื่อมต่อปุ่มประเมินเข้ากับ Dynamic Rubric
+        window.openSupEvalModal = function(supId, teacherName) {
+            window.currentEvalSupID = supId;
+            
+            // 💡 อนาคตถ้าอยากแยก FormA/FormB ให้ดึงจากข้อมูลรอบนิเทศ ตอนนี้ใช้ formA เป็นค่าเริ่มต้น
+            const formTemplateId = 'formA'; 
+            
             document.getElementById('supEvalSubtitle').innerText = `ผู้รับการนิเทศ: ${teacherName} | ฟอร์ม: ${formTemplateId === 'formA' ? 'A (เตรียมความพร้อม)' : 'B (ประเมินผลเข้มข้น)'}`;
             
             // ดึง JSON จากที่เราตั้งค่าไว้ในเฟส 3 มาวาด
@@ -16669,13 +16677,32 @@ window.saveStudentDetail = async function() {
             container.innerHTML = html;
             
             // ล้างช่องสรุปผล
-            ['sup_strength', 'sup_weakness', 'sup_development'].forEach(id => document.getElementById(id).value = '');
+            ['sup_strength', 'sup_weakness', 'sup_development'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = '';
+            });
             
             document.getElementById('supervisionEvalModal').classList.remove('hidden');
         };
 
         window.closeSupervisionModal = function() {
             document.getElementById('supervisionEvalModal').classList.add('hidden');
+        };
+
+        window.previewSupPhoto = function(input, previewId) {
+            const previewCont = document.getElementById(previewId);
+            const img = previewCont.querySelector('img');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    previewCont.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                img.src = '';
+                previewCont.classList.add('hidden');
+            }
         };
 
         window.calculateSupervisionScore = function() {
@@ -16725,13 +16752,96 @@ window.saveStudentDetail = async function() {
             }, 1500);
         };
 
-        window.saveSupervisionEvaluation = function() {
-            customConfirm("ยืนยันการบันทึกผลการนิเทศใช่หรือไม่?", () => {
-                // อนาคตเราจะเขียนโค้ดผูก API ส่งข้อมูลนี้ขึ้น Google Sheets
-                customAlert("💾 บันทึกข้อมูลเรียบร้อยแล้ว! (จำลองการทำงานสำเร็จ)", "success");
-                closeSupervisionModal();
-            });
+        // 💾 ฟังก์ชันยิงข้อมูลขึ้นเซิร์ฟเวอร์ (อัปเกรดอัปโหลดรูป)
+        window.saveSupervisionEvaluation = async function() {
+            if (!window.currentEvalSupID) return customAlert("ไม่พบรหัสอ้างอิงการนิเทศ", "error");
+            
+            const radiosChecked = document.querySelectorAll('#dynamicEvaluationFormContainer input[type="radio"]:checked');
+            const totalGroups = document.querySelectorAll('#dynamicEvaluationFormContainer .rubric-radios').length;
+            
+            if(radiosChecked.length < totalGroups && totalGroups > 0) {
+                return customAlert("⚠️ กรุณาประเมินและให้คะแนนให้ครบทุกหัวข้อก่อนบันทึกครับ", "warning");
+            }
+
+            const strengths = document.getElementById('sup_strength').value.trim();
+            const weakness = document.getElementById('sup_weakness').value.trim();
+            const suggestions = document.getElementById('sup_development').value.trim();
+            
+            if(!strengths || !weakness || !suggestions) {
+                return customAlert("กรุณากรอกข้อสรุปทั้ง 3 ช่อง หรือให้ AI ช่วยสรุปก่อนครับ", "warning");
+            }
+
+            let totalScore = 0;
+            radiosChecked.forEach(r => totalScore += parseInt(r.value));
+            const percent = totalGroups > 0 ? (totalScore / (totalGroups * 5)) * 100 : 0;
+            
+            let resultVal = 'ควรปรับปรุง';
+            if (percent >= 80) resultVal = 'ดีเยี่ยม';
+            else if (percent >= 70) resultVal = 'ดี';
+            else if (percent >= 60) resultVal = 'พอใช้';
+
+            if (!currentUser.SavedSignature) {
+                return customAlert("⚠️ คุณยังไม่ได้ตั้งค่าลายเซ็นในโปรไฟล์ ไม่สามารถยืนยันการประเมินได้ครับ", "error");
+            }
+
+            const btn = document.querySelector('button[onclick="saveSupervisionEvaluation()"]');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังบันทึก...'; 
+            btn.disabled = true;
+
+            try {
+                // 💡 ฟังก์ชันแปลงไฟล์เป็น Base64
+                const getBase64 = async (id) => {
+                    const el = document.getElementById(id);
+                    if (!el || el.files.length === 0) return null;
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.readAsDataURL(el.files[0]);
+                    });
+                };
+
+                const photo1 = await getBase64('sup_photo_1');
+                const photo2 = await getBase64('sup_photo_2');
+
+                const payload = {
+                    action: 'submitSupervisionEval',
+                    data: {
+                        SupID: window.currentEvalSupID,
+                        Evaluator: currentUser.FullName,
+                        Signature: currentUser.SavedSignature,
+                        EvalData: { 
+                            strengths: strengths, 
+                            suggestions: "จุดควรพัฒนา: " + weakness + "\\nแนวทางแก้ไข: " + suggestions, 
+                            result: resultVal,
+                            score: totalScore,
+                            percent: percent,
+                            photo1: photo1, // 👈 ส่งรูป 1
+                            photo2: photo2  // 👈 ส่งรูป 2
+                        }
+                    }
+                };
+                
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    customAlert("บันทึกผลการประเมินเรียบร้อย! (ระดับ: " + resultVal + ")", "success");
+                    // เคลียร์รูป
+                    ['sup_photo_1', 'sup_photo_2'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+                    ['sup_photo_preview_1', 'sup_photo_preview_2'].forEach(id => { const el = document.getElementById(id); if(el) { el.classList.add('hidden'); el.querySelector('img').src = ''; }});
+                    
+                    closeSupervisionModal();
+                    await fetchAllDatabasesFromGAS(); 
+                    renderSupTasks(); 
+                } else throw new Error(result.message);
+            } catch(e) { 
+                customAlert("Error: " + e.message, "error"); 
+            } finally { 
+                btn.innerHTML = origTxt; btn.disabled = false; 
+            }
         };
+
         // ==========================================
         // 📊 ระบบสรุปผล SLC (Results & AI Summary)
         // ==========================================
@@ -16938,6 +17048,27 @@ window.saveStudentDetail = async function() {
                         <div>
                             <label class="block text-xs font-bold text-indigo-600 mb-1">🔵 แนวทางพัฒนา</label>
                             <textarea id="sup_development" rows="2" class="w-full bg-indigo-50/30 border border-indigo-200 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-indigo-300"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- 📸 โซนอัปโหลดรูปภาพประกอบการนิเทศ (ไม่บังคับ) -->
+                <div class="mt-6 bg-white p-6 rounded-2xl border border-sky-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-sky-400"></div>
+                    <h4 class="font-black text-sky-900 mb-4 flex items-center gap-2">📸 รูปภาพประกอบการนิเทศ <span class="text-xs text-gray-400 font-normal">(ไม่บังคับ)</span></h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 border-dashed hover:border-sky-300 transition-colors">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">1. ภาพถ่ายครูผู้สอนกับกรรมการนิเทศ</label>
+                            <input type="file" id="sup_photo_1" accept="image/*" class="w-full text-xs outline-none bg-white p-1 rounded-md cursor-pointer" onchange="previewSupPhoto(this, 'sup_photo_preview_1')">
+                            <div id="sup_photo_preview_1" class="mt-3 hidden h-32 rounded-lg overflow-hidden border border-gray-200 shadow-inner bg-black">
+                                <img src="" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 border-dashed hover:border-sky-300 transition-colors">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">2. ภาพบรรยากาศการจัดการเรียนรู้</label>
+                            <input type="file" id="sup_photo_2" accept="image/*" class="w-full text-xs outline-none bg-white p-1 rounded-md cursor-pointer" onchange="previewSupPhoto(this, 'sup_photo_preview_2')">
+                            <div id="sup_photo_preview_2" class="mt-3 hidden h-32 rounded-lg overflow-hidden border border-gray-200 shadow-inner bg-black">
+                                <img src="" class="w-full h-full object-cover">
+                            </div>
                         </div>
                     </div>
                 </div>
