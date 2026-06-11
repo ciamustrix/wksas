@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.1 [June 8th, 2025] | TESTING-FxSupervision</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.2 [June 11th, 2025 - 12.20] | TESTING-FxSupervision</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -1488,10 +1488,9 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 🖨️ กระดาษสำหรับแคปรูป (แก้บั๊กตารางหาย: ใช้ Absolute ดันออกนอกจอแทน เพื่อให้ไลบรารีอ่านค่าได้ 100%) -->
-                <div style="position: absolute; left: -9999px; top: -9999px; width: 1122px; z-index: -9999; background: white;">
-                    <div id="subOrderPrintTarget" style="width: 100%; background: white;">
+                <!-- 🖨️ กระดาษสำหรับพิมพ์ PDF สรุปผล Open Class -->
+                <div style="position: absolute; left: -9999px; top: -9999px; width: 210mm; z-index: -9999; background: white;">
+                    <div id="slcReportPrintTarget" class="w-full bg-white relative mx-auto text-black a4-paper thai-saraban px-10 py-12">
                         <!-- เนื้อหาจะถูกเขียนด้วย JS -->
                     </div>
                 </div>
@@ -1595,10 +1594,10 @@
                     </div>
 
                     <div class="flex gap-2 border-b border-gray-200 mb-6 pb-2 overflow-x-auto no-scrollbar">
-                        <button onclick="switchSLCTab('tab-plc-group')" id="btn-tab-plc-group" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-indigo-600 text-white shadow-md">👥 1. จัดตั้งกลุ่ม PLC</button>
-                        <button onclick="switchSLCTab('tab-slc-seating')" id="btn-tab-slc-seating" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">🪑 2. ผังที่นั่ง & เตรียมแผน</button>
-                        <button onclick="switchSLCTab('tab-slc-observe')" id="btn-tab-slc-observe" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">🕵️ 3. สังเกตการณ์ (Buddy)</button>
-                        <button onclick="switchSLCTab('tab-slc-public')" id="btn-tab-slc-public" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">📢 4. กระดานเปิดชั้นเรียน</button>
+                        <button onclick="switchSLCTab('tab-slc-public')" id="btn-tab-slc-public" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-indigo-600 text-white shadow-md">📢 1. กระดานเปิดชั้นเรียน</button>
+                        <button onclick="switchSLCTab('tab-plc-group')" id="btn-tab-plc-group" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">👥 2. จัดตั้งกลุ่ม PLC</button>
+                        <button onclick="switchSLCTab('tab-slc-seating')" id="btn-tab-slc-seating" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">🪑 3. ผังที่นั่ง & เตรียมแผน</button>
+                        <button onclick="switchSLCTab('tab-slc-observe')" id="btn-tab-slc-observe" class="slc-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">🕵️ 4. สังเกตการณ์ (Buddy)</button>
                     </div>
                     <div id="tab-plc-group" class="slc-tab-content block">
                         <div class="glass-panel p-8 rounded-3xl shadow-xl max-w-2xl mx-auto border border-indigo-100">
@@ -1775,22 +1774,23 @@
                             </div>
                         </div>
                     </div>
-                    <div id="tab-slc-public" class="slc-tab-content hidden">
-
-                        <div class="glass-panel p-8 rounded-3xl shadow-xl border border-indigo-100 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-                            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-indigo-100 pb-4 relative z-10">
+                    <<div id="tab-slc-public" class="slc-tab-content hidden">
+                        <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl border border-indigo-100 min-h-[600px]">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-indigo-100 pb-4 gap-4">
                                 <div>
-                                    <h3 class="text-2xl font-bold text-gray-800">📢 กระดานเปิดชั้นเรียน (Open Class Board)</h3>
-                                    <p class="text-sm text-gray-500 mt-1">เข้าร่วมเป็นผู้สังเกตการณ์ (Buddy) ในชั้นเรียนที่เปิดสอนสัปดาห์นี้</p>
+                                    <h3 class="text-2xl font-black text-indigo-900 flex items-center gap-2">📢 กระดานเปิดชั้นเรียน (SLC Public Board)</h3>
+                                    <p class="text-xs text-gray-500 mt-1">เลือกห้องเรียนที่ท่านต้องการเข้าร่วมสังเกตการณ์ หรือให้ข้อเสนอแนะ</p>
                                 </div>
-                                <button onclick="renderOpenClassBoard()" class="mt-3 md:mt-0 bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-50 transition-colors flex items-center gap-2">
-                                    🔄 รีเฟรชกระดาน
+                                <button onclick="renderSLCPublicBoard()" class="w-full md:w-auto bg-indigo-100 text-indigo-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-200 transition-all flex items-center justify-center gap-2">
+                                    🔄 รีเฟรชกระดานล่าสุด
                                 </button>
                             </div>
                             
-                            <div id="slc_public_board_container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-                                <div class="col-span-full py-16 text-center text-gray-400 font-bold italic"><div class="loader mx-auto border-4 border-indigo-500 border-t-transparent mb-4 w-8 h-8"></div>กำลังโหลดข้อมูล...</div>
+                            <div id="slc_board_grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="col-span-full py-16 text-center text-indigo-300 font-bold">
+                                    <div class="loader loader-indigo inline-block mb-4 border-2"></div>
+                                    <p>กำลังโหลดข้อมูลชั้นเรียน...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1843,12 +1843,13 @@
                                             <li class="italic text-gray-500 font-normal border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-sm">⏳ รอฝ่ายวิชาการจัดตั้งกรรมการ...</li>
                                         </ul>
                                     </div>
-                                    
                                     <button type="submit" id="btnSubmitSupReq" class="w-full py-4 bg-rose-600 text-white font-bold rounded-2xl shadow-lg hover:bg-rose-700 transition-all flex justify-center items-center gap-2">
                                         📤 ยื่นคำขอรับการนิเทศ
                                     </button>
                                 </form>
                             </div>
+                        </div>
+                    </div>
                     <!-- Tab 2: ภารกิจนิเทศ (Supervisor) -->
                     <div id="tab-sup-task" class="sup-tab-content hidden">
                         <div class="glass-panel p-6 rounded-3xl shadow-xl border border-amber-100">
@@ -1882,10 +1883,9 @@
                                     </tbody>
                                 </table>
                             </div>
-
+                        </div>
                     </div>
                 </div>
-            </div> <!-- 💡 ปิดท้ายระบบนิเทศแบบพอดีๆ ไม่ให้ทะลัก -->
             
             <!-- ========================================== -->
                 <!-- VIEW 7: จัดการระบบ (Imperial Admin Dashboard) -->
@@ -2696,6 +2696,43 @@
                         <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
                             <button onclick="document.getElementById('supEvalModal').classList.add('hidden')" class="px-5 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">ยกเลิก</button>
                             <button id="btnSaveSupEval" onclick="saveSupervisionEval()" class="px-6 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-md">💾 บันทึกผลการนิเทศ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal: แสดงผลการสังเกตการณ์ SLC (SLC Results) -->
+            <div id="slcResultsModal" class="fixed inset-0 z-[90] hidden overflow-y-auto">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm transition-opacity" onclick="document.getElementById('slcResultsModal').classList.add('hidden')"></div>
+                    <div class="inline-block bg-white rounded-3xl p-6 sm:p-8 text-left shadow-2xl transform transition-all max-w-4xl w-full relative z-50 border-t-8 border-purple-500 flex flex-col max-h-[90vh]">
+                        <div class="flex justify-between items-start mb-4 border-b pb-4 shrink-0">
+                            <div>
+                                <h3 class="text-2xl font-black text-purple-900 flex items-center gap-2">📊 สรุปผลการสังเกตชั้นเรียน</h3>
+                                <p id="slcResultSubtitle" class="text-sm text-gray-500 mt-1 font-bold">วิชา: - | ผู้สอน: -</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="generateSLCAISummary()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-4 py-2 rounded-xl shadow-md hover:scale-105 transition-transform text-sm flex items-center gap-2">✨ AI ประมวลผลสรุป</button>
+                                <button onclick="document.getElementById('slcResultsModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none">&times;</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-6">
+                            <!-- กล่องแสดง AI Summary (ซ่อนไว้ก่อน) -->
+                            <div id="slcAISummaryBox" class="hidden bg-purple-50 p-6 rounded-2xl border border-purple-200 shadow-inner">
+                                <h4 class="font-black text-purple-800 border-b border-purple-200 pb-2 mb-3">🤖 AI Executive Summary</h4>
+                                <div id="slcAISummaryText" class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-medium">กำลังวิเคราะห์...</div>
+                            </div>
+
+                            <h4 class="font-bold text-gray-800 text-lg border-b pb-2">💬 บันทึกพฤติกรรมจาก Buddy</h4>
+                            <div id="slcLogsContainer" class="space-y-4">
+                                <!-- JS จะเสกคอมเมนต์ลงตรงนี้ -->
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-3 shrink-0 pt-4 border-t border-gray-100 mt-4 no-print">
+                            <button onclick="generateSLCReportPDF()" class="px-6 py-2.5 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-md flex items-center gap-2">
+                                📥 ดาวน์โหลด PDF
+                            </button>
+                            <button onclick="document.getElementById('slcResultsModal').classList.add('hidden')" class="px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors w-full sm:w-auto">ปิดหน้าต่าง</button>
                         </div>
                     </div>
                 </div>
@@ -10415,18 +10452,26 @@ window.deleteLog = function(logId) {
         };
 
         window.initSLCSystem = function() {
-            switchSLCTab('tab-plc-group');
+            switchSLCTab('tab-slc-public'); // 💡 เปลี่ยนตรงนี้ให้เปิดกระดานเป็นหน้าแรก!
             if(typeof toggleLayoutOptions === 'function') toggleLayoutOptions();
 
-            // โหลดรายชื่อครูลง Dropdown ของ Model Teacher
-            const slcModel = document.getElementById('slc_model');
-            if(slcModel && usersDB_Global) {
-                slcModel.innerHTML = '<option value="">-- เลือกผู้สอน --</option>' + 
-                    usersDB_Global.sort((a,b)=>a.FullName.localeCompare(b.FullName,'th')).map(u => `<option value="${u.Username}">${u.FullName}</option>`).join('');
-                if(currentUser) {
-                    slcModel.value = currentUser.Username;
-                    handleSLCModelChange(); // 💡 รันสคริปต์กรองข้อมูลทันที
+            // 1. กวาดล้าง <select> เก่าที่ซ้ำซ้อนทั้งหมด แล้วแปลงเป็น <input> อัตโนมัติ
+            document.querySelectorAll('#slc_model').forEach(el => {
+                if (el.tagName === 'SELECT') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'slc_model';
+                    input.readOnly = true;
+                    input.className = "w-full rounded-lg border border-indigo-200 p-2 text-sm outline-none bg-indigo-50 text-indigo-900 font-bold cursor-not-allowed shadow-inner";
+                    el.parentNode.replaceChild(input, el);
                 }
+            });
+
+            // 2. ยัดชื่อจริงลงช่อง
+            const slcModel = document.getElementById('slc_model');
+            if(slcModel && currentUser) {
+                slcModel.value = currentUser.FullName;
+                handleSLCModelChange(); // สั่งให้สมองกลโหลดข้อมูลต่อทันที
             }
         };
 
@@ -10901,6 +10946,216 @@ window.deleteLog = function(logId) {
         let currentEvidenceTarget = null; // เก็บ id ของเด็กที่กำลังจิ้ม
         let observationData = {}; // เก็บข้อมูลพฤติกรรม { stu_123: { note: '...', photo: '...' } }
 
+        // 📢 วาดการ์ดห้องเรียนลงบนกระดาน Tab 4 (ดึงจาก RAM) - อัปเกรด V3
+        window.renderSLCPublicBoard = function() {
+            const board = document.getElementById('slc_board_grid');
+            if (!board) return;
+
+            if (!slcSessionsDB_Global || slcSessionsDB_Global.length === 0) {
+                board.innerHTML = `
+                    <div class="col-span-full py-20 text-center flex flex-col items-center justify-center">
+                        <span class="text-6xl mb-4 opacity-50">📭</span>
+                        <p class="text-gray-400 font-bold text-lg">ยังไม่มีการเปิดชั้นเรียนในขณะนี้ครับ</p>
+                        <p class="text-xs text-gray-400 mt-1">Model Teacher สามารถสร้างห้องได้ที่แท็บ "เตรียมความพร้อม"</p>
+                    </div>`;
+                return;
+            }
+
+            // 🧠 ลอจิกเรียงเวลา: วันนี้/อนาคต (ใกล้สุดขึ้นก่อน) -> อดีต (ล่าสุดขึ้นก่อน)
+            const now = new Date();
+            now.setHours(0, 0, 0, 0); // ตั้งเวลาเป็นเที่ยงคืนเพื่อเทียบแค่วัน
+
+            const sortSessions = (sessions) => {
+                const upcoming = sessions.filter(s => new Date(s.Date) >= now).sort((a, b) => new Date(a.Date) - new Date(b.Date));
+                const past = sessions.filter(s => new Date(s.Date) < now).sort((a, b) => new Date(b.Date) - new Date(a.Date));
+                return [...upcoming, ...past];
+            };
+
+            const mySessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher === currentUser.FullName));
+            const otherSessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher !== currentUser.FullName));
+
+            const generateCards = (sessions) => {
+                let html = '';
+                if(sessions.length === 0) return '<div class="col-span-full py-6 text-center text-gray-400 font-medium text-sm">-- ไม่มีรายการ --</div>';
+
+                sessions.forEach(session => {
+                    let buddies = []; let pendingBuddies = []; let obsLogs = {};
+                    try { buddies = JSON.parse(session.BuddyTeachers || "[]"); } catch(e){}
+                    try { pendingBuddies = JSON.parse(session.PendingBuddies || "[]"); } catch(e){}
+                    try { obsLogs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+                    
+                    const isModel = session.ModelTeacher === currentUser.FullName;
+                    const isBuddy = buddies.includes(currentUser.FullName) || buddies.includes(currentUser.Username);
+                    const isPending = pendingBuddies.includes(currentUser.FullName) || pendingBuddies.includes(currentUser.Username);
+                    const obsCount = Object.keys(obsLogs).length;
+                    
+                    // 💡 ดึงรูปโปรไฟล์
+                    const mUser = usersDB_Global.find(u => u.FullName === session.ModelTeacher);
+                    const fallbackImg = "[https://ui-avatars.com/api/?name=](https://ui-avatars.com/api/?name=)" + encodeURIComponent(session.ModelTeacher) + "&background=6366f1&color=ffffff";
+                    const profileImg = (mUser && mUser.ProfileImage) ? getEmbeddableUrl(mUser.ProfileImage) : fallbackImg;
+
+                    // 💡 เช็คสถานะเวลา
+                    const sDate = new Date(session.Date);
+                    let timeStatusBadge = '';
+                    if (sDate < now) timeStatusBadge = '<div class="absolute top-0 right-0 bg-gray-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10">⚪ Completed</div>';
+                    else if (sDate.getTime() === now.getTime()) timeStatusBadge = '<div class="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10 animate-pulse">🔴 Today</div>';
+                    else timeStatusBadge = '<div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10">🔵 Upcoming</div>';
+
+                    // 💡 สร้างปุ่มหลัก
+                    let actionBtn = '';
+                    if (isModel) {
+                        const reqCount = pendingBuddies.length;
+                        const reqBadge = reqCount > 0 ? `<span class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center animate-bounce">${reqCount}</span>` : '';
+                        actionBtn = `<button onclick="manageSLCRequests('${session.SessionID}')" class="w-full relative bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-xl text-xs font-bold shadow-md transition-all">🔔 คำขอเข้าห้อง ${reqBadge}</button>`;
+                    } else if (isBuddy) {
+                        actionBtn = `<button onclick="enterObservationRoom('${session.SessionID}')" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex justify-center gap-2">👀 สังเกตการณ์</button>`;
+                    } else if (isPending) {
+                        actionBtn = `<button disabled class="w-full bg-amber-100 text-amber-700 py-2.5 rounded-xl text-xs font-bold border border-amber-200 shadow-inner">⏳ รออนุมัติ...</button>`;
+                    } else {
+                        actionBtn = `<button onclick="requestToJoinSLC('${session.SessionID}')" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex justify-center gap-2">✋ ขอเข้าร่วม</button>`;
+                    }
+
+                    // 💡 ปุ่มดูผล (โผล่มาเมื่อมีคนเขียน Log แล้ว)
+                    let resultBtn = '';
+                    if (obsCount > 0) {
+                        resultBtn = `<button onclick="openSLCResultsModal('${session.SessionID}')" class="w-full mt-2 bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-200 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex justify-center items-center gap-1">📊 ดูผลสังเกตการณ์</button>`;
+                    }
+
+                    html += `
+                    <div class="bg-white rounded-2xl p-5 border border-indigo-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group flex flex-col">
+                        ${timeStatusBadge}
+                        <div class="flex items-center gap-4 mb-4 border-b border-gray-100 pb-4 relative z-10">
+                            <img src="${profileImg}" class="w-12 h-12 rounded-2xl object-cover border-2 border-indigo-100 shadow-sm">
+                            <div>
+                                <h4 class="font-black text-gray-800 text-sm truncate w-40" title="${session.ModelTeacher}">${session.ModelTeacher}</h4>
+                                <p class="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-1">วิชา: ${session.SubjectCode} (ห้อง ${session.Room})</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 mb-4 relative z-10 flex-grow">
+                            <div class="flex items-start gap-2 text-xs text-gray-600"><span class="opacity-70">📅</span> <span><span class="font-bold text-gray-700">วันที่:</span> ${new Date(session.Date).toLocaleDateString('th-TH')} (คาบ ${session.Period})</span></div>
+                            <div class="flex items-start gap-2 text-xs text-gray-600"><span class="opacity-70">🤝</span> <span class="line-clamp-2" title="${buddies.join(', ')}"><span class="font-bold text-gray-700">Buddy:</span> ${buddies.length} ท่าน</span></div>
+                            <div class="flex items-start gap-2 text-xs text-gray-600"><span class="opacity-70">📝</span> <span><span class="font-bold text-gray-700">ผู้ประเมิน:</span> ${obsCount} ท่านบันทึกแล้ว</span></div>
+                        </div>
+                        <div class="mt-auto">
+                            ${actionBtn}
+                            ${resultBtn}
+                        </div>
+                    </div>`;
+                });
+                return html;
+            };
+
+            board.innerHTML = `
+                <div class="col-span-full border-b-2 border-indigo-500 pb-2 mb-2"><h4 class="text-xl font-black text-indigo-900 flex items-center gap-2">🌟 การเปิดชั้นเรียนของคุณ</h4></div>
+                ${generateCards(mySessions)}
+                <div class="col-span-full border-b-2 border-gray-300 pb-2 mt-6 mb-2"><h4 class="text-xl font-black text-gray-700 flex items-center gap-2">🌐 การเปิดชั้นเรียนของเพื่อนครู</h4></div>
+                ${generateCards(otherSessions)}
+            `;
+        };
+        // 🙋 ฟังก์ชันให้คนนอกกด "ขอเข้าร่วม"
+        window.requestToJoinSLC = function(sessionId) {
+            customConfirm("คุณต้องการส่งคำขอเข้าร่วมสังเกตการณ์ชั้นเรียนนี้ใช่หรือไม่? (ต้องรอให้ผู้สอนหลักอนุมัติก่อนถึงจะเข้าห้องได้)", async () => {
+                try {
+                    customAlert("กำลังส่งคำขอ...", "info");
+                    // โค้ดนี้จะส่งข้อมูลไปให้ Code.gs จัดการยัดชื่อลงช่อง PendingBuddies
+                    const payload = {
+                        action: 'requestJoinSLC', // 💡 ต้องไปเขียนรับใน Code.gs
+                        data: { SessionID: sessionId, TeacherName: currentUser.FullName }
+                    };
+                    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                    const result = await res.json();
+                    
+                    if(result.status === 'success') {
+                        customAlert("ส่งคำขอเรียบร้อยแล้ว รอผู้สอนหลักอนุมัติครับ", "success");
+                        // อัปเดต RAM ชั่วคราวเพื่อให้ UI เปลี่ยนเป็น "รออนุมัติ" ทันที
+                        const idx = slcSessionsDB_Global.findIndex(s => s.SessionID === sessionId);
+                        if (idx > -1) {
+                            let pending = [];
+                            try { pending = JSON.parse(slcSessionsDB_Global[idx].PendingBuddies || "[]"); } catch(e){}
+                            pending.push(currentUser.FullName);
+                            slcSessionsDB_Global[idx].PendingBuddies = JSON.stringify(pending);
+                        }
+                        renderSLCPublicBoard();
+                    } else throw new Error(result.message);
+                } catch(e) {
+                    customAlert("ฟังก์ชันนี้ต้องอัปเดต Code.gs หลังบ้านก่อนถึงจะสมบูรณ์ครับ (รอทำสเตปต่อไป)", "warning");
+                }
+            });
+        };
+
+        // 🔔 ฟังก์ชันให้ Model Teacher จัดการคำขอเข้าห้อง
+        window.manageSLCRequests = function(sessionId) {
+            const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
+            if (!session) return customAlert("ไม่พบข้อมูลห้องเรียน", "error");
+
+            let pending = [];
+            try { pending = JSON.parse(session.PendingBuddies || "[]"); } catch(e){}
+
+            if (pending.length === 0) {
+                return customAlert("ไม่มีคำขอเข้าร่วมสังเกตการณ์ที่รอการอนุมัติครับ", "info");
+            }
+
+            let html = '<div class="space-y-3 mt-4 text-left">';
+            pending.forEach(name => {
+                html += `
+                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <span class="font-bold text-gray-800 text-sm">🙋 ${name}</span>
+                    <div class="flex gap-2">
+                        <button onclick="handleSLCRequest('${sessionId}', '${name}', 'approve')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors border border-emerald-200 shadow-sm">อนุญาต</button>
+                        <button onclick="handleSLCRequest('${sessionId}', '${name}', 'reject')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-4 py-1.5 rounded-lg text-xs font-bold transition-colors border border-rose-200 shadow-sm">ปฏิเสธ</button>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+
+            Swal.fire({
+                title: '🔔 จัดการคำขอเข้าสังเกตการณ์',
+                html: html,
+                showConfirmButton: false,
+                showCloseButton: true,
+                width: '500px'
+            });
+        };
+
+        // สมองกลจัดการผลลัพธ์ (อนุญาต / ปฏิเสธ)
+        window.handleSLCRequest = async function(sessionId, teacherName, actionType) {
+            Swal.close();
+            const actionText = actionType === 'approve' ? 'อนุญาตให้' : 'ปฏิเสธ';
+            
+            customAlert(`กำลังดำเนินการ${actionText}...`, "info");
+            
+            try {
+                const payload = {
+                    action: actionType === 'approve' ? 'approveJoinSLC' : 'rejectJoinSLC',
+                    data: { SessionID: sessionId, TeacherName: teacherName }
+                };
+                
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    customAlert(`ดำเนินการ${actionText} ${teacherName} เรียบร้อย!`, "success");
+                    
+                    // อัปเดตข้อมูลบนหน้าจอ (RAM) ให้กระดานเปลี่ยนแบบ Real-time
+                    const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
+                    if (session) {
+                        let pending = []; try { pending = JSON.parse(session.PendingBuddies || "[]"); } catch(e){}
+                        pending = pending.filter(name => name !== teacherName);
+                        session.PendingBuddies = JSON.stringify(pending);
+                        
+                        if (actionType === 'approve') {
+                            let buddies = []; try { buddies = JSON.parse(session.BuddyTeachers || "[]"); } catch(e){}
+                            buddies.push(teacherName);
+                            session.BuddyTeachers = JSON.stringify(buddies);
+                        }
+                    }
+                    renderSLCPublicBoard();
+                } else throw new Error(result.message);
+            } catch(e) {
+                customAlert("ข้อผิดพลาด: " + e.message, "error");
+            }
+        };
+
         // 🚪 Buddy กดเข้าห้องสังเกตการณ์จากหน้ากระดาน (Tab 4 -> Tab 3)
         let activeSLC_SessionData = null; // จำว่ากำลังส่องห้องใคร
 
@@ -10918,7 +11173,11 @@ window.deleteLog = function(logId) {
             } catch(e){}
 
             document.getElementById('obs_status_badge').classList.remove('hidden');
-            document.getElementById('obs_subtitle').textContent = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${session.SubjectCode} (${session.Room})`;
+            
+            // 💡 อัปเกรด 1: แปลงรหัสวิชาเป็นชื่อเต็ม (ดักจับ undefined ด้วย)
+            const sInfo = subjectsDB_Global.find(sub => sub.SubjectCode === session.SubjectCode) || {};
+            const subjectName = sInfo.SubjectName ? `${session.SubjectCode} ${sInfo.SubjectName}` : session.SubjectCode;
+            document.getElementById('obs_subtitle').textContent = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${subjectName} (ห้อง ${session.Room})`;
 
             const gridView = document.getElementById('observation_grid_view');
             const listView = document.getElementById('observation_list_view');
@@ -10947,9 +11206,19 @@ window.deleteLog = function(logId) {
                 gridView.innerHTML = '<div class="text-center text-gray-500 font-bold py-10">ห้องนี้ไม่ได้จัดผังที่นั่ง กรุณาดูแบบรายชื่อครับ</div>';
             }
 
-            // วาดแบบ List (รายชื่อเรียงกัน)
+            // 💡 อัปเกรด 2: สมองกลดึงรายชื่อแบบทะลวงช่องว่าง (ลบ 'ม.' แล้วเทียบให้เป๊ะ)
             listContainer.innerHTML = '';
-            const roomStudents = studentsDB_Global.filter(s => s.Room === session.Room || s.Room === session.Room.replace('ม.', ''));
+            const targetRoomClean = String(session.Room).replace('ม.', '').trim();
+            const roomStudents = studentsDB_Global.filter(s => {
+                const dbRoomClean = String(s.Room).replace('ม.', '').trim();
+                return dbRoomClean === targetRoomClean;
+            });
+            
+            // ดักจับกรณีหาเด็กไม่เจอ (เช่นบั๊กวันที่โผล่มาแทนชื่อห้อง)
+            if (roomStudents.length === 0) {
+                 listContainer.innerHTML = `<div class="col-span-full py-10 text-center text-rose-500 font-bold bg-white rounded-xl border border-rose-200 shadow-sm">ไม่พบรายชื่อนักเรียนห้อง ${targetRoomClean} ในระบบ! <br><span class="text-xs text-gray-500 font-normal">*(หากกำลังทดสอบระบบ ให้ไปลบข้อมูลทดสอบเก่าทิ้งใน Google Sheets ก่อนครับ)*</span></div>`;
+            }
+
             roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                 const stuId = `stu_${s.StudentID}`;
                 const hasData = observationData[stuId];
@@ -16240,7 +16509,171 @@ window.saveStudentDetail = async function() {
                 closeSupervisionModal();
             });
         };
-        
+        // ==========================================
+        // 📊 ระบบสรุปผล SLC (Results & AI Summary)
+        // ==========================================
+        let currentViewingSLC = null;
+
+        window.openSLCResultsModal = function(sessionId) {
+            const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
+            if (!session) return;
+            currentViewingSLC = session;
+
+            document.getElementById('slcResultSubtitle').textContent = `วิชา: ${session.SubjectCode} (${session.Room}) | ผู้สอน: ${session.ModelTeacher}`;
+            document.getElementById('slcAISummaryBox').classList.add('hidden');
+            
+            const container = document.getElementById('slcLogsContainer');
+            container.innerHTML = '';
+
+            let logs = {};
+            try { logs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+
+            const observerNames = Object.keys(logs);
+            if (observerNames.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-6 italic font-bold">ยังไม่มีข้อมูลถูกบันทึกในระบบครับ</p>';
+            } else {
+                observerNames.forEach(obsName => {
+                    const obsData = logs[obsName];
+                    let notesHtml = '';
+                    
+                    // ภาพรวมครู
+                    if (obsData['GENERAL_CLASS']) {
+                        const tags = obsData['GENERAL_CLASS'].tags || [];
+                        const tagsHtml = tags.map(t => `<span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px]">${t}</span>`).join(' ');
+                        const pImg = obsData['GENERAL_CLASS'].photo ? `<img src="${obsData['GENERAL_CLASS'].photo}" class="mt-2 h-20 rounded border">` : '';
+                        notesHtml += `<div class="mb-2 p-2 bg-indigo-50/50 rounded-lg border border-indigo-100"><p class="text-xs font-bold text-indigo-800">🌟 ภาพรวมชั้นเรียน: ${tagsHtml}</p><p class="text-xs text-gray-700 mt-1">${obsData['GENERAL_CLASS'].note || '-'}</p>${pImg}</div>`;
+                    }
+
+                    // เด็กแต่ละคน
+                    Object.keys(obsData).forEach(stuId => {
+                        if (stuId !== 'GENERAL_CLASS') {
+                            const pImg = obsData[stuId].photo ? `<img src="${obsData[stuId].photo}" class="mt-2 h-20 rounded border">` : '';
+                            notesHtml += `<div class="mb-2 p-2 bg-white rounded-lg border border-gray-100"><p class="text-[10px] font-bold text-emerald-600">พฤติกรรมเด็ก (${stuId.replace('stu_','รหัส ')}):</p><p class="text-xs text-gray-700 mt-0.5">${obsData[stuId].note || '-'}</p>${pImg}</div>`;
+                        }
+                    });
+
+                    container.innerHTML += `
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <h5 class="font-bold text-sm text-gray-800 mb-3 border-b pb-1">👀 ผู้สังเกต: ${obsName}</h5>
+                        ${notesHtml || '<p class="text-xs text-gray-400">ไม่ได้เขียนบันทึกเพิ่มเติม</p>'}
+                    </div>`;
+                });
+            }
+
+            document.getElementById('slcResultsModal').classList.remove('hidden');
+        };
+        // 📥 วาดและ Export PDF รายงาน Open Class
+        window.generateSLCReportPDF = async function() {
+            if (!currentViewingSLC) return customAlert("ไม่พบข้อมูล", "error");
+            
+            const btn = window.event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle w-4 h-4"></div> กำลังจัดหน้ากระดาษ...`;
+            btn.disabled = true;
+
+            try {
+                const target = document.getElementById('slcReportPrintTarget');
+                const session = currentViewingSLC;
+                
+                const d = new Date(session.Date);
+                const dayNames = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+                const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                const dDate = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543}`;
+                
+                let buddies = [];
+                try { buddies = JSON.parse(session.BuddyTeachers || "[]"); } catch(e){}
+
+                // 1. ดึง AI Summary (ถ้ามี)
+                const aiBox = document.getElementById('slcAISummaryBox');
+                let aiSummaryHtml = '';
+                if (!aiBox.classList.contains('hidden')) {
+                    const aiText = document.getElementById('slcAISummaryText').innerHTML;
+                    aiSummaryHtml = `
+                        <div class="mb-6 break-inside-avoid bg-purple-50 p-4 rounded-xl border border-purple-200">
+                            <h4 class="font-bold text-lg text-purple-900 border-b border-purple-200 pb-2 mb-2">🤖 AI Executive Summary (สรุปภาพรวม)</h4>
+                            <div class="text-sm text-gray-800 leading-relaxed">${aiText}</div>
+                        </div>
+                    `;
+                }
+
+                // 2. ดึงคอมเมนต์ของ Buddy ทุกคน
+                let logs = {};
+                try { logs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+                let logsHtml = '';
+                
+                const observerNames = Object.keys(logs);
+                if (observerNames.length === 0) {
+                    logsHtml = '<div class="text-center text-gray-500 py-4 italic">ไม่มีบันทึกพฤติกรรมจากผู้สังเกตการณ์</div>';
+                } else {
+                    observerNames.forEach(obsName => {
+                        const obsData = logs[obsName];
+                        let notesHtml = '';
+                        
+                        // ภาพรวม
+                        if (obsData['GENERAL_CLASS']) {
+                            const tags = obsData['GENERAL_CLASS'].tags || [];
+                            const tagsHtml = tags.map(t => `[${t}]`).join(' ');
+                            notesHtml += `<div class="mb-2"><p class="text-sm font-bold text-indigo-800">ภาพรวมชั้นเรียน: <span class="font-normal text-gray-600">${tagsHtml}</span></p><p class="text-sm text-gray-700">${obsData['GENERAL_CLASS'].note || '-'}</p></div>`;
+                        }
+
+                        // รายบุคคล
+                        Object.keys(obsData).forEach(stuId => {
+                            if (stuId !== 'GENERAL_CLASS') {
+                                notesHtml += `<div class="mb-2"><p class="text-sm font-bold text-emerald-700">พฤติกรรมนักเรียน (${stuId.replace('stu_','รหัส ')}):</p><p class="text-sm text-gray-700">${obsData[stuId].note || '-'}</p></div>`;
+                            }
+                        });
+
+                        logsHtml += `
+                        <div class="mb-4 p-4 border border-gray-300 rounded-xl break-inside-avoid bg-white shadow-sm">
+                            <h5 class="font-bold text-md text-gray-800 border-b border-gray-200 pb-2 mb-2">ผู้สังเกตการณ์: ${obsName}</h5>
+                            ${notesHtml || '<p class="text-sm text-gray-500">ไม่ได้เขียนบันทึกเพิ่มเติม</p>'}
+                        </div>`;
+                    });
+                }
+
+                // 3. ประกอบร่าง HTML (ยัดลงกระดาษล่องหน)
+                target.innerHTML = `
+                    <div class="text-center mb-8 border-b-2 border-gray-800 pb-4">
+                        <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" class="w-20 mx-auto object-contain mix-blend-multiply mb-2" alt="โลโก้โรงเรียน">
+                        <h2 class="text-2xl font-bold text-gray-900">รายงานผลการสังเกตการณ์เปิดชั้นเรียน (Open Class)</h2>
+                        <h3 class="text-lg text-gray-700">โรงเรียนวังตะเคียนวิทยาคม</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6 text-sm bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <div><span class="font-bold text-gray-600">ผู้สอนหลัก:</span> <span class="font-bold text-gray-900">${session.ModelTeacher}</span></div>
+                        <div><span class="font-bold text-gray-600">วันที่:</span> <span class="text-gray-900">${dDate} (คาบ ${session.Period})</span></div>
+                        <div><span class="font-bold text-gray-600">รายวิชา:</span> <span class="text-gray-900">${session.SubjectCode}</span></div>
+                        <div><span class="font-bold text-gray-600">ห้องเรียน:</span> <span class="text-gray-900">${session.Room}</span></div>
+                        <div class="col-span-2"><span class="font-bold text-gray-600">เพื่อนครูคู่คิด (Buddy):</span> <span class="text-gray-900">${buddies.join(', ') || '-'}</span></div>
+                    </div>
+
+                    ${aiSummaryHtml}
+
+                    <div class="mb-4 break-inside-avoid">
+                        <h4 class="font-bold text-lg text-gray-800 border-b-2 border-gray-300 pb-2 mb-4">บันทึกพฤติกรรมจากผู้สังเกตการณ์</h4>
+                        ${logsHtml}
+                    </div>
+                    
+                    <div class="mt-8 pt-8 border-t border-gray-300 text-center text-xs text-gray-500">
+                        เอกสารนี้สร้างโดย WKS Academic System เมื่อ ${new Date().toLocaleString('th-TH')}
+                    </div>
+                `;
+
+                // รอ DOM วาด 0.5 วิ แล้วเรียกฟังก์ชันปริ้นท์
+                await new Promise(r => setTimeout(r, 500));
+                
+                // สกัดชื่อครูสั้นๆ ไว้ตั้งชื่อไฟล์
+                const shortName = session.ModelTeacher.split(' ')[0].replace(/นาย|นางสาว|นาง/g, '');
+                await generatePDF('slcReportPrintTarget', `รายงานOpenClass_${shortName}`);
+
+            } catch(e) {
+                console.error(e);
+                customAlert("เกิดข้อผิดพลาดในการสร้าง PDF: " + e.message, "error");
+            } finally {
+                btn.innerHTML = origTxt;
+                btn.disabled = false;
+            }
+        };
     </script>
     <!-- 🎯 [เฟส 4] หน้าต่างประเมินการนิเทศ (Supervision Evaluation Modal) -->
     <div id="supervisionEvalModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
