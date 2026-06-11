@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.3 [June 11th, 2025 - 14:52] | TESTING-f(SLC)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.3 [June 11th, 2025 - 16:53] | TESTING-f(SLC)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -1850,14 +1850,49 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Tab 2: ภารกิจนิเทศ (Supervisor) -->
+                    <!-- Tab 2: ภารกิจนิเทศ (Supervisor & My History) -->
                     <div id="tab-sup-task" class="sup-tab-content hidden">
-                        <div class="glass-panel p-6 rounded-3xl shadow-xl border border-amber-100">
-                            <h3 class="text-xl font-bold text-amber-800 mb-4 border-b border-amber-100 pb-2">ภารกิจกรรมการนิเทศของคุณ</h3>
-                            <div id="supTaskGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="col-span-full py-16 text-center text-amber-600 font-bold opacity-50">
-                                    <div class="text-4xl mb-2">☕</div>
-                                    ยังไม่มีภารกิจนิเทศที่รอการประเมินครับ
+                        <!-- 💡 เมนูสลับ Sub-tab ย่อย -->
+                        <div class="flex bg-amber-50/50 p-1.5 rounded-xl w-full max-w-md mb-6 shadow-inner border border-amber-100">
+                            <button onclick="toggleSupTaskSubTab('mine')" id="btn-suptask-mine" class="flex-1 py-2 text-sm font-bold rounded-lg bg-amber-500 text-white shadow-md transition-all">1. การนิเทศของตนเอง</button>
+                            <button onclick="toggleSupTaskSubTab('others')" id="btn-suptask-others" class="flex-1 py-2 text-sm font-bold rounded-lg text-amber-700 hover:bg-amber-200 transition-all bg-transparent">2. ภารกิจเป็นกรรมการ</button>
+                        </div>
+
+                        <!-- ส่วนที่ 1: การนิเทศของตนเอง (ประวัติที่ตัวเองขอ) -->
+                        <div id="suptask-content-mine" class="suptask-sub-content animate-in fade-in zoom-in duration-300">
+                            <div class="glass-panel p-6 rounded-3xl shadow-xl border border-amber-100">
+                                <h3 class="text-xl font-bold text-amber-800 mb-4 border-b border-amber-100 pb-2">ประวัติการขอรับการนิเทศของคุณ</h3>
+                                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-inner">
+                                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 font-bold text-gray-700 text-center w-16">คาบ</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700">วันที่นิเทศ</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700">รายวิชา / ห้อง</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700">สถานะ</th>
+                                                <th class="px-4 py-3 font-bold text-gray-700 text-center">ผลประเมิน</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="supHistoryTableBody" class="bg-white divide-y divide-gray-100">
+                                            <!-- JS จะมาวาดตรงนี้ -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ส่วนที่ 2: ภารกิจเป็นกรรมการ (ประเมินคนอื่น) -->
+                        <div id="suptask-content-others" class="suptask-sub-content hidden animate-in fade-in zoom-in duration-300">
+                            <div class="glass-panel p-6 rounded-3xl shadow-xl border border-amber-100">
+                                <div class="flex justify-between items-center mb-4 border-b border-amber-100 pb-2">
+                                    <h3 class="text-xl font-bold text-amber-800">ภารกิจกรรมการนิเทศที่รอประเมิน</h3>
+                                    <span class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm hidden" id="supTaskBadge">0</span>
+                                </div>
+                                <div id="supTaskGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div class="col-span-full py-16 text-center text-amber-600 font-bold opacity-50">
+                                        <div class="text-4xl mb-2">☕</div>
+                                        ยังไม่มีภารกิจนิเทศที่รอการประเมินครับ
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2338,6 +2373,16 @@
                                         <h4 class="font-bold text-amber-400 mb-2 border-b border-gray-600 pb-2 flex items-center gap-2">🚫 ล็อกวันห้ามนิเทศ (Blackout Dates)</h4>
                                         <p class="text-[10px] text-gray-400 mb-3">ระบบจะบล็อกไม่ให้ครูกดขอนิเทศในวันเหล่านี้ (คั่นด้วยลูกน้ำ)</p>
                                         <textarea id="supc_blackout" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-gray-300 outline-none focus:border-amber-500 resize-none" placeholder="เช่น 2026-06-15, 2026-06-16"></textarea>
+                                    </div>
+                                    <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-200 text-indigo-900 shadow-inner">
+                                        <h4 class="font-bold text-indigo-800 mb-2 border-b border-indigo-200 pb-2 flex items-center gap-2">🤝 เงื่อนไขการดึง Buddy เข้าประเมิน</h4>
+                                        <p class="text-[10px] text-indigo-600 mb-3">เมื่อใช้ AI จัดกรรมการ ระบบจะดึง Buddy จากกลุ่ม PLC ตามเงื่อนไขนี้</p>
+                                        <select id="supc_buddy_rule" class="w-full bg-white border border-indigo-300 rounded-xl p-3 text-sm font-bold outline-none focus:border-indigo-500">
+                                            <option value="none">1. ไม่กำหนดเงื่อนไข (ใครว่างดึงมาเลย)</option>
+                                            <option value="dept">2. ต้องอยู่กลุ่มสาระฯ เดียวกัน</option>
+                                            <option value="cross">3. บูรณาการ (บังคับต่างกลุ่มสาระฯ)</option>
+                                            <option value="peer">4. Peer-to-Peer (อายุงาน/Sq ใกล้เคียงกัน)</option>
+                                        </select>
                                     </div>
                                     <div class="bg-rose-950 p-5 rounded-2xl border border-rose-800 text-rose-200 shadow-inner flex flex-col justify-between">
                                         <div>
@@ -9219,6 +9264,10 @@ window.deleteLog = function(logId) {
             if (!myTimetable) {
                 if(container) container.innerHTML = '<p class="text-sm text-gray-500 font-bold italic">ไม่พบคาบสอนในระบบสำหรับวันนี้ครับ</p>';
                 if(section) section.classList.remove('hidden');
+                
+                // ล้างรายชื่อกรรมการถ้าระบบว่าง
+                const comList = document.getElementById('supCommitteeList');
+                if(comList) comList.innerHTML = '<li class="italic text-gray-500 font-normal border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-sm">⏳ กรุณาเลือกคาบสอน...</li>';
                 return;
             }
             
@@ -9232,9 +9281,10 @@ window.deleteLog = function(logId) {
                     const subCode = parts[0] ? parts[0].trim() : 'ไม่ระบุวิชา';
                     const room = parts[1] ? parts[1].trim() : '';
                     
+                    // 💡 เพิ่ม onclick="runTeacherAutoAssign" ให้มันทำงานทันทีที่ครูจิ้มเลือกคาบ!
                     html += `
                         <label class="flex items-center gap-3 p-3 bg-white border border-rose-200 rounded-lg cursor-pointer hover:bg-rose-50 transition-colors shadow-sm mb-2">
-                            <input type="radio" name="supReqPeriod" value="${i}|${subCode} ${room}" required class="form-radio text-rose-600 h-5 w-5">
+                            <input type="radio" name="supReqPeriod" value="${i}|${subCode} ${room}" required onchange="runTeacherAutoAssign(${i}, '${dayName}')" class="form-radio text-rose-600 h-5 w-5">
                             <span class="text-sm font-bold text-gray-800">คาบที่ ${i} <span class="text-rose-600 ml-2">${subCode} ${room}</span></span>
                         </label>
                     `;
@@ -9247,7 +9297,7 @@ window.deleteLog = function(logId) {
             if(container) container.innerHTML = html;
             if(section) section.classList.remove('hidden');
         };
-                // ==========================================
+        // ==========================================
         // 🧠 สมองกลระบบนิเทศ (Supervision Engines)
         // ==========================================
 
@@ -9337,97 +9387,206 @@ window.deleteLog = function(logId) {
                 }, 50);
             });
         };
-        // 🤖 สมองกลจัดกรรมการอัตโนมัติ (V.2 สมบูรณ์แบบ: เช็คตารางสอน + โควตา + กลุ่มสาระฯ)
-        window.autoAssignSupervisors = function(supId, requestingTeacher) {
-            // 1. ดึงข้อมูลคำขอ เพื่อเอา วันที่ คาบ และวิชา
-            const req = supervisionDB_Global.find(s => s.SupID === supId);
-            if(!req) return customAlert("ไม่พบข้อมูลคำขอ", "error");
+        // 🤖 สมองกลจัดกรรมการ (รันทันทีที่ครูเลือกคาบ) - V.Titanium Fix (บังคับรองฯ เบอร์ 1)
+        window.assignedCommitteeCache = []; // เก็บความจำกรรมการไว้ส่งขึ้น DB
 
-            const reqTeacherInfo = usersDB_Global.find(u => u.FullName === requestingTeacher) || {};
+        window.runTeacherAutoAssign = function(targetPeriod, targetDay) {
+            const listEl = document.getElementById('supCommitteeList');
+            if(!listEl) return;
+            listEl.innerHTML = '<li class="italic text-gray-500 font-normal border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-sm"><div class="loader loader-white border-2 border-rose-500 border-t-transparent w-3 h-3 inline-block align-middle mr-2"></div> AI กำลังค้นหากรรมการที่ว่าง...</li>';
+            
+            const reqTeacherInfo = usersDB_Global.find(u => u.FullName === currentUser.FullName) || {};
             const reqDept = reqTeacherInfo.Department;
-            const targetDay = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"][new Date(req.TargetDate).getDay()];
-            const targetPeriod = req.Period;
+            const reqSq = parseInt(reqTeacherInfo.Sq) || 999;
 
-            // 2. ฟังก์ชันเช็คโควตากรรมการ (ดึงจากที่แอดมินตั้งค่าไว้)
-            const getQuotaLimit = (cat) => {
-                const q = masterSwitches_Global['SupervisionMaster']?.settings?.quota;
-                if(typeof q === 'object' && q !== null) return q[cat] || 2;
-                return 2; 
-            };
-            const determineSupRole = (u) => {
-                const r = u.Role || "";
-                if(r.includes('Dir') || r.includes('DepDir') || r.includes('AsstDir')) return { cat: 'exec', limit: getQuotaLimit('exec') };
-                if(r.includes('EmpPngn') || r.includes('HOA')) return { cat: 'acad', limit: getQuotaLimit('acad') };
-                if(r.includes('Head') || r.includes('DepHead')) return { cat: 'head', limit: getQuotaLimit('head') };
-                return { cat: 'teacher', limit: getQuotaLimit('teacher') };
-            };
-
-            // 3. คำนวณภาระงานนิเทศปัจจุบันของครูทุกคน
-            let workloadMap = {};
-            usersDB_Global.forEach(t => workloadMap[t.FullName] = 0);
-            supervisionDB_Global.forEach(s => {
-                if(s.Status === 'Assigned' || s.Status === 'Evaluated') {
-                    try {
-                        let sups = JSON.parse(s.Supervisors || "[]");
-                        sups.forEach(name => { if(workloadMap[name] !== undefined) workloadMap[name]++; });
-                    } catch(e){}
-                }
-            });
-
-            // 4. ให้คะแนนความเหมาะสม (The Scoring System)
-            let scoredTeachers = [];
-            let eligibleTeachers = usersDB_Global.filter(u => u.FullName !== requestingTeacher && (!u.Role.includes('BirdSpy') || u.Role.includes('User')));
-
-            eligibleTeachers.forEach(t => {
-                let score = 0;
-                let rejectReason = null;
-
-                // กรองด่านที่ 1: โควตาเต็มหรือยัง?
-                const roleInfo = determineSupRole(t);
-                if(workloadMap[t.FullName] >= roleInfo.limit) rejectReason = "โควตาเต็ม";
-
-                // กรองด่านที่ 2: ตารางสอนว่างไหม? (เจาะทะลุ TimetableDB)
-                if(!rejectReason) {
-                    const tt = timetableDB_Global.find(x => x.TeacherName === t.FullName && x.Day === targetDay);
-                    if(tt && tt[`Period${targetPeriod}`] && tt[`Period${targetPeriod}`].trim() !== '') {
-                        rejectReason = "ติดสอน";
+            // เช็คว่าคนนี้ว่างสอนในคาบนี้ไหม?
+            const isFree = (teacherName) => {
+                if (typeof persistentExclusions !== 'undefined') {
+                    if (Array.isArray(persistentExclusions) && persistentExclusions.includes(teacherName)) return false;
+                    if (!Array.isArray(persistentExclusions) && typeof persistentExclusions === 'object') {
+                        const tExc = persistentExclusions[teacherName];
+                        if (tExc && tExc[targetDay] && tExc[targetDay].includes(parseInt(targetPeriod))) return false;
                     }
                 }
+                const tt = timetableDB_Global.find(x => x.TeacherName === teacherName && x.Day === targetDay);
+                if (tt && tt[`Period${targetPeriod}`] && tt[`Period${targetPeriod}`].trim() !== '') return false;
+                return true;
+            };
 
-                // ถ้าผ่านด่านมาได้ ให้มาคำนวณคะแนน!
-                if(!rejectReason) {
-                    // แต้มต่อ 1: อยู่หมวดเดียวกัน (+50 คะแนน)
-                    if(t.Department === reqDept) score += 50;
+            // กรองเอาบัญชีที่ใช้ระบบได้ และตัดตัวเองออก
+            const validTeachers = usersDB_Global.filter(u => u.FullName !== currentUser.FullName && (!u.Role.includes('BirdSpy') || u.Role.includes('User')));
+            
+            let selectedTeam = [null, null, null]; 
 
-                    // แต้มต่อ 2: โควตายิ่งเหลือเยอะ ยิ่งได้คะแนน (+10 ต่อโควตาที่เหลือ)
-                    score += (roleInfo.limit - workloadMap[t.FullName]) * 10;
-
-                    // แต้มต่อ 3: สุ่ม (+0 ถึง 5) เพื่อกันกรณีคะแนนเท่ากัน แล้วดึงแต่คนชื่อ ก.ไก่ ตลอด
-                    score += Math.random() * 5;
-
-                    scoredTeachers.push({ name: t.FullName, score: score });
-                }
+            // ==========================================
+            // 1. ตำแหน่งผู้บริหาร (บังคับหารองฯ เป็นอันดับ 1)
+            // ==========================================
+            let execCandidates = validTeachers.filter(u => {
+                // จับทั้ง Role และ Department มารวมกันตัวเล็กหมด จะได้หาเจอง่ายๆ
+                const r = String(u.Role || "").toLowerCase() + " " + String(u.Department || "").toLowerCase();
+                return r.includes('depdir') || r.includes('รองผู้อำนวยการ') || r.includes('รอง ผอ') || r.includes('รอง') || 
+                       r.includes('asstdir') || r.includes('ผู้ช่วย') || 
+                       r.includes('director') || r.includes('ผอ') || 
+                       r.includes('hoa') || r.includes('วิชาการ') || r.includes('emppngn');
             });
 
-            // 5. คัดเอา 3 อันดับแรกที่คะแนนสูงสุด
-            scoredTeachers.sort((a,b) => b.score - a.score);
-            const top3 = scoredTeachers.slice(0, 3);
-
-            // 6. อัปเดต Dropdown บนหน้าเว็บ
-            const resetDropdown = (id) => {
-                const el = document.getElementById(id);
-                if(el) { el.value = ""; el.classList.remove('bg-emerald-50', 'border-emerald-400'); }
+            // ให้ค่าน้ำหนัก (เลขน้อย = โดนเลือกก่อน)
+            const getExecWeight = (u) => {
+                const r = String(u.Role || "").toLowerCase() + " " + String(u.Department || "").toLowerCase();
+                if(r.includes('depdir') || r.includes('รอง')) return 1; 
+                if(r.includes('asstdir') || r.includes('ผู้ช่วย')) return 2;
+                if(r.includes('director') || r.includes('ผอ')) return 3;
+                if(r.includes('hoa') || r.includes('วิชาการ')) return 4;
+                if(r.includes('emppngn')) return 5;
+                return 99;
             };
-            resetDropdown(`sup1_${supId}`); resetDropdown(`sup2_${supId}`); resetDropdown(`sup3_${supId}`);
 
-            if(top3.length === 0) return customAlert("❌ ไม่มีครูท่านใดที่ตารางว่างหรือโควตาเหลือในคาบนี้เลยครับ", "error");
+            execCandidates.sort((a,b) => getExecWeight(a) - getExecWeight(b));
+            
+            // หาผู้บริหารคนที่ "ว่าง" ในคาบนั้น
+            selectedTeam[0] = execCandidates.find(u => isFree(u.FullName));
+            
+            // ถ้าไม่ว่างเลยสักคน ให้ดึง Top 10 อาวุโส (Sq) มาเสียบแทน
+            if (!selectedTeam[0]) {
+                const top10 = [...validTeachers].sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999)).slice(0, 10);
+                selectedTeam[0] = top10.find(u => isFree(u.FullName));
+            }
 
-            if(top3[0]) { const el = document.getElementById(`sup1_${supId}`); el.value = top3[0].name; el.classList.add('bg-emerald-50', 'border-emerald-400'); }
-            if(top3[1]) { const el = document.getElementById(`sup2_${supId}`); el.value = top3[1].name; el.classList.add('bg-emerald-50', 'border-emerald-400'); }
-            if(top3[2]) { const el = document.getElementById(`sup3_${supId}`); el.value = top3[2].name; el.classList.add('bg-emerald-50', 'border-emerald-400'); }
+            // ==========================================
+            // 2. ตำแหน่ง Buddy (เอาจากกลุ่ม PLC ก่อน)
+            // ==========================================
+            let myBuddyGroup = [];
+            const effectiveGroups = typeof getEffectivePLCGroups === 'function' ? getEffectivePLCGroups() : plcGroupsDB_Global;
+            for (let g of effectiveGroups) {
+                if (g.Status !== 'Active') continue;
+                let mems = []; try { mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members; } catch(e){}
+                if (Array.isArray(mems) && mems.includes(reqTeacherInfo.Username)) {
+                    myBuddyGroup = mems.map(username => (usersDB_Global.find(u => u.Username === username)?.FullName)).filter(name => name && name !== currentUser.FullName);
+                    break;
+                }
+            }
 
-            customAlert(`🤖 จัดกรรมการเรียบร้อย! (ระบบเช็คตารางสอนและกลุ่มสาระฯ ให้แล้ว)`, "success");
+            let buddyCandidates = validTeachers.filter(u => myBuddyGroup.includes(u.FullName) && u.FullName !== (selectedTeam[0]?.FullName));
+            buddyCandidates.sort(() => Math.random() - 0.5);
+            selectedTeam[1] = buddyCandidates.find(u => isFree(u.FullName));
+            
+            if (!selectedTeam[1]) {
+                selectedTeam[1] = validTeachers.find(u => isFree(u.FullName) && u.FullName !== (selectedTeam[0]?.FullName));
+            }
+
+            // ==========================================
+            // 3. ตำแหน่ง Mentor (พี่หมวด)
+            // ==========================================
+            let mentorCandidates = validTeachers.filter(u => 
+                u.Department === reqDept && 
+                (parseInt(u.Sq)||999) < reqSq && 
+                u.FullName !== (selectedTeam[0]?.FullName) && 
+                u.FullName !== (selectedTeam[1]?.FullName)
+            );
+            mentorCandidates.sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+            selectedTeam[2] = mentorCandidates.find(u => isFree(u.FullName));
+            
+            if (!selectedTeam[2]) {
+                const crossMentors = validTeachers.filter(u => 
+                    u.Department !== reqDept && 
+                    u.FullName !== (selectedTeam[0]?.FullName) && 
+                    u.FullName !== (selectedTeam[1]?.FullName)
+                ).sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+                selectedTeam[2] = crossMentors.find(u => isFree(u.FullName));
+            }
+
+            // ==========================================
+            // นำชื่อไปแสดงผลหน้าเว็บ!
+            // ==========================================
+            window.assignedCommitteeCache = selectedTeam.filter(t => t !== null && t !== undefined).map(t => t.FullName);
+            
+            setTimeout(() => {
+                if(window.assignedCommitteeCache.length === 0) {
+                    listEl.innerHTML = '<li class="text-rose-500 font-bold bg-rose-50 px-3 py-2 rounded-lg border border-rose-200">❌ ระบบไม่สามารถหากรรมการที่ว่างในคาบนี้ได้เลย กรุณาเปลี่ยนคาบครับ</li>';
+                } else {
+                    let html = '';
+                    const badges = ['ผู้บริหาร', 'เพื่อนครู/Buddy', 'พี่เลี้ยง/Mentor'];
+                    window.assignedCommitteeCache.forEach((name, idx) => {
+                        html += `<li class="flex justify-between items-center bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200 mb-1 shadow-sm">
+                            <span class="text-gray-800 font-bold">👤 ${name}</span>
+                            <span class="text-[10px] bg-white text-emerald-600 px-2 py-0.5 rounded shadow-sm">${badges[idx] || 'กรรมการ'}</span>
+                        </li>`;
+                    });
+                    listEl.innerHTML = html;
+                }
+            }, 500); 
         };
+        // 🚀 4. ดักจับตอนกดปุ่ม Submit เพื่อส่งคำขอ + ส่งชื่อกรรมการเข้า DB รวดเดียว
+        document.addEventListener('DOMContentLoaded', () => {
+            const supForm = document.getElementById('supRequestForm');
+            if (supForm) {
+                // ลบ EventListener ตัวเก่าทิ้ง ป้องกันมันซ้อนกัน
+                const newForm = supForm.cloneNode(true);
+                supForm.parentNode.replaceChild(newForm, supForm);
+
+                newForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const periodEl = document.querySelector('input[name="supReqPeriod"]:checked');
+                    if (!periodEl) return customAlert("กรุณาเลือกคาบเรียนที่ต้องการรับการนิเทศครับ");
+
+                    if (!window.assignedCommitteeCache || window.assignedCommitteeCache.length === 0) {
+                        return customAlert("ระบบยังไม่สามารถหากรรมการได้ กรุณาเลือกคาบอื่นครับ", "error");
+                    }
+
+                    const btn = document.getElementById('btnSubmitSupReq');
+                    const origTxt = btn.innerHTML;
+                    btn.innerHTML = '<div class="loader loader-white mr-3 border-2 inline-block align-middle"></div> กำลังส่งคำขอ...';
+                    btn.disabled = true;
+
+                    try {
+                        const parts = periodEl.value.split('|');
+                        const periodNum = parts[0];
+                        const subjectData = parts[1];
+                        
+                        const payload = {
+                            action: 'submitSupervisionRequest',
+                            data: {
+                                SupID: 'SUP-' + Date.now(),
+                                ReqDate: new Date().toISOString(),
+                                TargetDate: document.getElementById('supReqDate').value,
+                                Period: periodNum,
+                                SubjectData: subjectData,
+                                TeacherName: currentUser.FullName,
+                                Supervisors: JSON.stringify(window.assignedCommitteeCache), // 💡 ยัดกรรมการเข้าไปเลย
+                                Status: 'Assigned', // 💡 ข้ามขั้นเป็น Assigned ทันที ไม่ต้องรอแอดมิน!
+                                EvaluationData: JSON.stringify({}),
+                                Signatures: JSON.stringify({}),
+                                HOANote: ""
+                            }
+                        };
+                        
+                        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                        const result = await res.json();
+                        
+                        if(result.status === 'success') {
+                            customAlert("ส่งคำขอพร้อมจัดกรรมการเสร็จสมบูรณ์!", "success");
+                            newForm.reset();
+                            document.getElementById('supPeriodsSection').classList.add('hidden');
+                            document.getElementById('supCommitteeList').innerHTML = '<li class="italic text-gray-500 font-normal border border-gray-200 bg-white px-3 py-1.5 rounded-lg shadow-sm">⏳ รอฝ่ายวิชาการจัดตั้งกรรมการ...</li>';
+                            
+                            // 💡 ส่งแจ้งเตือน Telegram (ถ้ามีเขียนไว้ในหลังบ้าน)
+                            // fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'notifySupervisors', data: payload.data }) });
+
+                            await fetchAllDatabasesFromGAS();
+                            if(typeof renderSupHistory === 'function') renderSupHistory();
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    } catch(err) {
+                        customAlert("เกิดข้อผิดพลาด: " + err.message);
+                    } finally {
+                        btn.innerHTML = origTxt; 
+                        btn.disabled = false;
+                    }
+                });
+            }
+        });
         window.saveSupMapping = async function(supId) {
             const s1 = document.getElementById(`sup1_${supId}`).value;
             const s2 = document.getElementById(`sup2_${supId}`).value;
@@ -9452,7 +9611,21 @@ window.deleteLog = function(logId) {
                 }
             } catch(e) { customAlert("Error: " + e.message); }
         };
-
+        // 🎛️ สมองกลสลับ Sub-Tab ในหน้าภารกิจนิเทศ
+        window.toggleSupTaskSubTab = function(tabName) {
+            document.querySelectorAll('.suptask-sub-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`suptask-content-${tabName}`).classList.remove('hidden');
+            
+            const activeClass = 'flex-1 py-2 text-sm font-bold rounded-lg bg-amber-500 text-white shadow-md transition-all';
+            const inactiveClass = 'flex-1 py-2 text-sm font-bold rounded-lg text-amber-700 hover:bg-amber-200 transition-all bg-transparent';
+            
+            document.getElementById('btn-suptask-mine').className = tabName === 'mine' ? activeClass : inactiveClass;
+            document.getElementById('btn-suptask-others').className = tabName === 'others' ? activeClass : inactiveClass;
+            
+            // สั่งโหลดข้อมูลทันทีที่เปลี่ยนแท็บ
+            if(tabName === 'mine' && typeof renderSupHistory === 'function') renderSupHistory();
+            if(tabName === 'others' && typeof renderSupTasks === 'function') renderSupTasks();
+        };
         // 🎯 Tab 2: ภารกิจนิเทศของฉัน (Supervisor)
         window.renderSupTasks = function() {
             const grid = document.getElementById('supTaskGrid');
@@ -9793,69 +9966,12 @@ window.deleteLog = function(logId) {
         window.switchSupTab = function(tabId) {
             oldSwitchSupTab(tabId); // รันของเก่า
             if(tabId === 'tab-sup-request') renderSupHistory();
-            if(tabId === 'tab-sup-task') renderSupTasks();
+            if(tabId === 'tab-sup-task') {
+                renderSupTasks();     // โหลดตารางกรรมการ
+                renderSupHistory();   // โหลดตารางประวัติตัวเอง
+            }
             if(tabId === 'tab-sup-admin') renderSupAdminMapping();
         };
-        // 4. ดักจับตอนกดปุ่ม Submit เพื่อส่งคำขอ
-        document.addEventListener('DOMContentLoaded', () => {
-            const supForm = document.getElementById('supRequestForm');
-            if (supForm) {
-                supForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const periodEl = document.querySelector('input[name="supReqPeriod"]:checked');
-                    if (!periodEl) return customAlert("กรุณาเลือกคาบเรียนที่ต้องการรับการนิเทศครับ");
-
-                    const btn = document.getElementById('btnSubmitSupReq');
-                    const origTxt = btn.innerHTML;
-                    btn.innerHTML = '<div class="loader loader-white mr-3 border-2 inline-block align-middle"></div> กำลังส่งคำขอ...';
-                    btn.disabled = true;
-
-                    try {
-                        const parts = periodEl.value.split('|');
-                        const periodNum = parts[0];
-                        const subjectData = parts[1];
-                        
-                        const payload = {
-                            action: 'submitSupervisionRequest',
-                            data: {
-                                SupID: 'SUP-' + Date.now(),
-                                ReqDate: new Date().toISOString(), // วันที่กดยื่น
-                                TargetDate: document.getElementById('supReqDate').value, // วันที่จะให้นิเทศ
-                                Period: periodNum,
-                                SubjectData: subjectData,
-                                TeacherName: currentUser.FullName,
-                                Supervisors: "", // สเตปหน้า: โลจิกดึงคณะกรรมการอัตโนมัติ
-                                Status: 'Pending',
-                                EvaluationData: JSON.stringify({}),
-                                Signatures: JSON.stringify({}),
-                                HOANote: ""
-                            }
-                        };
-                        
-                        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
-                        const result = await res.json();
-                        
-                        if(result.status === 'success') {
-                            customAlert("ส่งคำขอรับการนิเทศเรียบร้อยแล้วครับ", "success");
-                            supForm.reset();
-                            document.getElementById('supPeriodsSection').classList.add('hidden');
-                            
-                            // รีเฟรชฐานข้อมูล เพื่ออัปเดตตารางประวัติ
-                            await fetchAllDatabasesFromGAS();
-                            if(typeof renderSupHistory === 'function') renderSupHistory();
-                        } else {
-                            throw new Error(result.message);
-                        }
-                    } catch(err) {
-                        customAlert("เกิดข้อผิดพลาด: " + err.message);
-                    } finally {
-                        btn.innerHTML = origTxt; 
-                        btn.disabled = false;
-                    }
-                });
-            }
-        });
         // ==========================================
         // 🚀 ฟังก์ชันละเว้นจัดสอนแทนถาวร (EmpPngn Only)
         // ==========================================
