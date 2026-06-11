@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.2 [June 11th, 2025 - 12.20] | TESTING-FxSupervision</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.2 [June 11th, 2025 - 12:44] | TESTING-f(SLC)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -10866,21 +10866,18 @@ window.deleteLog = function(logId) {
             const slotVal = document.getElementById('slc_timetable_slot').value;
             if(!dateVal || !slotVal) return customAlert("กรุณาเลือกคาบและวันที่เปิดชั้นเรียนก่อนครับ", "error");
 
-            // 💡 ซ่อมบั๊กตะกร้า: ดึงชื่อ Buddy ให้ตรงกับ ID ของ Checkbox จริงๆ
             const checkedBuddies = Array.from(document.querySelectorAll('input[name="slc_buddy_cb"]:checked')).map(cb => cb.value);
             const buddyNames = checkedBuddies.map(username => {
                 const uInfo = usersDB_Global.find(u => u.Username === username);
                 return uInfo ? uInfo.FullName : username;
             });
 
-            // ดึง HTML ของกระดาน (ถ้าไม่ได้ skip)
             let gridHtml = '';
             if (modeType === 'normal') {
                 const grid = document.getElementById('classroom_grid');
                 if(grid) gridHtml = grid.innerHTML;
             }
 
-            // 💡 ซ่อมบั๊ก UI: ทำให้ปุ่มโหลดหมุนตรงกับปุ่มที่เรากดจริงๆ
             const btns = document.querySelectorAll('button[onclick^="saveSeatingChart"]');
             btns.forEach(btn => {
                 btn.dataset.origTxt = btn.innerHTML;
@@ -10896,13 +10893,13 @@ window.deleteLog = function(logId) {
                     ModelTeacher: currentUser.FullName,
                     SubjectCode: document.getElementById('slc_hidden_subject').value,
                     Room: document.getElementById('slc_hidden_room').value,
-                    Period: slotVal.split('|')[0], // วันที่สอน
+                    Period: slotVal.split('|')[4], // 💡 แก้บั๊ก: ดึงเลขคาบจากท่อนที่ 5 (index 4) มาใช้เป๊ะๆ!
                     BuddyTeachers: JSON.stringify(buddyNames),
                     LayoutMode: modeType,
                     LayoutHTML: gridHtml,
                     MediaID: document.getElementById('slc_media').value,
                     Status: 'Active',
-                    ObservationLogs: JSON.stringify({}) // เตรียมกระบุงเปล่าไว้รับค่าจาก Buddy
+                    ObservationLogs: JSON.stringify({})
                 }
             };
 
@@ -10912,8 +10909,8 @@ window.deleteLog = function(logId) {
                 
                 if(result.status === 'success') {
                     customAlert("สร้างห้องเปิดชั้นเรียนสำเร็จ! ข้อมูลขึ้นกระดานแล้วครับ", "success");
-                    slcSessionsDB_Global.unshift(payload.data); // ยัดลงแรม
-                    switchSLCTab('tab-slc-public'); // วาร์ปพาวิ่งไปหน้ากระดานให้ดูผลงานตัวเอง
+                    slcSessionsDB_Global.unshift(payload.data); 
+                    switchSLCTab('tab-slc-public'); 
                 } else throw new Error(result.message);
             } catch(e) {
                 customAlert("ข้อผิดพลาด: " + e.message, "error");
@@ -14606,7 +14603,6 @@ window.saveStudentDetail = async function() {
                 return;
             }
 
-            // 1. หาตารางสอนของครูคนนี้ทั้ง 5 วัน
             const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
             let slotsHtml = '<option value="">-- กรุณาเลือกคาบที่เปิดสอน --</option>';
             let hasClass = false;
@@ -14623,8 +14619,8 @@ window.saveStudentDetail = async function() {
                             const level = parts[1] ? parts[1].trim() : '';
                             const room = parts[2] ? parts[2].trim() : '';
                             
-                            // ส่งข้อมูลอัดแน่นไปใน Value: วัน|วิชา|ห้อง|ระดับชั้น
-                            const valData = `${day}|${subCode}|${room}|${level}`;
+                            // 💡 แก้บั๊ก Period: เติม |${i} เข้าไปท้ายสุด เพื่อจำเลขคาบ!
+                            const valData = `${day}|${subCode}|${room}|${level}|${i}`;
                             slotsHtml += `<option value="${valData}">วัน${day} คาบ ${i} - ${subCode} ${level} ${room ? '(ห้อง '+room+')' : ''}</option>`;
                         }
                     }
