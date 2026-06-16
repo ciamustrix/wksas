@@ -232,7 +232,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.6 [June 12th, 2025 - 12:40] | TESTING-f(SLC)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.7 [June 17th, 2025 - 01:45] | TESTING-f(SLC)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -1675,7 +1675,25 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
+    <div class="col-span-1 md:col-span-2">
+        <label class="block text-sm font-bold text-orange-900 mb-1">🎯 หัวข้อที่สอน (Topic)</label>
+        <input type="text" id="slc_topic" class="w-full border border-orange-300 p-2 rounded-xl text-sm outline-none focus:border-orange-500" placeholder="เช่น การหาปริมาตรแก๊สที่ STP">
+    </div>
+    <div>
+        <label class="block text-sm font-bold text-orange-900 mb-1">📄 อัปโหลดแผนการจัดการเรียนรู้ (PDF/Word)</label>
+        <input type="file" id="slc_lesson_plan_file" accept=".pdf,.doc,.docx" class="w-full text-xs outline-none bg-white p-1.5 border border-orange-300 rounded-xl cursor-pointer">
+        <span class="text-[10px] text-orange-600">*หรือแนบลิงก์แทนในช่องถัดไป</span>
+    </div>
+    <div>
+        <label class="block text-sm font-bold text-orange-900 mb-1">🔗 ลิงก์แผนการจัดการเรียนรู้ (ถ้ามี)</label>
+        <input type="text" id="slc_lesson_plan_link" class="w-full border border-orange-300 p-2 rounded-xl text-sm outline-none focus:border-orange-500" placeholder="แปะลิงก์ Google Drive ของแผนฯ">
+    </div>
+    <div class="col-span-1 md:col-span-2 mt-2">
+        <label class="block text-sm font-bold text-blue-900 mb-1">✨ ความคาดหวังของ Model Teacher ต่อนักเรียนในคาบนี้</label>
+        <textarea id="slc_teacher_expectation" rows="2" class="w-full border border-blue-300 p-2 rounded-xl text-sm outline-none focus:border-blue-500 resize-none" placeholder="เช่น คาดหวังให้นักเรียนกล้าซักถามเมื่อไม่เข้าใจ และสามารถสรุปหลักการทดลองได้ด้วยตนเอง"></textarea>
+    </div>
+</div>
                         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             <div class="lg:col-span-1 glass-panel p-4 rounded-2xl shadow-md flex flex-col h-[600px]">
                                 <h3 class="font-bold text-gray-800 border-b pb-2 mb-3">รายชื่อนักเรียน</h3>
@@ -2344,6 +2362,7 @@
                                 <button onclick="toggleSupControlTab('config')" id="btn-supc-config" class="flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all">⚙️ ตั้งค่ากติกา</button>
                                 <button onclick="toggleSupControlTab('matrix')" id="btn-supc-matrix" class="flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all">👁️ โหมดเนตรวงแหวน</button>
                                 <button onclick="toggleSupControlTab('rubric')" id="btn-supc-rubric" class="flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all">📝 สร้างแบบประเมิน</button>
+                                <button onclick="toggleSupControlTab('schedule')" id="btn-supc-schedule" class="flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all">🗓️ คิวนิเทศรวม</button>
                             </div>
 
                             <!-- Tab 1: Config -->
@@ -2446,7 +2465,34 @@
                                     ➕ เพิ่มหมวดหมู่การประเมินใหม่
                                 </button>
                             </div>
-
+                            <!-- Tab 4: Schedule (ตารางคิวนิเทศรวม) -->
+                            <div id="supc-tab-schedule" class="hidden space-y-4 animate-in fade-in zoom-in duration-300">
+                                <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                    <h4 class="font-black text-rose-800 flex items-center gap-2">🗓️ ตารางคิวนิเทศและเปิดชั้นเรียน (Master Schedule)</h4>
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        <select id="filterSupScheduleTeacher" onchange="renderSupSchedule()" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-rose-500 font-bold text-gray-700 bg-rose-50/50">
+                                            <option value="">-- กรรมการทั้งหมด --</option>
+                                        </select>
+                                        <input type="date" id="filterSupScheduleDate" onchange="renderSupSchedule()" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-rose-500">
+                                        <button onclick="renderSupSchedule()" class="bg-gray-800 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-sm hover:bg-black transition-colors shrink-0">🔄 โหลดใหม่</button>
+                                    </div>
+                                </div>
+                                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-inner max-h-[500px] custom-scrollbar">
+                                    <table class="min-w-full divide-y divide-gray-200 text-sm text-left relative">
+                                        <thead class="bg-rose-50 sticky top-0 z-20 shadow-sm">
+                                            <tr>
+                                                <th class="px-4 py-3 font-bold text-rose-800">วันที่ / คาบ</th>
+                                                <th class="px-4 py-3 font-bold text-rose-800">ผู้สอนหลัก (ผู้รับการนิเทศ/SLC)</th>
+                                                <th class="px-4 py-3 font-bold text-rose-800">รายวิชา</th>
+                                                <th class="px-4 py-3 font-bold text-indigo-700">กรรมการ / Buddy (ผู้สังเกตการณ์)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="supScheduleTableBody" class="bg-white divide-y divide-gray-100">
+                                            <!-- JS จะวาดข้อมูลตรงนี้ -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <!-- [5] 👑 SECTION: GOD MODE (EmpPngn ONLY) -->
@@ -2764,19 +2810,24 @@
                                 <h3 class="text-2xl font-black text-purple-900 flex items-center gap-2">📊 สรุปผลการสังเกตชั้นเรียน</h3>
                                 <p id="slcResultSubtitle" class="text-sm text-gray-500 mt-1 font-bold">วิชา: - | ผู้สอน: -</p>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="generateSLCAISummary()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-4 py-2 rounded-xl shadow-md hover:scale-105 transition-transform text-sm flex items-center gap-2">✨ AI ประมวลผลสรุป</button>
-                                <button onclick="document.getElementById('slcResultsModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none">&times;</button>
+                            <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                                <button onclick="enableManualSLCSummary()" class="bg-white border border-purple-300 text-purple-700 font-bold px-3 py-2 rounded-xl shadow-sm hover:bg-purple-50 transition-colors text-xs flex items-center gap-1">📝 เขียนสรุป</button>
+                                <button onclick="generateSLCAISummary()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-3 py-2 rounded-xl shadow-md hover:scale-105 transition-transform text-xs flex items-center gap-1">✨ AI สรุปผล</button>
+                                <button onclick="document.getElementById('slcResultsModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none ml-2">&times;</button>
                             </div>
                         </div>
                         
                         <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-6">
-                            <!-- กล่องแสดง AI Summary (ซ่อนไว้ก่อน) -->
-                            <div id="slcAISummaryBox" class="hidden bg-purple-50 p-6 rounded-2xl border border-purple-200 shadow-inner">
-                                <h4 class="font-black text-purple-800 border-b border-purple-200 pb-2 mb-3">🤖 AI Executive Summary</h4>
-                                <div id="slcAISummaryText" class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-medium">กำลังวิเคราะห์...</div>
+                            <!-- 💡 กล่องแสดง AI Summary (อัปเกรดให้พิมพ์แก้ได้ และกดเซฟได้) -->
+                            <div id="slcAISummaryBox" class="hidden bg-purple-50 p-5 rounded-2xl border border-purple-200 shadow-inner">
+                                <div class="flex justify-between items-center border-b border-purple-200 pb-2 mb-3">
+                                    <h4 class="font-black text-purple-800 text-sm">🎯 สรุปภาพรวมการสังเกตชั้นเรียน (Executive Summary)</h4>
+                                </div>
+                                <textarea id="slcAISummaryText" rows="6" class="w-full bg-white border border-purple-200 rounded-xl p-4 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-purple-500 resize-none leading-relaxed shadow-sm" placeholder="พิมพ์สรุปภาพรวม หรือคลิกปุ่ม 'AI สรุปผล' ด้านบน..."></textarea>
+                                <div class="flex justify-end mt-3">
+                                    <button onclick="saveSLCAISummary()" id="btnSaveSLCSummary" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition-colors text-xs flex items-center gap-2">💾 บันทึกสรุปภาพรวมลงฐานข้อมูล</button>
+                                </div>
                             </div>
-
                             <h4 class="font-bold text-gray-800 text-lg border-b pb-2">💬 บันทึกพฤติกรรมจาก Buddy</h4>
                             <div id="slcLogsContainer" class="space-y-4">
                                 <!-- JS จะเสกคอมเมนต์ลงตรงนี้ -->
@@ -2850,6 +2901,61 @@
                             </div>
                             <div id="supPdfHeaderInfo" class="grid grid-cols-2 gap-4 mb-6 text-lg"></div>
                             <div id="supPdfEvalBody" class="space-y-6"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal: สรุปผลและสะท้อนคิด (Model Teacher Reflection) -->
+            <div id="slcReflectionModal" class="fixed inset-0 z-[90] hidden overflow-y-auto">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm transition-opacity" onclick="document.getElementById('slcReflectionModal').classList.add('hidden')"></div>
+                    <div class="inline-block bg-white rounded-3xl p-6 sm:p-8 text-left shadow-2xl transform transition-all max-w-4xl w-full relative z-50 border-t-8 border-purple-600 flex flex-col max-h-[90vh]">
+                        <div class="flex justify-between items-start mb-4 border-b pb-4 shrink-0">
+                            <div>
+                                <h3 class="text-2xl font-black text-purple-900 flex items-center gap-2">✍️ สรุปผลและสะท้อนคิด (Post-SLC Reflection)</h3>
+                                <p id="slcReflectSubtitle" class="text-sm text-gray-500 mt-1 font-bold">วิชา: - | ชั้น: -</p>
+                            </div>
+                            <button onclick="document.getElementById('slcReflectionModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-3xl font-bold leading-none">&times;</button>
+                        </div>
+                        
+                        <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-6">
+                            <!-- ส่วนข้อมูลจาก Buddy -->
+                            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-200 shadow-inner">
+                                <div class="flex justify-between items-center mb-3 border-b border-indigo-200 pb-2">
+                                    <h4 class="font-bold text-indigo-900">💬 ข้อมูลจากการสังเกตการณ์ (Buddy & Observer)</h4>
+                                    <button type="button" onclick="generateAIReflectionSummary()" class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg shadow font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1">✨ AI สรุปประเด็นสำคัญ</button>
+                                </div>
+                                <div id="slcReflectLogsContainer" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2 text-sm text-gray-700">
+                                    <!-- ดึงคอมเมนต์มาโชว์ -->
+                                </div>
+                            </div>
+
+                            <!-- ส่วนแบบฟอร์มสะท้อนคิด -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">1. สรุปข้อดี/ข้อสังเกต จากผู้สังเกตการณ์ <span class="text-xs font-normal text-gray-500">(AI ช่วยร่างให้ได้ หรือพิมพ์เอง)</span></label>
+                                    <textarea id="ref_ai_summary" rows="4" class="w-full rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 resize-none bg-purple-50/30" placeholder="กดปุ่ม 'AI สรุปประเด็นสำคัญ' ด้านบน หรือพิมพ์สรุปด้วยตนเอง..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">2. ท่านมีความพึงพอใจในการจัดการเรียนรู้ในครั้งนี้อย่างไร?</label>
+                                    <textarea id="ref_q1" rows="3" class="w-full rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 resize-none" placeholder="อธิบายความรู้สึก และสิ่งที่ท่านคิดว่าทำได้ดี..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">3. ท่านมีความคาดหวังในการจัดการเรียนรู้ในครั้งต่อไปอย่างไร?</label>
+                                    <textarea id="ref_q2" rows="3" class="w-full rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 resize-none" placeholder="ระบุเป้าหมาย หรือสิ่งที่อยากปรับปรุงในครั้งหน้า..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">4. ท่านมีข้อสังเกตหรือข้อคำถามเกี่ยวกับชั้นเรียนนี้อย่างไร?</label>
+                                    <textarea id="ref_q3" rows="3" class="w-full rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 resize-none" placeholder="ข้อสงสัย พฤติกรรมนักเรียนที่แปลกไป หรือประเด็นที่อยากปรึกษา..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 shrink-0 pt-4 border-t border-gray-100 mt-4">
+                            <button onclick="document.getElementById('slcReflectionModal').classList.add('hidden')" class="px-6 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors w-full sm:w-auto">ยกเลิก</button>
+                            <button onclick="submitSLCReflection()" id="btnSubmitReflect" class="px-8 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-colors shadow-md flex items-center gap-2">
+                                💾 บันทึกและปิดการเปิดชั้นเรียน
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -3066,6 +3172,11 @@
                                         <label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ซักถามเมื่อไม่เข้าใจ" class="mt-1 text-emerald-600 rounded"><span>ซักถามเมื่อไม่เข้าใจ</span></label>
                                         <label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ทำงานกลุ่มได้ดี" class="mt-1 text-emerald-600 rounded"><span>ทำงานกลุ่มได้ดี</span></label>
                                         <label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ช่วยเหลือเพื่อน" class="mt-1 text-emerald-600 rounded"><span>ช่วยเหลือเพื่อน</span></label>
+                                        <label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="กล้าแสดงความคิดเห็น" class="mt-1 text-emerald-600 rounded"><span>กล้าแสดงความคิดเห็นอย่างมีเหตุผล</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="รับฟังความคิดเห็นผู้อื่น" class="mt-1 text-emerald-600 rounded"><span>รับฟังความคิดเห็นของเพื่อน</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="นำเสนอผลงานได้ชัดเจน" class="mt-1 text-emerald-600 rounded"><span>นำเสนอผลงาน/ความคิดได้ชัดเจน</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="แก้ไขปัญหาเฉพาะหน้าได้ดี" class="mt-1 text-emerald-600 rounded"><span>แก้ไขปัญหาเฉพาะหน้าได้ดี</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="เชื่อมโยงความรู้ได้" class="mt-1 text-emerald-600 rounded"><span>สามารถเชื่อมโยงความรู้เก่ากับใหม่ได้</span></label>
                                     </div>
                                 </div>
                                 <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 shadow-inner">
@@ -3076,6 +3187,11 @@
                                         <label class="flex items-start gap-2 cursor-pointer hover:bg-rose-100 p-1 rounded"><input type="checkbox" value="คุยเล่นกับเพื่อน" class="mt-1 text-rose-600 rounded"><span>คุยเล่นกับเพื่อน</span></label>
                                         <label class="flex items-start gap-2 cursor-pointer hover:bg-rose-100 p-1 rounded"><input type="checkbox" value="หลับในห้องเรียน" class="mt-1 text-rose-600 rounded"><span>หลับในห้องเรียน</span></label>
                                         <label class="flex items-start gap-2 cursor-pointer hover:bg-rose-100 p-1 rounded"><input type="checkbox" value="ทำงานอื่นในคาบเรียน" class="mt-1 text-rose-600 rounded"><span>ทำงานอื่นในคาบเรียน</span></label>
+                                        <label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="กล้าแสดงความคิดเห็น" class="mt-1 text-emerald-600 rounded"><span>กล้าแสดงความคิดเห็นอย่างมีเหตุผล</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ไม่รับฟังความคิดเห็นต่างของเพื่อน" class="mt-1 text-emerald-600 rounded"><span>ไม่รับฟังความคิดเห็นต่างของเพื่อน</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ขัดจังหวะเพื่อน" class="mt-1 text-emerald-600 rounded"><span>ขัดจังหวะเพื่อน</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ไม่เตรียมอุปกรณ์มาเรียน" class="mt-1 text-emerald-600 rounded"><span>ไม่เตรียมอุปกรณ์มาเรียน</span></label>
+<label class="flex items-start gap-2 cursor-pointer hover:bg-emerald-100 p-1 rounded"><input type="checkbox" value="ขัดขวางการเรียนรู้ในชั้นเรียน" class="mt-1 text-emerald-600 rounded"><span>ขัดขวางการเรียนรู้ในชั้นเรียน</span></label>
                                     </div>
                                 </div>
                             </div>
@@ -3108,10 +3224,11 @@
                                 <textarea id="evNote" rows="3" class="w-full rounded-xl border border-gray-300 p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none shadow-inner" placeholder="ระบุพฤติกรรมที่พบเห็น หรือข้อสังเกต..."></textarea>
                             </div>
                             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm">
-                                <label class="block text-sm font-bold text-indigo-800 mb-2">📸 แนบรูปภาพพฤติกรรม / สภาพห้องเรียน</label>
-                                <input type="file" id="evPhoto" accept="image/*" capture="environment" class="w-full text-xs outline-none bg-white border border-indigo-200 p-1.5 rounded-lg cursor-pointer">
-                                <div id="evPhotoPreview" class="mt-3 hidden h-40 rounded-xl overflow-hidden border border-gray-200 shadow-inner bg-black">
-                                    <img src="" id="evImgElement" class="w-full h-full object-contain">
+                                <label class="block text-sm font-bold text-indigo-800 mb-2">📸 แนบรูปภาพพฤติกรรม / สภาพห้องเรียน <span class="text-xs text-indigo-500 font-normal">(อัปโหลดได้สูงสุด 5 รูป)</span></label>
+                                <!-- 💡 อัปเกรด: ใส่ multiple ให้เลือกได้หลายไฟล์ และเอา capture ออกเพื่อให้เลือกจากแกลลอรี่ได้ -->
+                                <input type="file" id="evPhoto" accept="image/*" multiple class="w-full text-xs outline-none bg-white border border-indigo-200 p-1.5 rounded-lg cursor-pointer" onchange="processEvidencePhotos(this)">
+                                <div id="evPhotoPreview" class="mt-3 hidden grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto custom-scrollbar rounded-xl border border-gray-200 shadow-inner bg-gray-50 p-2">
+                                    <!-- 💡 สมองกลจะวาดรูป 1-5 รูปลงตรงนี้ -->
                                 </div>
                             </div>
                         </div>
@@ -3569,10 +3686,21 @@
             document.getElementById('slc_action_footer').classList.add('hidden');
             document.getElementById('slc_analysis_result').innerHTML = '<div class="text-gray-400 font-bold italic"><div class="text-4xl mb-2 opacity-50">🤖</div>กรุณาเลือกสมาชิกและกดค้นหา<br>เพื่อให้ AI คำนวณคาบที่ตรงกันครับ</div>';
             
-            // วาด Dropdown
+            // วาด Dropdown (อัปเกรดเรียงตามกลุ่มสาระ และ Sq)
             let opts = '<option value="">-- เลือกครู --</option>';
-            usersDB_Global.filter(u => u.Role.includes('User') || u.Role.includes('HOA')).forEach(u => {
-                opts += `<option value="${u.FullName}">${u.FullName}</option>`;
+            const deptOrder = ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์และเทคโนโลยี", "สังคมศึกษา ศาสนา และวัฒนธรรม", "สุขศึกษาและพลศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ"];
+            
+            let sortedUsers = [...usersDB_Global.filter(u => u.Role.includes('User') || u.Role.includes('HOA'))];
+            sortedUsers.sort((a,b) => {
+                let d1 = deptOrder.indexOf(a.Department) !== -1 ? deptOrder.indexOf(a.Department) : 99;
+                let d2 = deptOrder.indexOf(b.Department) !== -1 ? deptOrder.indexOf(b.Department) : 99;
+                if(d1 !== d2) return d1 - d2;
+                return (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999);
+            });
+
+            sortedUsers.forEach(u => {
+                let shortDept = u.Department ? u.Department.substring(0,3) : '???';
+                opts += `<option value="${u.FullName}">[${shortDept}] ${u.FullName}</option>`;
             });
             let html = '';
             for(let i=1; i<=3; i++) {
@@ -6238,7 +6366,64 @@ window.deleteLog = function(logId) {
                 }
             }
         }
-        
+        // 💡 เครื่องยนต์ AI ยิงตรงเข้า Gemini Canvas (Bypass Apps Script 100%)
+        window.callGemini = async function(prompt, systemInstruction = "", useJson = false, customSchema = null) {
+            const apiKey = ""; // 💡 Canvas Environment จะแอบฝัง Key ให้ตอนรันอัตโนมัติ
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            if (systemInstruction) {
+                payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+            }
+
+            // 💡 ถ้าต้องการ JSON ให้จัด Schema ให้เป๊ะ
+            if (useJson) {
+                payload.generationConfig = { responseMimeType: "application/json" };
+                if (customSchema) {
+                    payload.generationConfig.responseSchema = customSchema;
+                } else {
+                    payload.generationConfig.responseSchema = { type: "OBJECT" };
+                }
+            }
+
+            let lastError = null;
+            // 💡 ลองยิงรีเควส 3 ครั้งเหมือนเดิม กันเน็ตกระตุก
+            for (let i = 0; i < 3; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status} - AI ปฏิเสธการเชื่อมต่อ`);
+                    
+                    const result = await response.json();
+                    const textResult = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (!textResult) throw new Error("ไม่พบข้อความตอบกลับจาก AI");
+
+                    if (useJson) {
+                        try {
+                            return JSON.parse(textResult);
+                        } catch (e) {
+                            // 💡 ดักทาง: บางที AI ก็ส่งเป็นก้อน Markdown มา ต้องถอดเสื้อผ้ามันออกก่อน
+                            const cleanedText = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
+                            return JSON.parse(cleanedText);
+                        }
+                    }
+                    return textResult;
+                } catch (error) {
+                    lastError = error;
+                    console.error("Canvas AI Error:", error);
+                    if (i === 2) throw lastError; // ถ้ารอบที่ 3 ยังพัง ค่อยโยน Error ออกไป
+                    await new Promise(r => setTimeout(r, 2000)); // หน่วงเวลา 2 วิแล้วลองใหม่
+                }
+            }
+        };
         window.suggestActivityWithAI = async function() {
             const topic = document.getElementById('topic').value;
             if (!topic) return customAlert("กรุณาระบุหัวข้อที่เรียนในส่วนที่ 3 ก่อนครับ");
@@ -6817,9 +7002,11 @@ window.deleteLog = function(logId) {
             const element = document.getElementById(elementId); 
             if (!element) return customAlert("ไม่พบข้อมูลสำหรับสร้าง PDF");
             
-           // 💡 แก้บั๊กที่ 1: บังคับให้เบราว์เซอร์รอโหลดฟอนต์ Sarabun ให้เสร็จ 100% ก่อนแคปหน้าจอ
             if (document.fonts && document.fonts.ready) await document.fonts.ready;
-            // 💡 บังคับให้รอรูปภาพ (ลายเซ็น) ทุกรูปโหลดเสร็จ 100% ก่อนแคปหน้าจอ ไม่งั้นล่องหน!
+            
+            // 💡 แก้บั๊กตรงนี้! ต้องบอกให้มันค้นหารูปภาพ "เฉพาะใน element ที่จะปริ้นท์"
+            const images = element.getElementsByTagName('img');
+            
             await Promise.all(Array.from(images).map(img => {
                 if (img.complete) return Promise.resolve();
                 return new Promise(resolve => { img.onload = img.onerror = resolve; });
@@ -9697,10 +9884,20 @@ window.deleteLog = function(logId) {
                 return;
             }
 
-            // เตรียม Dropdown รายชื่อครู
+            // เตรียม Dropdown รายชื่อครู (อัปเกรดเรียงตามกลุ่มสาระและ Sq)
             let teacherOpts = '<option value="">-- ว่าง --</option>';
-            usersDB_Global.sort((a,b)=>a.FullName.localeCompare(b.FullName, 'th')).forEach(u => {
-                if(!u.Role.includes('BirdSpy') || u.Role.includes('User')) teacherOpts += `<option value="${u.FullName}">${u.FullName}</option>`;
+            
+            const validTeachers = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User'));
+            validTeachers.sort((a,b) => {
+                const iA = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(a.Department) !== -1) ? LEARNING_AREAS.indexOf(a.Department) : 99;
+                const iB = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(b.Department) !== -1) ? LEARNING_AREAS.indexOf(b.Department) : 99;
+                if (iA !== iB) return iA - iB;
+                return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
+            });
+
+            validTeachers.forEach(u => {
+                const deptStr = u.Department ? `[${u.Department.substring(0,3)}] ` : '';
+                teacherOpts += `<option value="${u.FullName}">${deptStr}${u.FullName}</option>`;
             });
 
             pendingSups.forEach(s => {
@@ -9938,6 +10135,153 @@ window.deleteLog = function(logId) {
                 });
             }
         });
+        // 🤖 สมองกลจัดกรรมการ 3 ตำแหน่ง (V.4: ป้องกันร่างแยก ไม่ให้ซ้อนกับคิวนิเทศอื่นและ SLC)
+        window.autoAssignSupervisors = async function(supId, requestingTeacher) {
+            const req = supervisionDB_Global.find(s => s.SupID === supId);
+            if(!req) return customAlert("ไม่พบข้อมูลคำขอ", "error");
+
+            const reqTeacherInfo = usersDB_Global.find(u => u.FullName === requestingTeacher) || {};
+            const reqDept = reqTeacherInfo.Department;
+            const reqSq = parseInt(reqTeacherInfo.Sq) || 999;
+            const targetDay = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"][new Date(req.TargetDate).getDay()];
+            const targetPeriod = req.Period;
+
+            const btn = window.event ? window.event.currentTarget : null;
+            const origTxt = btn ? btn.innerHTML : "🤖 AI จัดให้";
+            if(btn) { btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังคำนวณ...'; btn.disabled = true; }
+
+            // 💡 0. Helper: เช็คว่าครูว่างไหม? (อัปเกรด V4: เช็คทะลุกำแพงทุกมิติ)
+            const isFree = (teacherName) => {
+                // กฏข้อ 1: เช็คละเว้นถาวร
+                if (typeof persistentExclusions !== 'undefined') {
+                    if (Array.isArray(persistentExclusions) && persistentExclusions.includes(teacherName)) return false;
+                    if (!Array.isArray(persistentExclusions) && typeof persistentExclusions === 'object') {
+                        const tExc = persistentExclusions[teacherName];
+                        if (tExc && tExc[targetDay] && tExc[targetDay].includes(parseInt(targetPeriod))) return false;
+                    }
+                }
+                
+                // กฏข้อ 2: เช็คตารางสอนปกติ
+                const tt = timetableDB_Global.find(x => x.TeacherName === teacherName && x.Day === targetDay);
+                if (tt && tt[`Period${targetPeriod}`] && tt[`Period${targetPeriod}`].trim() !== '') return false;
+                
+                const targetDateStr = req.TargetDate.split('T')[0];
+
+                // 💡 กฏข้อ 3: เช็คว่าติดคิว "นิเทศคนอื่น" หรือกำลัง "รับการนิเทศ" ในวันและคาบเดียวกันหรือไม่!
+                const isBusySupervising = supervisionDB_Global.some(s => {
+                    if (s.SupID === supId) return false; // ข้ามรายการตัวเอง
+                    if (s.TargetDate.split('T')[0] === targetDateStr && parseInt(s.Period) === parseInt(targetPeriod)) {
+                        let sups = []; try { sups = JSON.parse(s.Supervisors || "[]"); } catch(e){}
+                        return sups.includes(teacherName) || s.TeacherName === teacherName;
+                    }
+                    return false;
+                });
+                if (isBusySupervising) return false;
+
+                // 💡 กฏข้อ 4: เช็คว่าติดคิว "SLC Open Class" (ไม่ว่าจะเป็นผู้สอน หรือเป็น Buddy) หรือไม่!
+                const isBusySLC = slcSessionsDB_Global.some(slc => {
+                    if (slc.Date.split('T')[0] === targetDateStr && parseInt(slc.Period) === parseInt(targetPeriod)) {
+                        let buddies = []; try { buddies = JSON.parse(slc.BuddyTeachers || "[]"); } catch(e){}
+                        return slc.ModelTeacher === teacherName || buddies.includes(teacherName);
+                    }
+                    return false;
+                });
+                if (isBusySLC) return false;
+
+                return true; // รอดทุกด่าน แปลว่าว่างชัวร์!
+            };
+
+            const validTeachers = usersDB_Global.filter(u => u.FullName !== requestingTeacher && (!u.Role.includes('BirdSpy') || u.Role.includes('User')));
+            let selectedTeam = [null, null, null]; 
+
+            // ==========================================
+            // 👑 ตำแหน่งที่ 1: ผู้บริหาร
+            // ==========================================
+            let execCandidates = validTeachers.filter(u => {
+                const r = u.Role || "";
+                return r.includes('DepDir') || r.includes('HOA') || r.includes('AsstDir') || r.includes('Director') || r.includes('EmpPngn');
+            });
+            const roleWeight = (r) => { if(r.includes('DepDir')) return 1; if(r.includes('AsstDir')) return 2; if(r.includes('Director')) return 3; if(r.includes('HOA')) return 4; return 5; };
+            execCandidates.sort((a,b) => roleWeight(a.Role) - roleWeight(b.Role));
+            
+            selectedTeam[0] = execCandidates.find(u => isFree(u.FullName))?.FullName;
+
+            if (!selectedTeam[0]) {
+                const top10 = [...validTeachers].sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999)).slice(0, 10);
+                selectedTeam[0] = top10.find(u => isFree(u.FullName))?.FullName;
+            }
+
+            // ==========================================
+            // 🤝 ตำแหน่งที่ 2: Buddy
+            // ==========================================
+            let myBuddyGroup = [];
+            const effectiveGroups = typeof getEffectivePLCGroups === 'function' ? getEffectivePLCGroups() : plcGroupsDB_Global;
+            
+            for (let g of effectiveGroups) {
+                if (g.Status !== 'Active') continue;
+                let mems = []; try { mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members; } catch(e){}
+                if (Array.isArray(mems) && mems.includes(reqTeacherInfo.Username)) {
+                    myBuddyGroup = mems.map(username => (usersDB_Global.find(u => u.Username === username)?.FullName)).filter(name => name && name !== requestingTeacher);
+                    break;
+                }
+            }
+
+            const buddyRule = masterSwitches_Global?.SupervisionMaster?.settings?.buddyRule || 'none';
+            let buddyCandidates = validTeachers.filter(u => myBuddyGroup.includes(u.FullName));
+
+            if (buddyRule === 'dept') buddyCandidates = buddyCandidates.filter(u => u.Department === reqDept);
+            if (buddyRule === 'cross') buddyCandidates = buddyCandidates.filter(u => u.Department !== reqDept);
+            if (buddyRule === 'peer') {
+                buddyCandidates.sort((a,b) => Math.abs((parseInt(a.Sq)||999) - reqSq) - Math.abs((parseInt(b.Sq)||999) - reqSq));
+            } else {
+                buddyCandidates.sort(() => Math.random() - 0.5); 
+            }
+
+            selectedTeam[1] = buddyCandidates.find(u => isFree(u.FullName))?.FullName;
+            
+            if (!selectedTeam[1]) {
+                selectedTeam[1] = validTeachers.find(u => isFree(u.FullName) && u.FullName !== selectedTeam[0])?.FullName;
+            }
+
+            // ==========================================
+            // 🌟 ตำแหน่งที่ 3: Mentor
+            // ==========================================
+            let mentorCandidates = validTeachers.filter(u => u.Department === reqDept && (parseInt(u.Sq)||999) < reqSq && u.FullName !== selectedTeam[0] && u.FullName !== selectedTeam[1]);
+            mentorCandidates.sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+            selectedTeam[2] = mentorCandidates.find(u => isFree(u.FullName))?.FullName;
+            
+            if (!selectedTeam[2]) {
+                const crossMentors = validTeachers.filter(u => u.Department !== reqDept && u.FullName !== selectedTeam[0] && u.FullName !== selectedTeam[1])
+                                                  .sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+                selectedTeam[2] = crossMentors.find(u => isFree(u.FullName))?.FullName;
+            }
+
+            // ==========================================
+            // สรุปผล
+            // ==========================================
+            if(btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+
+            const cleanTeam = selectedTeam.filter(name => name !== null && name !== undefined);
+            if(cleanTeam.length === 0) return customAlert("❌ ระบบไม่สามารถหาใครที่ว่างในคาบนี้ได้เลยครับ (ติดสอน/ติดนิเทศ/ติดละเว้น กันหมด)", "error");
+
+            ['sup1_', 'sup2_', 'sup3_'].forEach(idPrefix => {
+                const el = document.getElementById(`${idPrefix}${supId}`);
+                if(el) { el.value = ""; el.classList.remove('bg-emerald-50', 'border-emerald-400'); }
+            });
+
+            if(cleanTeam[0]) { const el = document.getElementById(`sup1_${supId}`); if(el){ el.value = cleanTeam[0]; el.classList.add('bg-emerald-50', 'border-emerald-400');} }
+            if(cleanTeam[1]) { const el = document.getElementById(`sup2_${supId}`); if(el){ el.value = cleanTeam[1]; el.classList.add('bg-emerald-50', 'border-emerald-400');} }
+            if(cleanTeam[2]) { const el = document.getElementById(`sup3_${supId}`); if(el){ el.value = cleanTeam[2]; el.classList.add('bg-emerald-50', 'border-emerald-400');} }
+
+            if (cleanTeam.length === 3) {
+                customAlert(`🤖 ดึงตัว 3 ตำแหน่งเรียบร้อย! ระบบกำลังบันทึกอัตโนมัติ...`, "success");
+                setTimeout(() => {
+                    if(typeof saveSupMapping === 'function') saveSupMapping(supId);
+                }, 1000);
+            } else {
+                customAlert(`⚠️ ระบบหาคนได้เพียง ${cleanTeam.length} ท่าน กรุณาเลือกเพิ่มเติมในช่องที่ว่างแล้วกดบันทึกครับ`, "warning");
+            }
+        };
         window.saveSupMapping = async function(supId) {
             const s1 = document.getElementById(`sup1_${supId}`).value;
             const s2 = document.getElementById(`sup2_${supId}`).value;
@@ -11394,6 +11738,9 @@ window.deleteLog = function(logId) {
         };
         // 🎛️ สมองกลสลับโหมดผังที่นั่ง (วาด / อัปโหลด / ข้าม)
         window.toggleSeatingMode = function(mode) {
+            // 💡 สกัดจุดตาย: แปลงค่า normal จากฐานข้อมูลเก่า ให้เป็น virtual สำหรับ UI ใหม่
+            if (mode === 'normal' || !mode) mode = 'virtual';
+
             document.getElementById('seatingMode_virtual').classList.add('hidden');
             document.getElementById('seatingMode_upload').classList.add('hidden');
             document.getElementById('seatingMode_skip').classList.add('hidden');
@@ -11426,7 +11773,106 @@ window.deleteLog = function(logId) {
             }
         });
         
-        // 💾 Model Teacher กดบันทึกเพื่อเปิดชั้นเรียน! (ข้อมูลเข้า DB)
+        // 💡 บีบอัดรูปผังที่นั่งก่อนส่ง (ลดภาระฐานข้อมูล)
+        document.getElementById('slc_seating_image').onchange = async function(e) {
+            const file = e.target.files[0];
+            const previewCont = document.getElementById('slc_seating_image_preview');
+            if(!file) { previewCont.classList.add('hidden'); return; }
+            
+            // ใช้ฟังก์ชันบีบอัดที่เราเคยเขียนไว้แล้ว! 
+            const compressedBase64 = await compressToJPEG(file);
+            previewCont.querySelector('img').src = compressedBase64;
+            previewCont.classList.remove('hidden');
+        };
+
+        // ✏️ ฟังก์ชันดึงข้อมูลเก่าเข้าโหมดแก้ไข
+        window.editingSLCSessionID = null;
+
+        window.editSLCSession = function(sessionId) {
+            const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
+            if (!session) return customAlert("ไม่พบข้อมูล", "error");
+
+            window.editingSLCSessionID = sessionId;
+
+            // 1. วาร์ปไปที่ฟอร์มเตรียมแผน
+            switchSLCTab('tab-slc-seating');
+
+            document.getElementById('slc_model').value = session.ModelTeacher;
+
+            // 💡 สกัดจุดตาย: บังคับให้สมองกลโหลด "ตารางสอน" และ "Buddy" ของครูคนนี้ขึ้นมาก่อน!
+            if(typeof handleSLCModelChange === 'function') handleSLCModelChange();
+            if(typeof loadBuddiesForOpenClass === 'function') loadBuddiesForOpenClass(); 
+            
+            // 💡 หน่วงเวลา 0.3 วินาที รอให้หน้าเว็บวาด Dropdown กับ Checkbox ให้เสร็จ ค่อยยัดค่าเดิมลงไป!
+            setTimeout(() => {
+                // ดึงคาบสอนและห้องมาเสียบใน Dropdown (ใช้เทคนิคย้อนศร)
+                const slotEl = document.getElementById('slc_timetable_slot');
+                if (slotEl) {
+                    for (let opt of slotEl.options) {
+                        if (opt.value.endsWith(`|${session.Period}`) && opt.value.includes(session.SubjectCode)) {
+                            slotEl.value = opt.value;
+                            break;
+                        }
+                    }
+                }
+                
+                // กระตุ้นให้โหลดวันที่
+                generateSLCOpenDates();
+                
+                // รอวันที่วาดเสร็จอีกนิด ค่อยเซ็ตค่า
+                setTimeout(() => {
+                    const dateEl = document.getElementById('slc_open_date');
+                    if(dateEl) dateEl.value = session.Date.split('T')[0];
+                }, 100);
+
+                // โหลดข้อมูลเสริมที่แอบซ่อนไว้ (Topic, Expectation, Plan Link)
+                try {
+                    const extra = JSON.parse(session.MediaID || "{}");
+                    document.getElementById('slc_topic').value = extra.topic || '';
+                    document.getElementById('slc_lesson_plan_link').value = extra.planLink || '';
+                    document.getElementById('slc_teacher_expectation').value = extra.expectation || '';
+                    document.getElementById('slc_media').value = extra.mediaId || '';
+                } catch(e) {
+                    document.getElementById('slc_media').value = session.MediaID || '';
+                }
+
+                // 2. ติ๊กชื่อ Buddy ให้ตรงกับของเดิม
+                let buddies = [];
+                try { buddies = JSON.parse(session.BuddyTeachers || "[]"); } catch(e){}
+                
+                document.querySelectorAll('input[name="openclass_buddy_cb"], input[name="slc_buddy_cb"]').forEach(cb => {
+                    cb.checked = buddies.includes(cb.value) || buddies.includes(cb.dataset.name);
+                });
+                
+                if(typeof updateOpenClassBuddyTags === 'function') updateOpenClassBuddyTags();
+                if(typeof updateSLCBuddyTags === 'function') updateSLCBuddyTags();
+
+            }, 300); // 👈 หัวใจของความไวอยู่ตรงนี้!
+
+            // 3. วาดผังที่นั่งเก่าลงกระดาน
+            toggleSeatingMode(session.LayoutMode);
+            if (session.LayoutMode === 'normal' && session.LayoutHTML) {
+                const grid = document.getElementById('classroom_grid');
+                if(grid) grid.innerHTML = session.LayoutHTML;
+            } else if (session.LayoutMode === 'upload' && session.LayoutHTML) {
+                const preview = document.getElementById('slc_seating_image_preview');
+                const imgSrc = session.LayoutHTML.startsWith('http') ? session.LayoutHTML : getEmbeddableUrl(session.LayoutHTML);
+                preview.querySelector('img').src = imgSrc;
+                preview.classList.remove('hidden');
+            }
+
+            // เปลี่ยนหน้าตาปุ่มเพื่อให้รู้ว่ากำลัง "แก้ไข"
+            const btns = document.querySelectorAll('button[onclick^="saveSeatingChart"]');
+            btns.forEach(btn => {
+                btn.innerHTML = '💾 บันทึกการแก้ไข (Update)';
+                btn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+                btn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+            });
+
+            customAlert("เข้าสู่โหมดแก้ไขข้อมูลเปิดชั้นเรียนแล้ว", "info");
+        };
+
+        // 💾 ฟังก์ชันบันทึกข้อมูลและผังที่นั่ง (รองรับโหมด Edit)
         window.saveSeatingChart = async function(modeType = 'normal') {
             const dateVal = document.getElementById('slc_open_date').value;
             const slotVal = document.getElementById('slc_timetable_slot').value;
@@ -11441,22 +11887,34 @@ window.deleteLog = function(logId) {
             if (targetClassGroup && !targetClassGroup.startsWith('ม.')) targetClassGroup = 'ม.' + targetClassGroup;
             if (!targetClassGroup && physicalRoom.includes('/')) targetClassGroup = physicalRoom.startsWith('ม.') ? physicalRoom : 'ม.' + physicalRoom;
 
-            // 💡 พระเอกอยู่ตรงนี้: แพ็ก "ชั้นเรียน" คู่กับ "ห้องตึก"
             let finalRoomString = targetClassGroup;
             if (physicalRoom && physicalRoom !== targetClassGroup && !targetClassGroup.includes(physicalRoom)) {
                 finalRoomString = `${targetClassGroup} (${physicalRoom})`;
             }
 
-            const checkedBuddies = Array.from(document.querySelectorAll('input[name="slc_buddy_cb"]:checked')).map(cb => cb.value);
+            const checkedBuddies = Array.from(document.querySelectorAll('input[name="openclass_buddy_cb"]:checked, input[name="slc_buddy_cb"]:checked')).map(cb => cb.value);
             const buddyNames = checkedBuddies.map(username => {
                 const uInfo = usersDB_Global.find(u => u.Username === username);
                 return uInfo ? uInfo.FullName : username;
             });
 
-            let gridHtml = '';
+            // 💡 แอบแพ็กข้อมูลหัวข้อและความคาดหวัง ยัดลงไปใน JSON ซ่อนไว้ใน MediaID
+            const extraData = {
+                mediaId: document.getElementById('slc_media')?.value || '',
+                topic: document.getElementById('slc_topic')?.value || '',
+                planLink: document.getElementById('slc_lesson_plan_link')?.value || '',
+                expectation: document.getElementById('slc_teacher_expectation')?.value || ''
+            };
+            const packedMediaID = JSON.stringify(extraData);
+
+            let layoutPayload = '';
             if (modeType === 'normal') {
                 const grid = document.getElementById('classroom_grid');
-                if(grid) gridHtml = grid.innerHTML;
+                if(grid) layoutPayload = grid.innerHTML;
+            } else if (modeType === 'upload') {
+                // ถ้าอัปโหลดรูป ให้ส่ง Base64 ไป เดี๋ยวหลังบ้าน (Code.gs) จะเอาไปยัดลง Google Drive ให้เอง!
+                const img = document.getElementById('slc_seating_image_preview').querySelector('img');
+                layoutPayload = img ? img.src : '';
             }
 
             const btns = document.querySelectorAll('button[onclick^="saveSeatingChart"]');
@@ -11466,21 +11924,24 @@ window.deleteLog = function(logId) {
                 btn.disabled = true;
             });
 
+            // 💡 ถ้าเป็นโหมดแก้ไข ให้ใช้ SessionID เดิม ไม่งั้นสร้างใหม่
+            const sessionId = window.editingSLCSessionID || ('SLC-' + Date.now());
+
             const payload = {
                 action: 'saveSLCSession',
                 data: {
-                    SessionID: 'SLC-' + Date.now(),
+                    SessionID: sessionId,
                     Date: dateVal,
                     ModelTeacher: currentUser.FullName,
                     SubjectCode: targetSubject,
-                    Room: finalRoomString, // 👈 ส่งไปแบบแพ็กคู่ เช่น "ม.6/1 (0107)"
+                    Room: finalRoomString,
                     Period: targetPeriod,
                     BuddyTeachers: JSON.stringify(buddyNames),
                     LayoutMode: modeType,
-                    LayoutHTML: gridHtml,
-                    MediaID: document.getElementById('slc_media')?.value || '',
+                    LayoutHTML: layoutPayload,
+                    MediaID: packedMediaID, 
                     Status: 'Active',
-                    ObservationLogs: JSON.stringify({})
+                    ObservationLogs: JSON.stringify({}) // โหมดแก้ (Upsert) จะไม่เอาไปทับ ปลอดภัย 100%
                 }
             };
 
@@ -11488,15 +11949,30 @@ window.deleteLog = function(logId) {
                 const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
                 const result = await res.json();
                 if(result.status === 'success') {
-                    customAlert("สร้างห้องเปิดชั้นเรียนสำเร็จ!", "success");
-                    slcSessionsDB_Global.unshift(payload.data); 
+                    customAlert(result.message, "success");
+                    
+                    // อัปเดต RAM ทันที
+                    if (window.editingSLCSessionID) {
+                        const idx = slcSessionsDB_Global.findIndex(s => s.SessionID === window.editingSLCSessionID);
+                        if(idx > -1) slcSessionsDB_Global[idx] = payload.data;
+                    } else {
+                        slcSessionsDB_Global.unshift(payload.data); 
+                    }
+                    
+                    window.editingSLCSessionID = null; // คืนค่า
                     switchSLCTab('tab-slc-public'); 
+                    
+                    // เปลี่ยนปุ่มกลับเป็นสีเขียวเหมือนเดิม
+                    btns.forEach(btn => {
+                        btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+                        btn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+                    });
                 } else throw new Error(result.message);
             } catch(e) {
                 customAlert("ข้อผิดพลาด: " + e.message, "error");
             } finally {
                 btns.forEach(btn => {
-                    btn.innerHTML = btn.dataset.origTxt;
+                    btn.innerHTML = btn.dataset.origTxt || '💾 บันทึก';
                     btn.disabled = false;
                 });
             }
@@ -11523,7 +11999,7 @@ window.deleteLog = function(logId) {
         let currentEvidenceTarget = null; // เก็บ id ของเด็กที่กำลังจิ้ม
         let observationData = {}; // เก็บข้อมูลพฤติกรรม { stu_123: { note: '...', photo: '...' } }
 
-        // 📢 วาดการ์ดห้องเรียนลงบนกระดาน Tab 4 (ดึงจาก RAM) - อัปเกรด V3
+        // 📢 วาดการ์ดห้องเรียนลงบนกระดาน Tab 4 (พร้อมระบบจำกัดสิทธิ์ดูผล & จัดเรียง)
         window.renderSLCPublicBoard = function() {
             const board = document.getElementById('slc_board_grid');
             if (!board) return;
@@ -11538,10 +12014,7 @@ window.deleteLog = function(logId) {
                 return;
             }
 
-            // 🧠 ลอจิกเรียงเวลา: วันนี้/อนาคต (ใกล้สุดขึ้นก่อน) -> อดีต (ล่าสุดขึ้นก่อน)
-            const now = new Date();
-            now.setHours(0, 0, 0, 0); // ตั้งเวลาเป็นเที่ยงคืนเพื่อเทียบแค่วัน
-
+            const now = new Date(); now.setHours(0, 0, 0, 0); 
             const sortSessions = (sessions) => {
                 const upcoming = sessions.filter(s => new Date(s.Date) >= now).sort((a, b) => new Date(a.Date) - new Date(b.Date));
                 const past = sessions.filter(s => new Date(s.Date) < now).sort((a, b) => new Date(b.Date) - new Date(a.Date));
@@ -11549,7 +12022,22 @@ window.deleteLog = function(logId) {
             };
 
             const mySessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher === currentUser.FullName));
-            const otherSessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher !== currentUser.FullName));
+            let otherSessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher !== currentUser.FullName));
+
+            // 💡 อัปเกรด: จัดเรียง otherSessions ตามกลุ่มสาระฯ และ Sq
+            otherSessions.sort((a,b) => {
+                const uA = usersDB_Global.find(u => u.FullName === a.ModelTeacher) || {};
+                const uB = usersDB_Global.find(u => u.FullName === b.ModelTeacher) || {};
+                const iA = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(uA.Department) !== -1) ? LEARNING_AREAS.indexOf(uA.Department) : 99;
+                const iB = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(uB.Department) !== -1) ? LEARNING_AREAS.indexOf(uB.Department) : 99;
+                if (iA !== iB) return iA - iB;
+                return (parseInt(uA.Sq) || 9999) - (parseInt(uB.Sq) || 9999);
+            });
+
+            // 💡 สกัดสิทธิ์ผู้ใช้งานปัจจุบัน
+            const userRoles = currentUser.Role ? currentUser.Role.split(',').map(r => r.trim()) : [];
+            const isHOAOrAbove = userRoles.some(r => ['HOA', 'AsstDir', 'DepDir', 'Director', 'EmpPngn'].includes(r));
+            const isHOD = userRoles.includes('HOD');
 
             const generateCards = (sessions) => {
                 let html = '';
@@ -11566,43 +12054,63 @@ window.deleteLog = function(logId) {
                     const isPending = pendingBuddies.includes(currentUser.FullName) || pendingBuddies.includes(currentUser.Username);
                     const obsCount = Object.keys(obsLogs).length;
                     
-                    // 💡 ดึงรูปโปรไฟล์
                     const mUser = usersDB_Global.find(u => u.FullName === session.ModelTeacher);
                     const fallbackImg = "[https://ui-avatars.com/api/?name=](https://ui-avatars.com/api/?name=)" + encodeURIComponent(session.ModelTeacher) + "&background=6366f1&color=ffffff";
                     const profileImg = (mUser && mUser.ProfileImage) ? getEmbeddableUrl(mUser.ProfileImage) : fallbackImg;
 
-                    // 💡 เช็คสถานะเวลา
                     const sDate = new Date(session.Date);
                     let timeStatusBadge = '';
-                    if (sDate < now) timeStatusBadge = '<div class="absolute top-0 right-0 bg-gray-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10">⚪ Completed</div>';
+                    if (session.Status === 'Completed') timeStatusBadge = '<div class="absolute top-0 right-0 bg-gray-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10">⚪ Completed</div>';
+                    else if (sDate < now) timeStatusBadge = '<div class="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10 animate-pulse">🟣 Wait Reflection</div>';
                     else if (sDate.getTime() === now.getTime()) timeStatusBadge = '<div class="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10 animate-pulse">🔴 Today</div>';
                     else timeStatusBadge = '<div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl shadow-sm tracking-wider uppercase z-10">🔵 Upcoming</div>';
 
-                    // 💡 สร้างปุ่มหลัก
                     let actionBtn = '';
                     if (isModel) {
                         const reqCount = pendingBuddies.length;
-                        const reqBadge = reqCount > 0 ? `<span class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center animate-bounce">${reqCount}</span>` : '';
-                        actionBtn = `<button onclick="manageSLCRequests('${session.SessionID}')" class="w-full relative bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-xl text-xs font-bold shadow-md transition-all">🔔 คำขอเข้าห้อง ${reqBadge}</button>`;
+                        const reqBadge = reqCount > 0 ? `<span class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center animate-bounce shadow-md">${reqCount}</span>` : '';
+                        
+                        if (session.Status !== 'Completed') {
+                            actionBtn = `
+                            <div class="flex gap-2">
+                                <button onclick="editSLCSession('${session.SessionID}')" class="w-1/3 bg-sky-50 hover:bg-sky-100 text-sky-700 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all border border-sky-200">✏️ แก้ไข</button>
+                                <button onclick="manageSLCRequests('${session.SessionID}')" class="w-2/3 relative bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-xl text-xs font-bold shadow-md transition-all">🔔 คำขอ ${reqBadge}</button>
+                            </div>`;
+                        } else {
+                            actionBtn = `<div class="w-full bg-gray-100 text-gray-500 py-2.5 rounded-xl text-xs font-bold text-center border border-gray-200">✅ ปิดการเปิดชั้นเรียนแล้ว</div>`;
+                        }
                     } else if (isBuddy) {
-                        actionBtn = `<button onclick="enterObservationRoom('${session.SessionID}')" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex justify-center gap-2">👀 สังเกตการณ์</button>`;
+                        if (sDate > now) {
+                            actionBtn = `<button disabled class="w-full bg-gray-100 text-gray-400 py-2.5 rounded-xl text-xs font-bold border border-gray-200 shadow-inner cursor-not-allowed">⏳ รอเวลาเข้าสังเกตการณ์</button>`;
+                        } else if (session.Status === 'Completed') {
+                            actionBtn = `<div class="w-full bg-gray-100 text-gray-500 py-2.5 rounded-xl text-xs font-bold text-center border border-gray-200">✅ ปิดห้องแล้ว</div>`;
+                        } else {
+                            actionBtn = `<button onclick="enterObservationRoom('${session.SessionID}')" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex justify-center gap-2">👀 สังเกตการณ์</button>`;
+                        }
                     } else if (isPending) {
-                        actionBtn = `<button disabled class="w-full bg-amber-100 text-amber-700 py-2.5 rounded-xl text-xs font-bold border border-amber-200 shadow-inner">⏳ รออนุมัติ...</button>`;
+                        actionBtn = `<button disabled class="w-full bg-amber-100 text-amber-700 py-2.5 rounded-xl text-xs font-bold border border-amber-200 shadow-inner cursor-not-allowed">⏳ รออนุมัติ...</button>`;
                     } else {
-                        actionBtn = `<button onclick="requestToJoinSLC('${session.SessionID}')" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex justify-center gap-2">✋ ขอเข้าร่วม</button>`;
+                        if (sDate > now) {
+                            actionBtn = `<button onclick="requestToJoinSLC('${session.SessionID}')" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white py-2.5 rounded-xl text-xs font-black shadow-md transition-all flex justify-center gap-2">✋ ขอเข้าร่วม</button>`;
+                        } else {
+                            actionBtn = `<button disabled class="w-full bg-gray-100 text-gray-400 py-2.5 rounded-xl text-xs font-bold border border-gray-200 shadow-inner cursor-not-allowed">🔒 หมดเวลาขอเข้าร่วม</button>`;
+                        }
                     }
 
-                    // 💡 ปุ่มดูผล (โผล่มาเมื่อมีคนเขียน Log แล้ว)
+                    // 💡 ล็อกกุญแจปุ่มดูผล! ให้เห็นเฉพาะคนที่เกี่ยวข้อง
                     let resultBtn = '';
-                    if (obsCount > 0) {
-                        resultBtn = `<button onclick="openSLCResultsModal('${session.SessionID}')" class="w-full mt-2 bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-200 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex justify-center items-center gap-1">📊 ดูผลสังเกตการณ์</button>`;
+                    const isSameDept = isHOD && mUser?.Department === currentUser.Department;
+                    const canViewResults = isModel || isBuddy || isSameDept || isHOAOrAbove;
+
+                    if (obsCount > 0 && canViewResults) {
+                        resultBtn = `<button onclick="openSLCResultsModal('${session.SessionID}')" class="w-full mt-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex justify-center items-center gap-1">📊 ดูผลสังเกตการณ์</button>`;
                     }
 
                     html += `
-                    <div class="bg-white rounded-2xl p-5 border border-indigo-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group flex flex-col">
+                    <div class="bg-white rounded-2xl p-5 border ${session.Status === 'Completed' ? 'border-gray-200 opacity-80' : 'border-indigo-100 shadow-sm hover:shadow-lg hover:-translate-y-1'} transition-all relative overflow-hidden group flex flex-col">
                         ${timeStatusBadge}
                         <div class="flex items-center gap-4 mb-4 border-b border-gray-100 pb-4 relative z-10">
-                            <img src="${profileImg}" class="w-12 h-12 rounded-2xl object-cover border-2 border-indigo-100 shadow-sm">
+                            <img src="${profileImg}" crossorigin="anonymous" class="w-12 h-12 rounded-2xl object-cover border-2 border-indigo-100 shadow-sm">
                             <div>
                                 <h4 class="font-black text-gray-800 text-sm truncate w-40" title="${session.ModelTeacher}">${session.ModelTeacher}</h4>
                                 <p class="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-1">วิชา: ${session.SubjectCode} (ห้อง ${session.Room})</p>
@@ -11628,6 +12136,101 @@ window.deleteLog = function(logId) {
                 <div class="col-span-full border-b-2 border-gray-300 pb-2 mt-6 mb-2"><h4 class="text-xl font-black text-gray-700 flex items-center gap-2">🌐 การเปิดชั้นเรียนของเพื่อนครู</h4></div>
                 ${generateCards(otherSessions)}
             `;
+        };
+
+        // 🚪 Buddy กดเข้าห้องสังเกตการณ์ (แสดงรูปที่อัปโหลดและเป้าหมายของ Model Teacher)
+        window.enterObservationRoom = function(sessionId) {
+            const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
+            if(!session) return customAlert("ไม่พบข้อมูลห้องเรียนนี้", "error");
+
+            activeSLC_SessionData = session;
+            observationData = {}; 
+
+            try {
+                const allLogs = JSON.parse(session.ObservationLogs || "{}");
+                if (allLogs[currentUser.FullName]) observationData = allLogs[currentUser.FullName];
+            } catch(e){}
+
+            document.getElementById('obs_status_badge').classList.remove('hidden');
+            
+            const sInfo = subjectsDB_Global.find(sub => sub.SubjectCode === session.SubjectCode) || {};
+            const subjectName = sInfo.SubjectName ? `${session.SubjectCode} ${sInfo.SubjectName}` : session.SubjectCode;
+            
+            // 💡 ดึงหัวข้อและแผนการสอนที่ซ่อนไว้มาแสดงโชว์ให้ Buddy เห็นชัดๆ!
+            try {
+                const extra = JSON.parse(session.MediaID || "{}");
+                let linkHtml = extra.planLink ? ` | <a href="${extra.planLink}" target="_blank" class="text-sky-600 underline hover:text-sky-800">📄 ดูแผนการสอน</a>` : '';
+                let topicHtml = extra.topic ? `<span class="text-indigo-600 font-bold mt-1 inline-block">🎯 หัวข้อ: ${extra.topic}</span>` : '';
+                document.getElementById('obs_subtitle').innerHTML = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${subjectName} (ชั้น ${session.Room}) <br> ${topicHtml}${linkHtml}`;
+            } catch(e) {
+                document.getElementById('obs_subtitle').textContent = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${subjectName} (ชั้น ${session.Room})`;
+            }
+
+            const gridView = document.getElementById('observation_grid_view');
+            const listContainer = document.getElementById('obs_list_container');
+            
+            // 💡 แก้ปัญหาผังที่นั่งโหมดอัปโหลดรูป
+            if (session.LayoutMode === 'normal' && session.LayoutHTML) {
+                gridView.innerHTML = session.LayoutHTML;
+                gridView.className = 'flex-1 relative w-full h-full mt-4 p-2 overflow-y-auto no-scrollbar pb-20 bg-white rounded-xl shadow-inner border border-gray-200 flex items-center justify-center'; 
+                
+                const allDesks = gridView.querySelectorAll('.desk-slot');
+                allDesks.forEach(desk => {
+                    desk.removeAttribute('ondrop'); desk.removeAttribute('ondragover'); desk.draggable = false;
+                    desk.classList.remove('cursor-move', 'hover:border-indigo-400', 'hover:border-rose-400');
+                    const student = desk.querySelector('.student-card');
+                    if(student) {
+                        student.removeAttribute('draggable'); student.removeAttribute('ondragstart');
+                        student.classList.remove('cursor-grab', 'active:cursor-grabbing');
+                        student.classList.add('cursor-pointer', 'hover:bg-indigo-100', 'hover:scale-105', 'transition-transform');
+                        const stuId = student.id; const stuName = student.querySelector('.student-name')?.textContent || 'นักเรียน';
+                        student.onclick = (e) => { e.stopPropagation(); openEvidenceModal(stuId, stuName); };
+                        if(observationData[stuId]) renderEvidenceBadge(student, observationData[stuId]);
+                    }
+                });
+            } else if (session.LayoutMode === 'upload' && session.LayoutHTML) {
+                // 💡 ถ้าเป็นรูปภาพที่อัปโหลดไว้ ให้เอามันมาโชว์เลย!
+                const imgSrc = session.LayoutHTML.startsWith('http') ? session.LayoutHTML : getEmbeddableUrl(session.LayoutHTML);
+                gridView.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center justify-start overflow-y-auto no-scrollbar pb-20 pt-4">
+                        <img src="${imgSrc}" crossorigin="anonymous" class="max-w-full rounded-xl border-2 border-indigo-200 shadow-md mb-4 object-contain">
+                        <p class="text-xs text-gray-500 font-bold bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">ผังที่นั่งแบบรูปภาพ ไม่สามารถจดพฤติกรรมโดยการคลิกที่โต๊ะได้ กรุณาเปลี่ยนไปใช้ "โหมดรายชื่อ" แทนครับ</p>
+                    </div>
+                `;
+            } else {
+                gridView.innerHTML = '<div class="text-center text-gray-500 font-bold py-10">ห้องนี้ไม่ได้จัดผังที่นั่ง กรุณาดูแบบรายชื่อครับ</div>';
+            }
+
+            listContainer.innerHTML = '';
+            const actualClassGroup = String(session.Room).split(' ')[0]; 
+            const targetRoomClean = actualClassGroup.replace('ม.', '').trim();
+            
+            const roomStudents = studentsDB_Global.filter(s => {
+                const dbRoomClean = String(s.Room).replace('ม.', '').trim();
+                return dbRoomClean === targetRoomClean;
+            });
+            
+            if (roomStudents.length === 0) {
+                 listContainer.innerHTML = `<div class="col-span-full py-10 text-center text-rose-500 font-bold bg-white rounded-xl border border-rose-200 shadow-sm">ไม่พบรายชื่อนักเรียนชั้น ${targetRoomClean} ในระบบ!</div>`;
+            }
+
+            roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
+                const stuId = `stu_${s.StudentID}`;
+                const hasData = observationData[stuId];
+                const badge = hasData ? `<span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded shadow ml-2">บันทึกแล้ว</span>` : '';
+                
+                listContainer.innerHTML += `
+                <div onclick="openEvidenceModal('${stuId}', '${s.FirstName} ${s.LastName}')" class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 bg-indigo-100 text-indigo-700 flex items-center justify-center rounded-full text-xs font-bold">${s.No}</span>
+                        <span class="text-xs font-bold text-gray-700 group-hover:text-indigo-700 transition-colors">${s.FirstName} ${s.LastName}</span>
+                    </div>
+                    <div id="list_badge_${stuId}">${badge}</div>
+                </div>`;
+            });
+
+            switchSLCTab('tab-slc-observe');
+            toggleObserveMode(session.LayoutMode === 'normal' ? 'grid' : 'list');
         };
         // 🙋 ฟังก์ชันให้คนนอกกด "ขอเข้าร่วม"
         window.requestToJoinSLC = function(sessionId) {
@@ -11735,85 +12338,6 @@ window.deleteLog = function(logId) {
 
         // 🚪 Buddy กดเข้าห้องสังเกตการณ์จากหน้ากระดาน (Tab 4 -> Tab 3)
         let activeSLC_SessionData = null; 
-
-        window.enterObservationRoom = function(sessionId) {
-            const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
-            if(!session) return customAlert("ไม่พบข้อมูลห้องเรียนนี้", "error");
-
-            activeSLC_SessionData = session;
-            observationData = {}; 
-
-            try {
-                const allLogs = JSON.parse(session.ObservationLogs || "{}");
-                if (allLogs[currentUser.FullName]) observationData = allLogs[currentUser.FullName];
-            } catch(e){}
-
-            document.getElementById('obs_status_badge').classList.remove('hidden');
-            
-            const sInfo = subjectsDB_Global.find(sub => sub.SubjectCode === session.SubjectCode) || {};
-            const subjectName = sInfo.SubjectName ? `${session.SubjectCode} ${sInfo.SubjectName}` : session.SubjectCode;
-            // โชว์ป้ายชื่อห้องให้เห็นครบๆ ไปเลย
-            document.getElementById('obs_subtitle').textContent = `ผู้สอน: ${session.ModelTeacher} | วิชา: ${subjectName} (ชั้น ${session.Room})`;
-
-            const gridView = document.getElementById('observation_grid_view');
-            const listView = document.getElementById('observation_list_view');
-            const listContainer = document.getElementById('obs_list_container');
-            
-            if (session.LayoutMode === 'normal' && session.LayoutHTML) {
-                gridView.innerHTML = session.LayoutHTML;
-                gridView.className = 'flex-1 relative w-full h-full mt-4 p-2 overflow-y-auto no-scrollbar pb-20 bg-white rounded-xl shadow-inner border border-gray-200 flex items-center justify-center'; 
-                
-                const allDesks = gridView.querySelectorAll('.desk-slot');
-                allDesks.forEach(desk => {
-                    desk.removeAttribute('ondrop'); desk.removeAttribute('ondragover'); desk.draggable = false;
-                    desk.classList.remove('cursor-move', 'hover:border-indigo-400', 'hover:border-rose-400');
-                    const student = desk.querySelector('.student-card');
-                    if(student) {
-                        student.removeAttribute('draggable'); student.removeAttribute('ondragstart');
-                        student.classList.remove('cursor-grab', 'active:cursor-grabbing');
-                        student.classList.add('cursor-pointer', 'hover:bg-indigo-100', 'hover:scale-105', 'transition-transform');
-                        const stuId = student.id; const stuName = student.querySelector('.student-name')?.textContent || 'นักเรียน';
-                        student.onclick = (e) => { e.stopPropagation(); openEvidenceModal(stuId, stuName); };
-                        if(observationData[stuId]) renderEvidenceBadge(student, observationData[stuId]);
-                    }
-                });
-            } else {
-                gridView.innerHTML = '<div class="text-center text-gray-500 font-bold py-10">ห้องนี้ไม่ได้จัดผังที่นั่ง กรุณาดูแบบรายชื่อครับ</div>';
-            }
-
-            // 💡 พระเอกจุดที่ 2: หั่นเอาแค่ข้อความก้อนแรกก่อนเว้นวรรค (เอาแค่ "ม.6/1") มาใช้ค้นหาเด็ก
-            listContainer.innerHTML = '';
-            const actualClassGroup = String(session.Room).split(' ')[0]; // แยก "ม.6/1 (0107)" เป็น ["ม.6/1", "(0107)"] แล้วเอาตัวแรก
-            const targetRoomClean = actualClassGroup.replace('ม.', '').trim();
-            
-            const roomStudents = studentsDB_Global.filter(s => {
-                const dbRoomClean = String(s.Room).replace('ม.', '').trim();
-                return dbRoomClean === targetRoomClean;
-            });
-            
-            if (roomStudents.length === 0) {
-                 listContainer.innerHTML = `<div class="col-span-full py-10 text-center text-rose-500 font-bold bg-white rounded-xl border border-rose-200 shadow-sm">ไม่พบรายชื่อนักเรียนชั้น ${targetRoomClean} ในระบบ!</div>`;
-            }
-
-            roomStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
-                const stuId = `stu_${s.StudentID}`;
-                const hasData = observationData[stuId];
-                const badge = hasData ? `<span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded shadow ml-2">บันทึกแล้ว</span>` : '';
-                
-                listContainer.innerHTML += `
-                <div onclick="openEvidenceModal('${stuId}', '${s.FirstName} ${s.LastName}')" class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all flex items-center justify-between group">
-                    <div class="flex items-center gap-3">
-                        <span class="w-6 h-6 bg-indigo-100 text-indigo-700 flex items-center justify-center rounded-full text-xs font-bold">${s.No}</span>
-                        <span class="text-xs font-bold text-gray-700 group-hover:text-indigo-700 transition-colors">${s.FirstName} ${s.LastName}</span>
-                    </div>
-                    <div id="list_badge_${stuId}">${badge}</div>
-                </div>`;
-            });
-
-            switchSLCTab('tab-slc-observe');
-            toggleObserveMode(session.LayoutMode === 'normal' ? 'grid' : 'list');
-        };
-
         // 🎛️ ปุ่มสลับดูผัง vs ดูกล่องชื่อ
         window.toggleObserveMode = function(mode) {
             document.getElementById('observation_grid_view').classList.toggle('hidden', mode !== 'grid');
@@ -11823,6 +12347,77 @@ window.deleteLog = function(logId) {
             document.getElementById('btn-obs-list').className = mode === 'list' ? 'flex-1 px-4 py-1.5 text-xs font-bold rounded-md bg-indigo-600 text-white shadow-sm transition-all' : 'flex-1 px-4 py-1.5 text-xs font-bold rounded-md text-gray-600 hover:bg-gray-200 transition-all bg-transparent';
         };
 
+        // ==========================================
+        // 📸 ระบบจัดการรูปภาพ Evidence V.2 (รองรับ 5 รูป + JPEG Compression)
+        // ==========================================
+        window.tempEvidencePhotos = []; // ความจำชั่วคราวเก็บรูป
+
+        // 🧠 สมองกลบีบอัดรูปเป็น JPEG
+        window.compressToJPEG = function(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width; canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8)); // 💡 บีบอัดเป็น JPEG 80% ป้องกันไฟล์บวม
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        window.processEvidencePhotos = async function(input) {
+            const files = input.files;
+            if (!files || files.length === 0) return;
+            
+            if (tempEvidencePhotos.length + files.length > 5) {
+                customAlert('อัปโหลดรูปได้สูงสุด 5 รูปครับ', 'warning');
+                input.value = ''; return;
+            }
+
+            for(let i=0; i<files.length; i++) {
+                if (files[i].size > 5 * 1024 * 1024) {
+                    customAlert(`ไฟล์ ${files[i].name} ใหญ่เกิน 5MB ข้ามการอัปโหลดไฟล์นี้`, 'warning');
+                    continue;
+                }
+                const jpegBase64 = await compressToJPEG(files[i]);
+                tempEvidencePhotos.push(jpegBase64);
+            }
+            
+            renderEvidencePhotoPreview();
+            input.value = ''; // เคลียร์ input เพื่อให้กดเลือกรูปเดิมซ้ำได้
+        };
+
+        window.renderEvidencePhotoPreview = function() {
+            const preview = document.getElementById('evPhotoPreview');
+            if (tempEvidencePhotos.length === 0) {
+                preview.classList.add('hidden'); preview.innerHTML = '';
+                return;
+            }
+            preview.classList.remove('hidden');
+            preview.classList.add('grid');
+            
+            let html = '';
+            tempEvidencePhotos.forEach((src, idx) => {
+                html += `
+                <div class="relative h-24 rounded-lg overflow-hidden border border-gray-300 shadow-sm group">
+                    <img src="${src}" class="w-full h-full object-cover">
+                    <button onclick="removeEvidencePhoto(${idx})" class="absolute top-1 right-1 bg-rose-500/80 hover:bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-black shadow backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
+                </div>`;
+            });
+            preview.innerHTML = html;
+        };
+
+        window.removeEvidencePhoto = function(idx) {
+            tempEvidencePhotos.splice(idx, 1);
+            renderEvidencePhotoPreview();
+        };
+
         // 📝 เปิดหน้าต่างจดบันทึก (ภาพรวมครู)
         window.openGeneralEvidenceModal = function() {
             if(!activeSLC_SessionData) return customAlert("กรุณาเข้าห้องสังเกตการณ์ก่อนครับ");
@@ -11830,22 +12425,23 @@ window.deleteLog = function(logId) {
             
             document.getElementById('evIcon').textContent = '🌟';
             document.getElementById('evTitleText').textContent = 'ภาพรวมชั้นเรียน และ เทคนิคการสอน';
-            document.getElementById('evGeneralSection').classList.remove('hidden'); // โชว์ Checkbox ประเมินครู
+            document.getElementById('evGeneralSection').classList.remove('hidden'); 
             document.getElementById('studentBehaviorGrid').classList.add('hidden');
             document.getElementById('teacherBehaviorGrid').classList.remove('hidden');
-            const data = observationData[currentEvidenceTarget] || { note: '', photo: null, tags: [] };
-            document.getElementById('evNote').value = data.note;
+            
+            const data = observationData[currentEvidenceTarget] || { note: '', photos: [], tags: [] };
+            document.getElementById('evNote').value = data.note || '';
             document.getElementById('evPhoto').value = '';
             
-            // ติ๊ก Checkbox ของเก่า
-            document.querySelectorAll('#evGeneralCheckboxes input[type="checkbox"]').forEach(cb => {
-                cb.checked = (data.tags || []).includes(cb.value);
+            // 💡 อัปเดต: โหลดค่า Checkbox เดิมมาติ๊กให้ (ถอดเครื่องหมาย ✅ ❌ ออกก่อนเทียบ)
+            document.querySelectorAll('#evGeneralCheckboxes input[type="checkbox"], #teacherBehaviorGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = (data.tags || []).some(t => t.replace(/[✅❌]/g, '').trim() === cb.value.trim());
             });
             
-            const preview = document.getElementById('evPhotoPreview');
-            const imgEl = document.getElementById('evImgElement');
-            if(data.photo) { imgEl.src = data.photo; preview.classList.remove('hidden'); } 
-            else { imgEl.src = ''; preview.classList.add('hidden'); }
+            // 💡 โหลดรูปเดิมมาใส่ RAM
+            if (data.photo && !data.photos) data.photos = [data.photo]; // Backward compatibility
+            tempEvidencePhotos = data.photos ? [...data.photos] : [];
+            renderEvidencePhotoPreview();
             
             document.getElementById('evidenceModal').classList.remove('hidden');
         };
@@ -11855,17 +12451,23 @@ window.deleteLog = function(logId) {
             currentEvidenceTarget = stuId;
             document.getElementById('evIcon').textContent = '📝';
             document.getElementById('evTitleText').textContent = 'บันทึกพฤติกรรม: ' + stuName;
-            document.getElementById('evGeneralSection').classList.add('hidden'); // ซ่อน Checkbox ประเมินครู
+            document.getElementById('evGeneralSection').classList.add('hidden'); 
             document.getElementById('studentBehaviorGrid').classList.remove('hidden');
             document.getElementById('teacherBehaviorGrid').classList.add('hidden');
-            const data = observationData[stuId] || { note: '', photo: null };
-            document.getElementById('evNote').value = data.note;
-            document.getElementById('evPhoto').value = '';
             
-            const preview = document.getElementById('evPhotoPreview');
-            const imgEl = document.getElementById('evImgElement');
-            if(data.photo) { imgEl.src = data.photo; preview.classList.remove('hidden'); } 
-            else { imgEl.src = ''; preview.classList.add('hidden'); }
+            const data = observationData[stuId] || { note: '', photos: [], tags: [] };
+            document.getElementById('evNote').value = data.note || '';
+            document.getElementById('evPhoto').value = '';
+
+            // 💡 อัปเดต: โหลดค่า Checkbox เด็กเดิมมาติ๊กให้ 
+            document.querySelectorAll('#studentBehaviorGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = (data.tags || []).some(t => t.replace(/[✅❌]/g, '').trim() === cb.value.trim());
+            });
+            
+            // 💡 โหลดรูปเดิมมาใส่ RAM
+            if (data.photo && !data.photos) data.photos = [data.photo]; // Backward compatibility
+            tempEvidencePhotos = data.photos ? [...data.photos] : [];
+            renderEvidencePhotoPreview();
             
             document.getElementById('evidenceModal').classList.remove('hidden');
         };
@@ -11873,30 +12475,36 @@ window.deleteLog = function(logId) {
         window.closeEvidenceModal = function() {
             document.getElementById('evidenceModal').classList.add('hidden');
             currentEvidenceTarget = null;
+            tempEvidencePhotos = []; // ล้างแรมรูปทิ้ง
         };
 
         window.saveEvidence = function() {
             if(!currentEvidenceTarget) return;
-            
             const note = document.getElementById('evNote').value;
-            const imgEl = document.getElementById('evImgElement');
-            const photo = document.getElementById('evPhotoPreview').classList.contains('hidden') ? null : imgEl.src;
+            const photosToSave = [...tempEvidencePhotos]; 
             
             if(currentEvidenceTarget === 'GENERAL_CLASS') {
+                // 💡 กวาด Checkbox ภาพรวม และแยกบวก/ลบ ของครู
                 const tags = Array.from(document.querySelectorAll('#evGeneralCheckboxes input[type="checkbox"]:checked')).map(cb => cb.value);
-                observationData[currentEvidenceTarget] = { note, photo, tags };
-            } else {
-                observationData[currentEvidenceTarget] = { note, photo };
+                const teacherPos = Array.from(document.querySelectorAll('#teacher_positive_list input[type="checkbox"]:checked')).map(cb => '✅ ' + cb.value);
+                const teacherNeg = Array.from(document.querySelectorAll('#teacher_negative_list input[type="checkbox"]:checked')).map(cb => '❌ ' + cb.value);
                 
-                // ติดเข็มกลัดโหมด Grid
+                const allTags = [...tags, ...teacherPos, ...teacherNeg];
+                observationData[currentEvidenceTarget] = { note, photos: photosToSave, tags: allTags };
+            } else {
+                // 💡 กวาด Checkbox พฤติกรรมเด็ก (แยกบวก/ลบ ให้ AI แยกแยะง่าย)
+                const stuPos = Array.from(document.querySelectorAll('#behavior_positive_list input[type="checkbox"]:checked')).map(cb => '✅ ' + cb.value);
+                const stuNeg = Array.from(document.querySelectorAll('#behavior_negative_list input[type="checkbox"]:checked')).map(cb => '❌ ' + cb.value);
+                
+                const allTags = [...stuPos, ...stuNeg];
+                observationData[currentEvidenceTarget] = { note, photos: photosToSave, tags: allTags };
+                
                 const stuCard = document.getElementById('observation_grid_view').querySelector('#' + currentEvidenceTarget);
                 if(stuCard) renderEvidenceBadge(stuCard, observationData[currentEvidenceTarget]);
                 
-                // ติดเข็มกลัดโหมด List
                 const listBadge = document.getElementById(`list_badge_${currentEvidenceTarget}`);
                 if(listBadge) listBadge.innerHTML = `<span class="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded shadow ml-2">บันทึกแล้ว</span>`;
             }
-            
             closeEvidenceModal();
         };
 
@@ -11905,7 +12513,7 @@ window.deleteLog = function(logId) {
             if(oldBadge) oldBadge.remove();
             let icons = '';
             if(data.note) icons += '📝';
-            if(data.photo) icons += '📸';
+            if(data.photos && data.photos.length > 0) icons += '📸';
             if(icons) stuCard.innerHTML += `<div class="evidence-badge absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full shadow-md z-20 border border-white animate-bounce">${icons}</div>`;
         }
 
@@ -14289,7 +14897,8 @@ window.deleteLog = function(logId) {
         window.switchView = function(viewId) {
             oldSwitchView(viewId);
             if(viewId === 'view-admin') {
-                switchAdminTab('admin-sec-users'); // บังคับเปิดแท็บแรก (จัดการบุคลากร)
+                switchAdminTab('admin-sec-students'); // บังคับเปิดแท็บแรก (จัดการนักเรียน)
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // ย้ำให้มันเลื่อนขึ้นบนสุดเสมอ
             }
         };
         // ==========================================
@@ -14321,8 +14930,8 @@ window.deleteLog = function(logId) {
                 if(godCard) godCard.classList.add('hidden', '!hidden'); // บังคับซ่อนขั้นเด็ดขาด
                 if(adminGrid) { adminGrid.classList.remove('lg:grid-cols-5'); adminGrid.classList.add('lg:grid-cols-4'); }
             }
-            // 👁️ เมนูบริหารงานนิเทศ (ให้ HOA, LttPngn, EmpPngn เห็นได้)
-            const isSupAdmin = currentUser && currentUser.Role && currentUser.Role.split(',').some(r => ['HOA', 'LttPngn', 'EmpPngn'].includes(r.trim()));
+            // 👁️ เมนูบริหารงานนิเทศ (จำกัดสิทธิ์ให้ HOD, HOA, บริหาร, แอดมิน เท่านั้น)
+            const isSupAdmin = currentUser && currentUser.Role && currentUser.Role.split(',').some(r => ['HOD', 'HOA', 'AsstDir', 'DepDir', 'Director', 'LttPngn', 'EmpPngn'].includes(r.trim()));
             const supCard = document.getElementById('card-sup-control');
             if (supCard) {
                 if(isSupAdmin) supCard.classList.remove('hidden', '!hidden');
@@ -15043,7 +15652,7 @@ window.saveStudentDetail = async function() {
                 }
                 
                 // เลื่อนจอลงไปที่เนื้อหา
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                //target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                 // 💡 จุดสกัด: บังคับโหลดข้อมูลตามแท็บที่กดแบบครบวงจร
                 if (secId === 'admin-sec-db' && typeof initRegistrarPanel === 'function') initRegistrarPanel();
@@ -15257,27 +15866,22 @@ window.saveStudentDetail = async function() {
                 const displayName = `${s.Prefix}${s.FirstName} ${s.LastName}`;
                 const shortName = s.Nickname ? `${s.FirstName} (${s.Nickname})` : s.FirstName;
                 
+                // 💡 กลับมาใช้ดีไซน์กล่องรายชื่อปกติแบบ Draggable (ลากวางได้) ไม่ลอยทะลุขอบแล้ว!
                 pool.innerHTML += `
-                <div class="absolute border-2 border-slate-200 bg-white shadow-sm rounded-lg cursor-pointer hover:border-orange-400 hover:shadow-md transition-all flex items-center justify-center overflow-hidden" 
-      style="left: ${s.x || 0}px; top: ${s.y || 0}px; width: 120px; height: 48px; transform: translate(-50%, -50%);" 
-      onclick="if(typeof openStudentObservation === 'function') openStudentObservation('${s.id || s.StudentID || s.No}')">
-      
-      <div class="student-inner flex items-center justify-center gap-1.5 pointer-events-none w-full px-2">
-          <span class="student-no bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] shadow-sm font-bold">${s.No}</span>
-          <span class="student-name truncate text-xs font-bold text-gray-700">${shortName}</span>
-      </div>
+                <div id="stu_${s.StudentID}" draggable="true" ondragstart="drag(event)" class="student-card cursor-grab active:cursor-grabbing p-2 border border-gray-200 shadow-sm bg-white text-xs w-full sm:w-auto rounded-lg hover:border-indigo-400 hover:shadow-md transition-all">
+                    <div class="student-inner flex flex-row items-center gap-1.5 pointer-events-none">
+                        <span class="student-no bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] shadow-sm font-bold">${s.No}</span>
+                        <span class="student-name truncate font-bold text-gray-700">${shortName}</span>
+                    </div>
                 </div>`;
             });
         };
 
         window.finishSLCObservation = async function() {
+            if (!activeSLC_SessionData) return customAlert("ไม่มีห้องเรียนที่กำลังสังเกตการณ์ครับ", "error");
             if (Object.keys(observationData).length === 0) {
-                return customAlert("ยังไม่มีการบันทึกพฤติกรรมเด็กคนไหนเลยครับ", "info");
+                return customAlert("ยังไม่มีการบันทึกพฤติกรรมใดๆ เลยครับ", "info");
             }
-
-            const modelVal = document.getElementById('slc_model').value;
-            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
-            if (!modelInfo) return customAlert("กรุณาตรวจสอบชื่อ Model Teacher ด้วยครับ");
 
             customConfirm("ยืนยันการส่งผลการสังเกตการณ์ใช่หรือไม่?", async () => {
                 const btn = document.getElementById('btnFinishObserve');
@@ -15289,7 +15893,8 @@ window.saveStudentDetail = async function() {
                     const payload = {
                         action: 'submitSLCObservation',
                         data: {
-                            ModelTeacher: modelInfo.FullName, // 💡 ส่งชื่อเต็มขึ้นไปให้ถูก
+                            SessionID: activeSLC_SessionData.SessionID, // 💡 ใช้ ID อ้างอิงชัวร์สุด 100%
+                            ModelTeacher: activeSLC_SessionData.ModelTeacher, // 💡 ดึงจาก Session ที่กดเข้ามาจริงๆ
                             Observer: currentUser.FullName,
                             ObservationData: observationData
                         }
@@ -16551,6 +17156,7 @@ window.saveStudentDetail = async function() {
         // 👁️ Supervision Master Control Logic (The Eye of Sauron)
         // ==========================================
 
+        // ฟังก์ชันสลับแท็บเมนูแผงวิชาการ (อัปเกรดมีแท็บคิวนิเทศ)
         window.toggleSupControlTab = function(tabName) {
             document.getElementById('supc-tab-config').classList.toggle('hidden', tabName !== 'config');
             document.getElementById('supc-tab-matrix').classList.toggle('hidden', tabName !== 'matrix');
@@ -16558,6 +17164,9 @@ window.saveStudentDetail = async function() {
             const rubricTab = document.getElementById('supc-tab-rubric');
             if(rubricTab) rubricTab.classList.toggle('hidden', tabName !== 'rubric');
             
+            const scheduleTab = document.getElementById('supc-tab-schedule');
+            if(scheduleTab) scheduleTab.classList.toggle('hidden', tabName !== 'schedule');
+
             const activeClass = 'flex-1 py-2 text-sm font-bold rounded-lg bg-rose-600 text-white shadow-md transition-all';
             const inactiveClass = 'flex-1 py-2 text-sm font-bold rounded-lg text-rose-700 hover:bg-rose-200 transition-all';
             
@@ -16566,11 +17175,115 @@ window.saveStudentDetail = async function() {
             
             const btnRubric = document.getElementById('btn-supc-rubric');
             if(btnRubric) btnRubric.className = tabName === 'rubric' ? activeClass : inactiveClass;
+
+            const btnSchedule = document.getElementById('btn-supc-schedule');
+            if(btnSchedule) btnSchedule.className = tabName === 'schedule' ? activeClass : inactiveClass;
             
             if(tabName === 'matrix') renderSupMatrixView();
             if(tabName === 'rubric') loadRubricEditor();
+            if(tabName === 'schedule') renderSupSchedule();
         };
 
+        // ฟังก์ชันวาดตารางคิวนิเทศรวม (อัปเกรด V.กรองกรรมการ)
+        window.renderSupSchedule = function() {
+            const tbody = document.getElementById('supScheduleTableBody');
+            const dateFilter = document.getElementById('filterSupScheduleDate').value;
+            const teacherFilter = document.getElementById('filterSupScheduleTeacher')?.value; // 💡 ดึงค่าตัวกรองกรรมการ
+            if(!tbody) return;
+
+            // 💡 แอบยัดรายชื่อกรรมการลง Dropdown ถ้ามันยังว่างอยู่ (อัปเกรดเรียงกลุ่มสาระ + Sq)
+            const tFilterEl = document.getElementById('filterSupScheduleTeacher');
+            if (tFilterEl && tFilterEl.options.length <= 1) {
+                const validTeachers = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User'));
+                
+                validTeachers.sort((a,b) => {
+                    const iA = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(a.Department) !== -1) ? LEARNING_AREAS.indexOf(a.Department) : 99;
+                    const iB = (typeof LEARNING_AREAS !== 'undefined' && LEARNING_AREAS.indexOf(b.Department) !== -1) ? LEARNING_AREAS.indexOf(b.Department) : 99;
+                    if (iA !== iB) return iA - iB;
+                    return (parseInt(a.Sq) || 9999) - (parseInt(b.Sq) || 9999);
+                });
+
+                validTeachers.forEach(u => {
+                    const deptStr = u.Department ? `[${u.Department.substring(0,3)}] ` : '';
+                    tFilterEl.add(new Option(`${deptStr}${u.FullName}`, u.FullName));
+                });
+                if(teacherFilter) tFilterEl.value = teacherFilter; // รักษาสถานะเดิม
+            }
+
+            let allEvents = [];
+
+            // 1. ดึงข้อมูลนิเทศ (Supervision)
+            supervisionDB_Global.forEach(s => {
+                if(s.Status !== 'Pending') {
+                    let sups = []; try { sups = JSON.parse(s.Supervisors || "[]"); } catch(e){}
+                    allEvents.push({
+                        type: 'Supervision', dateRaw: s.TargetDate, period: s.Period,
+                        teacher: s.TeacherName, subject: s.SubjectData, observers: sups
+                    });
+                }
+            });
+
+            // 2. ดึงข้อมูล Open Class (SLC)
+            slcSessionsDB_Global.forEach(s => {
+                let buddies = []; try { buddies = JSON.parse(s.BuddyTeachers || "[]"); } catch(e){}
+                allEvents.push({
+                    type: 'SLC', dateRaw: s.Date, period: s.Period,
+                    teacher: s.ModelTeacher, subject: `${s.SubjectCode} (${s.Room})`, observers: buddies
+                });
+            });
+
+            // 💡 กรองตามกรรมการ (ถ้ามีการเลือก)
+            if (teacherFilter) {
+                allEvents = allEvents.filter(e => e.observers.includes(teacherFilter));
+            }
+
+            // กรองวันที่ (ถ้าไม่มี ให้ดูเฉพาะตั้งแต่วันนี้เป็นต้นไป)
+            if (dateFilter) {
+                allEvents = allEvents.filter(e => e.dateRaw.split('T')[0] === dateFilter);
+            } else {
+                const today = new Date(); today.setHours(0,0,0,0);
+                allEvents = allEvents.filter(e => new Date(e.dateRaw) >= today);
+            }
+
+            // จัดเรียง: วันที่ -> คาบเรียน
+            allEvents.sort((a,b) => {
+                const dA = new Date(a.dateRaw); const dB = new Date(b.dateRaw);
+                if(dA.getTime() !== dB.getTime()) return dA - dB;
+                return parseInt(a.period) - parseInt(b.period);
+            });
+
+            tbody.innerHTML = '';
+            if(allEvents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-400 font-bold italic">-- ไม่พบคิวการนิเทศหรือเปิดชั้นเรียน --</td></tr>';
+                return;
+            }
+
+            allEvents.forEach(e => {
+                const dDate = new Date(e.dateRaw).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
+                const typeBadge = e.type === 'Supervision' 
+                    ? '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold border border-rose-200 shadow-sm">👁️ นิเทศ</span>'
+                    : '<span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-200 shadow-sm">🤝 Open Class</span>';
+
+                // 💡 ไฮไลท์ชื่อกรรมการที่ค้นหา ให้เห็นชัดๆ ว่าคนนี้อยู่ตรงไหนของตาราง
+                const observersHtml = e.observers.map(obs => {
+                    if (obs === teacherFilter) return `<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-300 font-black shadow-sm">👉 ${obs}</span>`;
+                    return obs;
+                }).join('<br>');
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors">
+                        <td class="px-4 py-3 align-top whitespace-nowrap">
+                            <div class="font-bold text-gray-800">${dDate}</div>
+                            <div class="text-xs text-rose-600 font-black mt-1">คาบที่ ${e.period}</div>
+                            <div class="mt-1">${typeBadge}</div>
+                        </td>
+                        <td class="px-4 py-3 align-top font-bold text-gray-700">${e.teacher}</td>
+                        <td class="px-4 py-3 align-top text-xs text-gray-600">${e.subject}</td>
+                        <td class="px-4 py-3 align-top text-xs font-bold text-indigo-700 leading-relaxed space-y-1">${observersHtml || '-'}</td>
+                    </tr>
+                `;
+            });
+        };
         // 📅 สมองกลคำนวณสัปดาห์และวันที่ภาษาไทยฉบับสมบูรณ์ (Centralized Date Engine)
         window.getSchoolWeek = function(targetDateStr) {
             // วันเปิดภาคเรียนอ้างอิง (เดี๋ยวเฟสหลังเราค่อยทำที่ตั้งค่าให้ดึงจาก DB ตอนนี้ล็อกเป็น 18 พ.ค. ก่อน)
@@ -16678,6 +17391,9 @@ window.saveStudentDetail = async function() {
             
             const blackEl = document.getElementById('supc_blackout');
             if(blackEl) blackEl.value = conf.settings.blackout || '';
+            // โหลดค่าเงื่อนไข Buddy
+            const buddyRuleEl = document.getElementById('supc_buddy_rule');
+            if(buddyRuleEl) buddyRuleEl.value = conf.settings.buddyRule || 'none';
         };
 
         // 📝 สมองกลอัปเดตข้อมูลรายจุด (Real-time update)
@@ -16821,6 +17537,7 @@ window.saveStudentDetail = async function() {
 
             try {
                 // รวบรวมค่า Settings นอกรอบการนิเทศ (แพ็คโควตาทั้ง 4 กลุ่มเป็น JSON)
+                masterSwitches_Global['SupervisionMaster'].settings.buddyRule = document.getElementById('supc_buddy_rule').value || 'none';
                 masterSwitches_Global['SupervisionMaster'].settings.quota = {
                     exec: document.getElementById('supc_q_exec').value || 5,
                     acad: document.getElementById('supc_q_acad').value || 5,
@@ -16843,7 +17560,7 @@ window.saveStudentDetail = async function() {
             }
         };
 
-        // 👁️ สมองกลวาดตารางโหมดเนตรวงแหวน (V.Dynamic Columns อัปเกรดนับคอลัมน์ตามรอบจริง)
+        // 👁️ สมองกลวาดตารางโหมดเนตรวงแหวน (V.Security Filter)
         window.renderSupMatrixView = function() {
             const tbody = document.getElementById('supcMatrixBody');
             const theadRow = document.getElementById('supcMatrixHeaderRow');
@@ -16851,26 +17568,34 @@ window.saveStudentDetail = async function() {
             
             tbody.innerHTML = '';
             
-            // 🧠 1. ดึงข้อมูลรอบทั้งหมดจาก Config ของแก
+            // 1. ดึงข้อมูลรอบทั้งหมดจาก Config
             const roundsConfig = masterSwitches_Global['SupervisionMaster']?.rounds || [];
             
-            // 🧠 2. วาดหัวตารางแบบ Dynamic
+            // 2. วาดหัวตารางแบบ Dynamic
             let headHtml = `
                 <th class="px-4 py-3 font-bold text-left w-56 sticky left-0 bg-slate-800 border-r border-slate-600 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">รายชื่อครูผู้สอน</th>
                 <th class="px-4 py-3 font-bold border-r border-slate-600">กลุ่มสาระฯ</th>
                 <th class="px-4 py-3 font-bold text-indigo-300 border-r border-slate-600 w-32">บทบาท / โควตา</th>
             `;
-            // ลูปสร้างหัวคอลัมน์รอบการนิเทศตามที่มีจริง
             roundsConfig.forEach((r, idx) => {
                 const color = r.type === 'auto' ? 'text-amber-300' : 'text-rose-300';
-                const shortName = r.name.split(':')[0] || `รอบที่ ${idx + 1}`; // ดึงชื่อสั้นๆ มาโชว์
+                const shortName = r.name.split(':')[0] || `รอบที่ ${idx + 1}`;
                 headHtml += `<th class="px-4 py-3 font-bold ${color} border-r border-slate-600">${shortName}</th>`;
             });
             theadRow.innerHTML = headHtml;
 
-            // 🧠 3. จัดการข้อมูลครูและวาดเนื้อหาตาราง
+            // 💡 3. จัดการสิทธิ์การมองเห็นข้อมูลครู (HOD เห็นแค่คนในหมวด)
+            const userRoles = currentUser.Role ? currentUser.Role.split(',').map(r => r.trim()) : [];
+            const isHOAOrAbove = userRoles.some(r => ['HOA', 'AsstDir', 'DepDir', 'Director', 'EmpPngn'].includes(r));
+            
             let validTeachers = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User'));
             
+            // ล็อกให้หัวหน้าหมวดเห็นเฉพาะลูกน้องในหมวดตัวเอง
+            if (!isHOAOrAbove && userRoles.includes('HOD')) {
+                validTeachers = validTeachers.filter(u => u.Department === currentUser.Department);
+            }
+            
+            // จัดเรียง กลุ่มสาระฯ -> อาวุโส
             validTeachers.sort((a,b) => {
                 const iA = LEARNING_AREAS.indexOf(a.Department) !== -1 ? LEARNING_AREAS.indexOf(a.Department) : 99;
                 const iB = LEARNING_AREAS.indexOf(b.Department) !== -1 ? LEARNING_AREAS.indexOf(b.Department) : 99;
@@ -16898,14 +17623,14 @@ window.saveStudentDetail = async function() {
                 const getStatusHtml = (index) => {
                     const s = mySups[index];
                     if(!s) return `<div class="bg-rose-50 text-rose-500 font-bold px-2 py-1 rounded text-xs border border-rose-100 w-max mx-auto">🔴 ยังไม่เริ่ม</div>`;
-                    if(s.Status === 'Evaluated') return `<div class="bg-emerald-50 text-emerald-600 font-bold px-2 py-1 rounded text-xs border border-emerald-100 w-max mx-auto shadow-sm">🟢 ผ่านแล้ว</div>`;
+                    // 💡 อัปเกรด: เปลี่ยนปุ่ม "ผ่านแล้ว" ให้กดเข้าไปดูผลได้!
+                    if(s.Status === 'Evaluated') return `<button onclick="viewSupReceipt('${s.SupID}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold px-2 py-1 rounded text-xs border border-emerald-200 w-max mx-auto shadow-sm transition-colors cursor-pointer" title="คลิกเพื่อดูใบประเมิน">🟢 ผ่านแล้ว (ดูผล)</button>`;
                     return `<div class="bg-amber-50 text-amber-500 font-bold px-2 py-1 rounded text-xs border border-amber-100 w-max mx-auto animate-pulse">🟡 รอประเมิน</div>`;
                 };
 
                 const roleInfo = determineSupRole(u);
                 const roleBadge = `<div class="bg-${roleInfo.color}-50 text-${roleInfo.color}-700 border border-${roleInfo.color}-200 px-2 py-1 rounded-lg text-[10px] font-bold w-full text-center shadow-sm">${roleInfo.name}<br><span class="text-xs opacity-80">โควตา: ${roleInfo.limit}/สัปดาห์</span></div>`;
 
-                // เริ่มวาดแถวของครูคนนั้น (ล็อก 3 คอลัมน์แรก)
                 let rowHtml = `
                 <tr class="hover:bg-rose-50/50 transition-colors border-b border-gray-100">
                     <td class="px-4 py-3 font-bold text-gray-800 text-left sticky left-0 bg-white border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] truncate max-w-[150px]" title="${u.FullName}">${u.FullName}</td>
@@ -16913,9 +17638,8 @@ window.saveStudentDetail = async function() {
                     <td class="px-2 py-3 border-r border-gray-100 bg-white align-middle">${roleBadge}</td>
                 `;
 
-                // ลูปวาดคอลัมน์สถานะตามจำนวนรอบที่มีจริง!
                 roundsConfig.forEach((r, idx) => {
-                    const bgStr = idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'; // สลับสีพื้นหลังให้ดูง่าย
+                    const bgStr = idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white';
                     rowHtml += `<td class="px-4 py-3 border-r border-gray-100 ${bgStr} align-middle">${getStatusHtml(idx)}</td>`;
                 });
 
@@ -17170,13 +17894,24 @@ window.saveStudentDetail = async function() {
             currentViewingSLC = session;
 
             document.getElementById('slcResultSubtitle').textContent = `วิชา: ${session.SubjectCode} (${session.Room}) | ผู้สอน: ${session.ModelTeacher}`;
-            document.getElementById('slcAISummaryBox').classList.add('hidden');
+            const summaryBox = document.getElementById('slcAISummaryBox');
+            const summaryText = document.getElementById('slcAISummaryText');
             
             const container = document.getElementById('slcLogsContainer');
             container.innerHTML = '';
 
             let logs = {};
             try { logs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+
+            // 💡 สกัดบทสรุปผู้บริหารออกมาก่อน (ถ้าเคยเซฟไว้)
+            if (logs['__EXECUTIVE_SUMMARY__']) {
+                summaryText.value = logs['__EXECUTIVE_SUMMARY__'];
+                summaryBox.classList.remove('hidden');
+                delete logs['__EXECUTIVE_SUMMARY__']; // ลบออกจากการวนลูปโชว์คอมเมนต์รายคน
+            } else {
+                summaryBox.classList.add('hidden');
+                summaryText.value = '';
+            }
 
             const observerNames = Object.keys(logs);
             if (observerNames.length === 0) {
@@ -17186,19 +17921,23 @@ window.saveStudentDetail = async function() {
                     const obsData = logs[obsName];
                     let notesHtml = '';
                     
-                    // ภาพรวมครู
+                    let pImgHtml = ''; let tagsHtml = '';
+                    if (obsData['GENERAL_CLASS'] && obsData['GENERAL_CLASS'].tags && obsData['GENERAL_CLASS'].tags.length > 0) tagsHtml = obsData['GENERAL_CLASS'].tags.join(', ');
+                    if (obsData['GENERAL_CLASS'] && obsData['GENERAL_CLASS'].photos && obsData['GENERAL_CLASS'].photos.length > 0) {
+                        pImgHtml = '<div class="flex gap-2 mt-2 overflow-x-auto pb-2 custom-scrollbar">' + obsData['GENERAL_CLASS'].photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" class="h-20 rounded-lg border border-indigo-200 object-cover shadow-sm cursor-pointer" onclick="window.open(this.src)">`).join('') + '</div>';
+                    }
                     if (obsData['GENERAL_CLASS']) {
-                        const tags = obsData['GENERAL_CLASS'].tags || [];
-                        const tagsHtml = tags.map(t => `<span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px]">${t}</span>`).join(' ');
-                        const pImg = obsData['GENERAL_CLASS'].photo ? `<img src="${obsData['GENERAL_CLASS'].photo}" class="mt-2 h-20 rounded border">` : '';
-                        notesHtml += `<div class="mb-2 p-2 bg-indigo-50/50 rounded-lg border border-indigo-100"><p class="text-xs font-bold text-indigo-800">🌟 ภาพรวมชั้นเรียน: ${tagsHtml}</p><p class="text-xs text-gray-700 mt-1">${obsData['GENERAL_CLASS'].note || '-'}</p>${pImg}</div>`;
+                        notesHtml += `<div class="mb-2 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100"><p class="text-xs font-bold text-indigo-800">🌟 ภาพรวมชั้นเรียน: <span class="font-normal text-gray-700">${tagsHtml ? tagsHtml : '-'}</span></p><p class="text-xs text-gray-700 mt-1 font-bold">บันทึกเพิ่มเติม: <span class="font-normal">${obsData['GENERAL_CLASS'].note || '-'}</span></p>${pImgHtml}</div>`;
                     }
 
-                    // เด็กแต่ละคน
                     Object.keys(obsData).forEach(stuId => {
                         if (stuId !== 'GENERAL_CLASS') {
-                            const pImg = obsData[stuId].photo ? `<img src="${obsData[stuId].photo}" class="mt-2 h-20 rounded border">` : '';
-                            notesHtml += `<div class="mb-2 p-2 bg-white rounded-lg border border-gray-100"><p class="text-[10px] font-bold text-emerald-600">พฤติกรรมเด็ก (${stuId.replace('stu_','รหัส ')}):</p><p class="text-xs text-gray-700 mt-0.5">${obsData[stuId].note || '-'}</p>${pImg}</div>`;
+                            let sImgHtml = ''; let sTagsHtml = '';
+                            if (obsData[stuId].tags && obsData[stuId].tags.length > 0) sTagsHtml = '<p class="text-[10px] text-gray-600 mt-1 font-bold">พฤติกรรมที่พบ: <span class="font-normal">' + obsData[stuId].tags.join(', ') + '</span></p>';
+                            if (obsData[stuId].photos && obsData[stuId].photos.length > 0) {
+                                sImgHtml = '<div class="flex gap-2 mt-2 overflow-x-auto pb-2 custom-scrollbar">' + obsData[stuId].photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" class="h-16 rounded border border-gray-200 object-cover shadow-sm cursor-pointer" onclick="window.open(this.src)">`).join('') + '</div>';
+                            }
+                            notesHtml += `<div class="mb-2 p-3 bg-white rounded-xl border border-gray-100"><p class="text-[10px] font-bold text-emerald-600">เด็ก (${stuId.replace('stu_','รหัส ')}):</p><p class="text-xs text-gray-700 mt-0.5">${obsData[stuId].note || '-'}</p>${sTagsHtml}${sImgHtml}</div>`;
                         }
                     });
 
@@ -17209,10 +17948,93 @@ window.saveStudentDetail = async function() {
                     </div>`;
                 });
             }
-
             document.getElementById('slcResultsModal').classList.remove('hidden');
         };
-        // 📥 วาดและ Export PDF รายงาน Open Class
+
+        // 💡 เปิดกล่องให้พิมพ์สรุปเอง
+        window.enableManualSLCSummary = function() {
+            document.getElementById('slcAISummaryBox').classList.remove('hidden');
+            document.getElementById('slcAISummaryText').focus();
+        };
+
+        // 💡 ให้ AI ร่างสรุปใส่กล่อง
+        window.generateSLCAISummary = async function() {
+            if (!currentViewingSLC) return;
+            const summaryBox = document.getElementById('slcAISummaryBox');
+            const summaryText = document.getElementById('slcAISummaryText');
+            
+            summaryBox.classList.remove('hidden');
+            summaryText.value = 'กำลังอ่านบันทึกและให้ AI ประมวลผล โปรดรอสักครู่...';
+
+            let logs = {};
+            try { logs = JSON.parse(currentViewingSLC.ObservationLogs || "{}"); } catch(e){}
+            
+            let rawNotes = [];
+            Object.values(logs).forEach(obsData => {
+                if (typeof obsData !== 'object') return; // กันพังถ้าเจอตัวแปรแปลกๆ
+                Object.values(obsData).forEach(d => {
+                    if(d.tags && d.tags.length > 0) rawNotes.push(`เทคนิคที่ใช้/พฤติกรรม: ${d.tags.join(', ')}`);
+                    if(d.note && d.note.trim() !== '') rawNotes.push(d.note);
+                });
+            });
+
+            if (rawNotes.length === 0) {
+                summaryText.value = 'ข้อมูลการสังเกตชั้นเรียนไม่เพียงพอสำหรับให้ AI วิเคราะห์ครับ ท่านสามารถพิมพ์สรุปได้ด้วยตนเอง';
+                return;
+            }
+
+            try {
+                const prompt = `จากบันทึกการสังเกตชั้นเรียนแบบ Open Class ต่อไปนี้:\n\n${rawNotes.join('\n')}\n\nจงเขียนสรุปภาพรวม (Executive Summary) สั้นๆ กระชับ แบ่งเป็น 2 หัวข้อ: 1. จุดเด่นที่พบ 2. ข้อเสนอแนะเพื่อการพัฒนา ใช้ภาษาทางการและสร้างสรรค์`;
+                const result = await callGemini(prompt, "คุณคือศึกษานิเทศก์ผู้เชี่ยวชาญการสรุปผลการสอนแบบกัลยาณมิตร");
+                // แปลง Markdown **ตัวหนา** ทิ้งไป เพื่อให้ช่อง Textarea อ่านง่ายๆ
+                summaryText.value = result.replace(/\*\*(.*?)\*\*/g, '$1'); 
+            } catch(e) {
+                summaryText.value = `เกิดข้อผิดพลาดในการเชื่อมต่อ AI: ${e.message} \n\nท่านสามารถพิมพ์สรุปผลได้ด้วยตนเอง`;
+            }
+        };
+
+        // 💡 บันทึกบทสรุปผู้บริหาร ลงฐานข้อมูลเดิม (ซ่อนไว้ในคีย์พิเศษ)
+        window.saveSLCAISummary = async function() {
+            if (!currentViewingSLC) return;
+            const text = document.getElementById('slcAISummaryText').value.trim();
+            if (!text) return customAlert('กรุณาพิมพ์ข้อความสรุปก่อนบันทึกครับ', 'warning');
+
+            const btn = document.getElementById('btnSaveSLCSummary');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle w-3 h-3"></div> บันทึก...';
+            btn.disabled = true;
+
+            try {
+                let allLogs = {};
+                try { allLogs = JSON.parse(currentViewingSLC.ObservationLogs || "{}"); } catch(e){}
+                
+                // ยัดบทสรุปลงไปในกุญแจลับ
+                allLogs['__EXECUTIVE_SUMMARY__'] = text;
+
+                const payload = {
+                    action: 'updateSLCSession',
+                    data: {
+                        SessionID: currentViewingSLC.SessionID,
+                        ObservationLogs: JSON.stringify(allLogs)
+                    }
+                };
+
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    customAlert("บันทึกสรุปภาพรวมเรียบร้อยแล้ว!", "success");
+                    // อัปเดต RAM
+                    currentViewingSLC.ObservationLogs = payload.data.ObservationLogs;
+                } else throw new Error(result.message);
+            } catch(e) {
+                customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
+            } finally {
+                btn.innerHTML = origTxt; 
+                btn.disabled = false;
+            }
+        };
+        // 📥 วาดและ Export PDF รายงาน Open Class (V. Clean Print HTML)
         window.generateSLCReportPDF = async function() {
             if (!currentViewingSLC) return customAlert("ไม่พบข้อมูล", "error");
             
@@ -17233,88 +18055,129 @@ window.saveStudentDetail = async function() {
                 let buddies = [];
                 try { buddies = JSON.parse(session.BuddyTeachers || "[]"); } catch(e){}
 
-                // 1. ดึง AI Summary (ถ้ามี)
-                const aiBox = document.getElementById('slcAISummaryBox');
-                let aiSummaryHtml = '';
-                if (!aiBox.classList.contains('hidden')) {
-                    const aiText = document.getElementById('slcAISummaryText').innerHTML;
-                    aiSummaryHtml = `
-                        <div class="mb-6 break-inside-avoid bg-purple-50 p-4 rounded-xl border border-purple-200">
-                            <h4 class="font-bold text-lg text-purple-900 border-b border-purple-200 pb-2 mb-2">🤖 AI Executive Summary (สรุปภาพรวม)</h4>
-                            <div class="text-sm text-gray-800 leading-relaxed">${aiText}</div>
-                        </div>
-                    `;
-                }
-
-                // 2. ดึงคอมเมนต์ของ Buddy ทุกคน
                 let logs = {};
                 try { logs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+
+                // 1. ดึง Executive Summary
+                let aiSummaryHtml = '';
+                if (logs['__EXECUTIVE_SUMMARY__']) {
+                    const cleanText = logs['__EXECUTIVE_SUMMARY__'].replace(/\n/g, '<br>');
+                    aiSummaryHtml = `
+                        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #9333ea; border-radius: 8px; background-color: #faf5ff; page-break-inside: avoid;">
+                            <h4 style="font-size: 16px; font-weight: bold; color: #6b21a8; margin: 0 0 10px 0; border-bottom: 1px solid #e9d5ff; padding-bottom: 5px;">🎯 สรุปภาพรวมการสังเกตชั้นเรียน (Executive Summary)</h4>
+                            <div style="font-size: 14px; color: #1f2937; line-height: 1.6;">${cleanText}</div>
+                        </div>
+                    `;
+                    delete logs['__EXECUTIVE_SUMMARY__']; // ซ่อนไว้ไม่ให้ไปปนกับของ Buddy
+                }
+
+                // 2. ดึงคอมเมนต์ของ Buddy ทุกคน (ใช้ HTML ธรรมดาล้วนๆ เพื่อให้ PDF ไม่เพี้ยน)
                 let logsHtml = '';
-                
                 const observerNames = Object.keys(logs);
                 if (observerNames.length === 0) {
-                    logsHtml = '<div class="text-center text-gray-500 py-4 italic">ไม่มีบันทึกพฤติกรรมจากผู้สังเกตการณ์</div>';
+                    logsHtml = '<div style="text-align: center; color: #6b7280; padding: 20px;">ไม่มีบันทึกพฤติกรรมจากผู้สังเกตการณ์</div>';
                 } else {
                     observerNames.forEach(obsName => {
                         const obsData = logs[obsName];
                         let notesHtml = '';
                         
-                        // ภาพรวม
+                        // ภาพรวมครู
                         if (obsData['GENERAL_CLASS']) {
-                            const tags = obsData['GENERAL_CLASS'].tags || [];
-                            const tagsHtml = tags.map(t => `[${t}]`).join(' ');
-                            notesHtml += `<div class="mb-2"><p class="text-sm font-bold text-indigo-800">ภาพรวมชั้นเรียน: <span class="font-normal text-gray-600">${tagsHtml}</span></p><p class="text-sm text-gray-700">${obsData['GENERAL_CLASS'].note || '-'}</p></div>`;
+                            let tagsHtml = ''; let pImgHtml = '';
+                            if (obsData['GENERAL_CLASS'].tags && obsData['GENERAL_CLASS'].tags.length > 0) tagsHtml = obsData['GENERAL_CLASS'].tags.join(', ');
+                            if (obsData['GENERAL_CLASS'].photos && obsData['GENERAL_CLASS'].photos.length > 0) {
+                                pImgHtml = '<div style="margin-top: 10px;">' + obsData['GENERAL_CLASS'].photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" style="height: 100px; max-width: 100%; border-radius: 4px; border: 1px solid #e5e7eb; margin-right: 5px;">`).join('') + '</div>';
+                            }
+                            notesHtml += `
+                                <div style="margin-bottom: 10px; padding: 10px; background-color: #e0e7ff; border-radius: 6px;">
+                                    <p style="margin: 0; font-size: 14px; font-weight: bold; color: #1e40af;">🌟 ภาพรวมชั้นเรียน: <span style="font-weight: normal; color: #374151;">${tagsHtml || '-'}</span></p>
+                                    <p style="margin: 5px 0 0 0; font-size: 14px;"><strong>บันทึกเพิ่มเติม:</strong> ${obsData['GENERAL_CLASS'].note || '-'}</p>
+                                    ${pImgHtml}
+                                </div>`;
                         }
 
-                        // รายบุคคล
+                        // เด็กแต่ละคน
                         Object.keys(obsData).forEach(stuId => {
                             if (stuId !== 'GENERAL_CLASS') {
-                                notesHtml += `<div class="mb-2"><p class="text-sm font-bold text-emerald-700">พฤติกรรมนักเรียน (${stuId.replace('stu_','รหัส ')}):</p><p class="text-sm text-gray-700">${obsData[stuId].note || '-'}</p></div>`;
+                                let sTagsHtml = ''; let sImgHtml = '';
+                                if (obsData[stuId].tags && obsData[stuId].tags.length > 0) sTagsHtml = `<p style="margin: 5px 0 0 0; font-size: 12px; color: #4b5563;"><strong>พฤติกรรม:</strong> ${obsData[stuId].tags.join(', ')}</p>`;
+                                if (obsData[stuId].photos && obsData[stuId].photos.length > 0) {
+                                    sImgHtml = '<div style="margin-top: 5px;">' + obsData[stuId].photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" style="height: 80px; max-width: 100%; border-radius: 4px; border: 1px solid #e5e7eb; margin-right: 5px;">`).join('') + '</div>';
+                                }
+                                notesHtml += `
+                                    <div style="margin-bottom: 5px; padding: 8px; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                        <p style="margin: 0; font-size: 12px; font-weight: bold; color: #047857;">เด็ก (${stuId.replace('stu_','รหัส ')}):</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 14px; color: #1f2937;">${obsData[stuId].note || '-'}</p>
+                                        ${sTagsHtml}
+                                        ${sImgHtml}
+                                    </div>`;
                             }
                         });
 
                         logsHtml += `
-                        <div class="mb-4 p-4 border border-gray-300 rounded-xl break-inside-avoid bg-white shadow-sm">
-                            <h5 class="font-bold text-md text-gray-800 border-b border-gray-200 pb-2 mb-2">ผู้สังเกตการณ์: ${obsName}</h5>
-                            ${notesHtml || '<p class="text-sm text-gray-500">ไม่ได้เขียนบันทึกเพิ่มเติม</p>'}
+                        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #d1d5db; border-radius: 8px; background-color: #ffffff; page-break-inside: avoid;">
+                            <h5 style="font-size: 16px; font-weight: bold; margin: 0 0 10px 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; color: #111827;">ผู้สังเกตการณ์: ${obsName}</h5>
+                            ${notesHtml || '<p style="font-size: 14px; color: #6b7280; margin: 0;">ไม่ได้เขียนบันทึกเพิ่มเติม</p>'}
                         </div>`;
                     });
                 }
 
-                // 3. ประกอบร่าง HTML (ยัดลงกระดาษล่องหน)
+                // 3. ประกอบร่าง HTML (ยัดลงกระดาษล่องหน พร้อม Inline CSS เน้นๆ)
                 target.innerHTML = `
-                    <div class="text-center mb-8 border-b-2 border-gray-800 pb-4">
-                        <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" class="w-20 mx-auto object-contain mix-blend-multiply mb-2" alt="โลโก้โรงเรียน">
-                        <h2 class="text-2xl font-bold text-gray-900">รายงานผลการสังเกตการณ์เปิดชั้นเรียน (Open Class)</h2>
-                        <h3 class="text-lg text-gray-700">โรงเรียนวังตะเคียนวิทยาคม</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-6 text-sm bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <div><span class="font-bold text-gray-600">ผู้สอนหลัก:</span> <span class="font-bold text-gray-900">${session.ModelTeacher}</span></div>
-                        <div><span class="font-bold text-gray-600">วันที่:</span> <span class="text-gray-900">${dDate} (คาบ ${session.Period})</span></div>
-                        <div><span class="font-bold text-gray-600">รายวิชา:</span> <span class="text-gray-900">${session.SubjectCode}</span></div>
-                        <div><span class="font-bold text-gray-600">ห้องเรียน:</span> <span class="text-gray-900">${session.Room}</span></div>
-                        <div class="col-span-2"><span class="font-bold text-gray-600">เพื่อนครูคู่คิด (Buddy):</span> <span class="text-gray-900">${buddies.join(', ') || '-'}</span></div>
-                    </div>
+                    <div style="font-family: 'Sarabun', sans-serif; color: #000; line-height: 1.5;">
+                        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1f2937; padding-bottom: 15px;">
+                            <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" style="width: 80px; margin: 0 auto 10px auto; display: block;" alt="โลโก้โรงเรียน">
+                            <h2 style="font-size: 22px; font-weight: bold; margin: 0 0 5px 0;">รายงานผลการสังเกตการณ์เปิดชั้นเรียน (Open Class)</h2>
+                            <h3 style="font-size: 18px; margin: 0;">โรงเรียนวังตะเคียนวิทยาคม</h3>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px; background-color: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 4px 0; width: 50%;"><strong>ผู้สอนหลัก:</strong> ${session.ModelTeacher}</td>
+                                    <td style="padding: 4px 0; width: 50%;"><strong>วันที่:</strong> ${dDate} (คาบ ${session.Period})</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0;"><strong>รายวิชา:</strong> ${session.SubjectCode}</td>
+                                    <td style="padding: 4px 0;"><strong>ห้องเรียน:</strong> ${session.Room}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="padding: 4px 0;"><strong>เพื่อนครูคู่คิด (Buddy):</strong> ${buddies.join(', ') || '-'}</td>
+                                </tr>
+                            </table>
+                        </div>
 
-                    ${aiSummaryHtml}
+                        ${aiSummaryHtml}
 
-                    <div class="mb-4 break-inside-avoid">
-                        <h4 class="font-bold text-lg text-gray-800 border-b-2 border-gray-300 pb-2 mb-4">บันทึกพฤติกรรมจากผู้สังเกตการณ์</h4>
-                        ${logsHtml}
-                    </div>
-                    
-                    <div class="mt-8 pt-8 border-t border-gray-300 text-center text-xs text-gray-500">
-                        เอกสารนี้สร้างโดย WKS Academic System เมื่อ ${new Date().toLocaleString('th-TH')}
+                        <div style="page-break-inside: auto;">
+                            <h4 style="font-size: 18px; font-weight: bold; margin: 0 0 15px 0; border-bottom: 2px solid #d1d5db; padding-bottom: 5px;">บันทึกพฤติกรรมจากผู้สังเกตการณ์</h4>
+                            ${logsHtml}
+                        </div>
+                        
+                        <div style="margin-top: 40px; padding-top: 15px; border-top: 1px solid #d1d5db; text-align: center; font-size: 12px; color: #6b7280;">
+                            เอกสารนี้สร้างโดย WKS Academic System เมื่อ ${new Date().toLocaleString('th-TH')}
+                        </div>
                     </div>
                 `;
 
-                // รอ DOM วาด 0.5 วิ แล้วเรียกฟังก์ชันปริ้นท์
-                await new Promise(r => setTimeout(r, 500));
+                // รอ DOM วาดรูปและฟอนต์ 1 วิ
+                await new Promise(r => setTimeout(r, 1000));
                 
                 // สกัดชื่อครูสั้นๆ ไว้ตั้งชื่อไฟล์
                 const shortName = session.ModelTeacher.split(' ')[0].replace(/นาย|นางสาว|นาง/g, '');
-                await generatePDF('slcReportPrintTarget', `รายงานOpenClass_${shortName}`);
+                
+                // 💡 จูน PDF ให้เป๊ะที่สุด ป้องกันขอบขาด
+                const opt = { 
+                    margin: [10, 10, 10, 10], // เติมขอบกระดาษให้ปลอดภัย (มิลลิเมตร)
+                    filename: `รายงานOpenClass_${shortName}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                };
+
+                await html2pdf().set(opt).from(target).save();
+                
+                customAlert("ดาวน์โหลดรายงาน PDF เรียบร้อยแล้วครับ", "success");
 
             } catch(e) {
                 console.error(e);
@@ -17322,7 +18185,148 @@ window.saveStudentDetail = async function() {
             } finally {
                 btn.innerHTML = origTxt;
                 btn.disabled = false;
+                document.getElementById('slcReportPrintTarget').innerHTML = ''; // ล้างขยะล่องหนทิ้ง
             }
+        };
+        // ==========================================
+        // ✍️ ระบบสะท้อนคิด (Post-SLC Reflection)
+        // ==========================================
+        let currentReflectionSessionId = null;
+
+        window.openSLCReflectionModal = function(sessionId) {
+            const session = slcSessionsDB_Global.find(s => s.SessionID === sessionId);
+            if (!session) return;
+            currentReflectionSessionId = sessionId;
+
+            document.getElementById('slcReflectSubtitle').textContent = `วิชา: ${session.SubjectCode} (ห้อง ${session.Room}) | วันที่: ${new Date(session.Date).toLocaleDateString('th-TH')}`;
+            
+            // ดึงคอมเมนต์ของ Buddy ทุกคนมาโชว์ให้อ่าน
+            const container = document.getElementById('slcReflectLogsContainer');
+            container.innerHTML = '';
+            let logs = {};
+            try { logs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+
+            const observerNames = Object.keys(logs);
+            if (observerNames.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-4 italic font-bold">ยังไม่มีข้อมูลจากผู้สังเกตการณ์ครับ</p>';
+            } else {
+                observerNames.forEach(obsName => {
+                    const obsData = logs[obsName];
+                    let notesHtml = '';
+                    
+                    if (obsData['GENERAL_CLASS'] && obsData['GENERAL_CLASS'].note) {
+                        notesHtml += `<p class="mb-1"><span class="font-bold text-indigo-700">ภาพรวม:</span> ${obsData['GENERAL_CLASS'].note}</p>`;
+                    }
+                    Object.keys(obsData).forEach(stuId => {
+                        if (stuId !== 'GENERAL_CLASS' && obsData[stuId].note) {
+                            notesHtml += `<p class="mb-1 text-xs"><span class="font-bold text-emerald-600">เด็ก (${stuId.replace('stu_','')}):</span> ${obsData[stuId].note}</p>`;
+                        }
+                    });
+
+                    container.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 mb-2">
+                        <div class="font-bold text-sm text-gray-800 mb-1 border-b pb-1">👀 ${obsName}</div>
+                        ${notesHtml || '<p class="text-xs text-gray-400">ไม่มีคอมเมนต์เพิ่มเติม</p>'}
+                    </div>`;
+                });
+            }
+
+            // ล้างฟอร์มให้สะอาด
+            document.getElementById('ref_ai_summary').value = '';
+            document.getElementById('ref_q1').value = '';
+            document.getElementById('ref_q2').value = '';
+            document.getElementById('ref_q3').value = '';
+
+            document.getElementById('slcReflectionModal').classList.remove('hidden');
+        };
+
+        // ให้ AI ช่วยสรุปคอมเมนต์ทั้งหมด
+        window.generateAIReflectionSummary = async function() {
+            if (!currentReflectionSessionId) return;
+            const session = slcSessionsDB_Global.find(s => s.SessionID === currentReflectionSessionId);
+            
+            const btn = window.event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white border-2 inline-block align-middle w-3 h-3 mr-1"></div> วิเคราะห์...';
+            btn.disabled = true;
+
+            let logs = {};
+            try { logs = JSON.parse(session.ObservationLogs || "{}"); } catch(e){}
+            
+            let rawNotes = [];
+            Object.values(logs).forEach(obsData => {
+                Object.values(obsData).forEach(d => {
+                    if(d.tags && d.tags.length > 0) rawNotes.push(`เทคนิค: ${d.tags.join(', ')}`);
+                    if(d.note && d.note.trim() !== '') rawNotes.push(d.note);
+                });
+            });
+
+            if (rawNotes.length === 0) {
+                btn.innerHTML = origTxt; btn.disabled = false;
+                return customAlert("ข้อมูลการสังเกตการณ์ไม่เพียงพอให้ AI วิเคราะห์ครับ", "warning");
+            }
+
+            try {
+                const prompt = `จากบันทึกของผู้สังเกตการณ์ชั้นเรียนต่อไปนี้:\n\n${rawNotes.join('\n')}\n\nจงสรุปข้อดี และข้อสังเกต/แนวทางพัฒนา อย่างละ 2-3 ข้อ สั้นๆ กระชับ เป็นภาษาที่เข้าใจง่ายและสร้างสรรค์`;
+                const result = await callGemini(prompt, "คุณคือผู้เชี่ยวชาญการสรุปผลการสอน");
+                document.getElementById('ref_ai_summary').value = result.replace(/\*\*/g, ''); // ลบตัวหนาออกให้พิมพ์แก้ง่ายๆ
+            } catch(e) {
+                customAlert("ข้อผิดพลาด AI: " + e.message, "error");
+            } finally {
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
+
+        // ปิดจ๊อบ! กดยืนยันแล้วเซฟ
+        window.submitSLCReflection = async function() {
+            const aiSum = document.getElementById('ref_ai_summary').value.trim();
+            const q1 = document.getElementById('ref_q1').value.trim();
+            const q2 = document.getElementById('ref_q2').value.trim();
+            const q3 = document.getElementById('ref_q3').value.trim();
+
+            if(!q1 || !q2) return customAlert("กรุณาตอบคำถามสะท้อนคิดข้อ 2 และ 3 ให้ครบถ้วนครับ", "warning");
+
+            customConfirm("ยืนยันการบันทึกการสะท้อนคิด? (การกระทำนี้จะเปลี่ยนสถานะห้องเป็น Completed ถาวร และไม่สามารถให้ใครเข้าห้องได้อีก)", async () => {
+                const btn = document.getElementById('btnSubmitReflect');
+                const origTxt = btn.innerHTML;
+                btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังบันทึก...'; 
+                btn.disabled = true;
+
+                try {
+                    // แพ็คข้อมูลเป็น JSON ก่อนส่ง
+                    const reflectionData = { aiSummary: aiSum, satisfaction: q1, expectation: q2, observation: q3 };
+                    
+                    const payload = {
+                        action: 'submitSLCReflection',
+                        data: {
+                            SessionID: currentReflectionSessionId,
+                            ReflectionData: JSON.stringify(reflectionData)
+                        }
+                    };
+
+                    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                    const result = await res.json();
+
+                    if (result.status === 'success') {
+                        customAlert("บันทึกสรุปผลและสะท้อนคิดสำเร็จ! ปิดห้องเรียบร้อย", "success");
+                        
+                        // อัปเดต RAM
+                        const session = slcSessionsDB_Global.find(s => s.SessionID === currentReflectionSessionId);
+                        if(session) {
+                            session.Status = 'Completed'; 
+                            session.ReflectionData = payload.data.ReflectionData; // เผื่ออนาคตจะดึงมาโชว์ใน PDF
+                        }
+                        
+                        document.getElementById('slcReflectionModal').classList.add('hidden');
+                        renderSLCPublicBoard(); // วาดกระดานใหม่
+                    } else throw new Error(result.message);
+                } catch(e) {
+                    customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
+                } finally {
+                    btn.innerHTML = origTxt; 
+                    btn.disabled = false;
+                }
+            });
         };
     </script>
     <!-- 🎯 [เฟส 4] หน้าต่างประเมินการนิเทศ (Supervision Evaluation Modal) -->
