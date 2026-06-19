@@ -190,6 +190,28 @@
             top: 0; left: 0; right: 0; bottom: 0;
             width: 100%; height: 100%; opacity: 0; cursor: pointer;
         }
+        @media print {
+        @page {
+          size: A4 portrait; /* 💡 บังคับเป็นขนาด A4 แนวตั้ง */
+          margin: 15mm; /* 💡 ระยะขอบกระดาษ ปรับลดเพิ่มได้ตามชอบ */
+        }
+        
+        /* 💡 บังคับให้เบราว์เซอร์พิมพ์สีพื้นหลังและรูปภาพออกมาด้วย (สำคัญมาก) */
+        body {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        /* 💡 ป้องกันตาราง หรือกล่องข้อความโดนหั่นครึ่งตอนขึ้นหน้าใหม่ */
+        table, tr, td, th, .prevent-break {
+          page-break-inside: avoid !important;
+        }
+
+        /* 💡 ซ่อนปุ่มต่างๆ ไม่ให้ไปโผล่ในกระดาษ (ถ้าปุ่มแกใช้คลาส .no-print) */
+        .no-print {
+          display: none !important;
+        }
+      }
     </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col relative">
@@ -232,7 +254,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.7 [June 17th, 2025 - 01:45] | TESTING-f(SLC)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.7 [June 19th, 2025 - 12:40] | TESTING-f(Supervision)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -2412,6 +2434,15 @@
                                             <option value="peer">4. Peer-to-Peer (อายุงาน/Sq ใกล้เคียงกัน)</option>
                                         </select>
                                     </div>
+                                    <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 text-emerald-900 shadow-inner">
+                                        <h4 class="font-bold text-emerald-800 mb-2 border-b border-emerald-200 pb-2 flex items-center gap-2">🌟 เงื่อนไขการดึง Mentor เข้าประเมิน</h4>
+                                        <p class="text-[10px] text-emerald-600 mb-3">ระบบจะดึงพี่เลี้ยง (Mentor) ตามเงื่อนไขนี้ (Sq ต่ำ = อาวุโสสูงกว่า)</p>
+                                        <select id="supc_mentor_rule" class="w-full bg-white border border-emerald-300 rounded-xl p-3 text-sm font-bold outline-none focus:border-emerald-500">
+                                            <option value="dept_senior">1. Sq สูงกว่าในกลุ่มสาระเดียวกัน (ดึงข้ามหมวดถ้าไม่พอ)</option>
+                                            <option value="any_senior">2. Sq สูงกว่า (ในและนอกกลุ่มสาระ)</option>
+                                            <option value="none">3. ไม่กำหนดเงื่อนไข (ใครก็ได้ที่ว่าง)</option>
+                                        </select>
+                                    </div>
                                     <div class="bg-rose-950 p-5 rounded-2xl border border-rose-800 text-rose-200 shadow-inner flex flex-col justify-between">
                                         <div>
                                             <h4 class="font-bold text-rose-400 mb-2 border-b border-rose-800 pb-2 flex items-center gap-2">⏳ สวิตช์ประหาร (Auto-Penalty)</h4>
@@ -2422,7 +2453,7 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </div> <!-- 💡 ปิดกล่อง Tab 1: Config ที่ลืมปิดตรงนี้!! -->
 
                             <!-- Tab 2: Matrix View (โหมดเนตรวงแหวน) -->
                             <div id="supc-tab-matrix" class="hidden">
@@ -10025,22 +10056,27 @@ window.deleteLog = function(logId) {
             // ==========================================
             // 3. ตำแหน่ง Mentor (พี่หมวด)
             // ==========================================
-            let mentorCandidates = validTeachers.filter(u => 
-                u.Department === reqDept && 
-                (parseInt(u.Sq)||999) < reqSq && 
-                u.FullName !== (selectedTeam[0]?.FullName) && 
-                u.FullName !== (selectedTeam[1]?.FullName)
-            );
-            mentorCandidates.sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
-            selectedTeam[2] = mentorCandidates.find(u => isFree(u.FullName));
-            
-            if (!selectedTeam[2]) {
-                const crossMentors = validTeachers.filter(u => 
-                    u.Department !== reqDept && 
-                    u.FullName !== (selectedTeam[0]?.FullName) && 
-                    u.FullName !== (selectedTeam[1]?.FullName)
-                ).sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
-                selectedTeam[2] = crossMentors.find(u => isFree(u.FullName));
+            const mentorRule = masterSwitches_Global?.SupervisionMaster?.settings?.mentorRule || 'dept_senior';
+            let mentorCandidates = [];
+
+            if (mentorRule === 'dept_senior') {
+                mentorCandidates = validTeachers.filter(u => u.Department === reqDept && (parseInt(u.Sq)||999) < reqSq && u.FullName !== (selectedTeam[0]?.FullName) && u.FullName !== (selectedTeam[1]?.FullName));
+                mentorCandidates.sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+                selectedTeam[2] = mentorCandidates.find(u => isFree(u.FullName));
+                
+                if (!selectedTeam[2]) {
+                    const crossMentors = validTeachers.filter(u => u.Department !== reqDept && (parseInt(u.Sq)||999) < reqSq && u.FullName !== (selectedTeam[0]?.FullName) && u.FullName !== (selectedTeam[1]?.FullName))
+                                                      .sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+                    selectedTeam[2] = crossMentors.find(u => isFree(u.FullName));
+                }
+            } else if (mentorRule === 'any_senior') {
+                mentorCandidates = validTeachers.filter(u => (parseInt(u.Sq)||999) < reqSq && u.FullName !== (selectedTeam[0]?.FullName) && u.FullName !== (selectedTeam[1]?.FullName));
+                mentorCandidates.sort((a,b) => (parseInt(a.Sq)||999) - (parseInt(b.Sq)||999));
+                selectedTeam[2] = mentorCandidates.find(u => isFree(u.FullName));
+            } else {
+                mentorCandidates = validTeachers.filter(u => u.FullName !== (selectedTeam[0]?.FullName) && u.FullName !== (selectedTeam[1]?.FullName));
+                mentorCandidates.sort(() => Math.random() - 0.5); // สุ่มใครก็ได้ที่ว่าง
+                selectedTeam[2] = mentorCandidates.find(u => isFree(u.FullName));
             }
 
             // ==========================================
@@ -10613,7 +10649,7 @@ window.deleteLog = function(logId) {
             }
             document.body.removeChild(textArea);
         };
-        // 🎯 5. สร้างใบรายงานผลนิเทศ (PDF)
+        // 🎯 5. สร้างใบรายงานผลนิเทศ (PDF) - V. โชว์คะแนนดิบ
         window.viewSupReceipt = function(supId) {
             const s = supervisionDB_Global.find(x => x.SupID === supId);
             if(!s) return;
@@ -10636,13 +10672,49 @@ window.deleteLog = function(logId) {
                 const ev = evals[evaluator];
                 const sigUrl = sigs[evaluator] ? getEmbeddableUrl(sigs[evaluator]) : '';
                 
+                // 💡 ดึงคะแนนออกมาโชว์ (ดักจับไว้ด้วยเผื่อเป็น Log เก่าที่ยังไม่มีการเก็บคะแนน)
+                const scoreHtml = ev.score !== undefined ? `<div class="text-sm text-gray-500 mt-1 font-bold">คะแนนการประเมิน: <span class="text-gray-800 text-lg">${ev.score}</span> คะแนน <span class="text-xs bg-gray-100 px-2 py-0.5 rounded ml-1 border border-gray-200">(${Number(ev.percent).toFixed(1)}%)</span></div>` : '';
+                
+                // 💡 โค้ดใหม่: สร้างตารางรายละเอียดคะแนนรายข้อ
+                let detailsTableHtml = '';
+                if (ev.details && ev.details.length > 0) {
+                    detailsTableHtml = `
+                    <div class="mb-4 overflow-hidden rounded-xl border border-gray-200 break-inside-avoid">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700">
+                                    <th class="p-2 border-b border-gray-200 font-bold">รายการประเมิน</th>
+                                    <th class="p-2 border-b border-gray-200 text-center font-bold w-16">คะแนน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    ev.details.forEach(cat => {
+                        detailsTableHtml += `<tr class="bg-rose-50 text-rose-800 font-bold"><td class="p-2 border-b border-gray-200" colspan="2">${cat.category}</td></tr>`;
+                        cat.items.forEach(item => {
+                            detailsTableHtml += `
+                            <tr class="text-gray-700">
+                                <td class="p-2 border-b border-gray-100 pl-6 border-l-4 border-rose-300 bg-white">▪ ${item.name}</td>
+                                <td class="p-2 border-b border-gray-100 text-center font-bold text-rose-600 bg-white">${item.score}</td>
+                            </tr>`;
+                        });
+                    });
+                    detailsTableHtml += `</tbody></table></div>`;
+                }
+
                 bodyHtml += `
                 <div class="border border-gray-300 p-4 rounded-xl mb-4 break-inside-avoid">
-                    <h4 class="font-bold text-lg border-b border-gray-200 pb-2 mb-3 bg-gray-50 px-2">กรรมการนิเทศคนที่ ${idx+1}: ${evaluator}</h4>
+                    <h4 class="font-bold text-lg border-b border-gray-200 pb-2 mb-3 bg-gray-50 px-2 flex justify-between">
+                        <span>กรรมการนิเทศคนที่ ${idx+1}: ${evaluator}</span>
+                    </h4>
+                    ${detailsTableHtml}
                     <div class="mb-2"><span class="font-bold text-gray-600 text-sm">1. ข้อค้นพบ/จุดเด่น:</span><p class="text-sm mt-1 pl-4">${ev.strengths}</p></div>
                     <div class="mb-4"><span class="font-bold text-gray-600 text-sm">2. ข้อเสนอแนะ:</span><p class="text-sm mt-1 pl-4">${ev.suggestions}</p></div>
-                    <div class="flex justify-between items-end border-t border-gray-100 pt-3">
-                        <div class="font-bold text-lg">สรุปผล: <span class="border-b-2 border-gray-800 px-4">${ev.result}</span></div>
+                    <div class="flex justify-between items-end border-t border-gray-100 pt-3 mt-2">
+                        <div>
+                            <div class="font-bold text-lg text-gray-700">สรุปผลระดับ: <span class="border-b-2 border-rose-600 text-rose-600 px-2">${ev.result}</span></div>
+                            ${scoreHtml}
+                        </div>
                         <div class="text-center w-48">
                             ${sigUrl ? `<img src="${sigUrl}" crossorigin="anonymous" class="h-16 mx-auto mb-1 object-contain">` : '<div class="h-16 mb-1"></div>'}
                             <div class="text-sm">( ${evaluator} )</div>
@@ -17394,8 +17466,10 @@ window.saveStudentDetail = async function() {
             // โหลดค่าเงื่อนไข Buddy
             const buddyRuleEl = document.getElementById('supc_buddy_rule');
             if(buddyRuleEl) buddyRuleEl.value = conf.settings.buddyRule || 'none';
+            // โหลดค่าเงื่อนไข Mentor
+            const mentorRuleEl = document.getElementById('supc_mentor_rule');
+            if(mentorRuleEl) mentorRuleEl.value = conf.settings.mentorRule || 'dept_senior';
         };
-
         // 📝 สมองกลอัปเดตข้อมูลรายจุด (Real-time update)
         window.updateRoundData = function(index, key, value) {
             masterSwitches_Global['SupervisionMaster'].rounds[index][key] = value;
@@ -17538,6 +17612,7 @@ window.saveStudentDetail = async function() {
             try {
                 // รวบรวมค่า Settings นอกรอบการนิเทศ (แพ็คโควตาทั้ง 4 กลุ่มเป็น JSON)
                 masterSwitches_Global['SupervisionMaster'].settings.buddyRule = document.getElementById('supc_buddy_rule').value || 'none';
+                masterSwitches_Global['SupervisionMaster'].settings.mentorRule = document.getElementById('supc_mentor_rule').value || 'dept_senior';
                 masterSwitches_Global['SupervisionMaster'].settings.quota = {
                     exec: document.getElementById('supc_q_exec').value || 5,
                     acad: document.getElementById('supc_q_acad').value || 5,
@@ -17620,12 +17695,21 @@ window.saveStudentDetail = async function() {
             validTeachers.forEach(u => {
                 const mySups = supervisionDB_Global.filter(s => s.TeacherName === u.FullName).sort((a,b) => new Date(a.ReqDate) - new Date(b.ReqDate));
                 
+                const isEmpPngn = userRoles.includes('EmpPngn'); // 💡 เช็คสิทธิ์พระเจ้า
+                
                 const getStatusHtml = (index) => {
                     const s = mySups[index];
                     if(!s) return `<div class="bg-rose-50 text-rose-500 font-bold px-2 py-1 rounded text-xs border border-rose-100 w-max mx-auto">🔴 ยังไม่เริ่ม</div>`;
-                    // 💡 อัปเกรด: เปลี่ยนปุ่ม "ผ่านแล้ว" ให้กดเข้าไปดูผลได้!
-                    if(s.Status === 'Evaluated') return `<button onclick="viewSupReceipt('${s.SupID}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold px-2 py-1 rounded text-xs border border-emerald-200 w-max mx-auto shadow-sm transition-colors cursor-pointer" title="คลิกเพื่อดูใบประเมิน">🟢 ผ่านแล้ว (ดูผล)</button>`;
-                    return `<div class="bg-amber-50 text-amber-500 font-bold px-2 py-1 rounded text-xs border border-amber-100 w-max mx-auto animate-pulse">🟡 รอประเมิน</div>`;
+                    
+                    // 💡 สร้างปุ่มลบ เฉพาะ EmpPngn เท่านั้นที่เห็น
+                    let delBtn = '';
+                    if (isEmpPngn) {
+                        delBtn = `<button onclick="deleteSupervisionRecord('${s.SupID}')" class="block mx-auto mt-1 text-[9px] text-rose-500 hover:text-white font-bold bg-rose-50 hover:bg-rose-600 px-2 py-0.5 rounded shadow-sm border border-rose-200 transition-colors">🗑️ ลบข้อมูล</button>`;
+                    }
+
+                    if(s.Status === 'Evaluated') return `<div class="text-center"><button onclick="viewSupReceipt('${s.SupID}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold px-2 py-1 rounded text-xs border border-emerald-200 w-max mx-auto shadow-sm transition-colors cursor-pointer" title="คลิกเพื่อดูใบประเมิน">🟢 ผ่านแล้ว (ดูผล)</button>${delBtn}</div>`;
+                    
+                    return `<div class="text-center"><div class="bg-amber-50 text-amber-500 font-bold px-2 py-1 rounded text-xs border border-amber-100 w-max mx-auto animate-pulse">🟡 รอประเมิน</div>${delBtn}</div>`;
                 };
 
                 const roleInfo = determineSupRole(u);
@@ -17651,6 +17735,28 @@ window.saveStudentDetail = async function() {
         window.executeSupervisionPenalty = function() {
             customConfirm("⚠️ ยืนยันการรันระบบตรวจสอบและลงโทษอัตโนมัติ? (ครูที่ไม่ส่งคำขอในรอบที่หมดเวลาไปแล้ว จะถูกประทับตราว่า 'ขาดการนิเทศ')", () => {
                 customAlert("🚀 รันสวิตช์ประหารเรียบร้อย! ระบบกำลังสแกนประวัติครูทั้งโรงเรียน...", "success");
+            });
+        };
+        // 🗑️ ฟังก์ชันลบข้อมูลนิเทศ (EmpPngn Only)
+        window.deleteSupervisionRecord = function(supId) {
+            customConfirm("⚠️ ยืนยันการลบข้อมูลการนิเทศนี้ทิ้งอย่างถาวรใช่หรือไม่? (การกระทำนี้จะลบประวัติของครูคนนี้ในรอบที่เลือกออกไปเลย)", async () => {
+                customAlert("กำลังเชื่อมต่อเพื่อลบข้อมูล...", "info");
+                try {
+                    const payload = { action: 'deleteSupervision', id: supId };
+                    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                    const result = await res.json();
+                    
+                    if (result.status === 'success') {
+                        customAlert("ลบข้อมูลการนิเทศเรียบร้อยแล้ว", "success");
+                        // อัปเดต RAM ลบก้อนนั้นทิ้งไปเลย
+                        supervisionDB_Global = supervisionDB_Global.filter(s => s.SupID !== supId);
+                        renderSupMatrixView(); // วาดตารางเนตรวงแหวนใหม่
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch(e) {
+                    customAlert("เกิดข้อผิดพลาด: " + e.message + " (อย่าลืมเพิ่มเคส deleteSupervision ใน Code.gs ด้วยนะไอซ์!)", "error");
+                }
             });
         };
         // ==========================================
@@ -17813,9 +17919,29 @@ window.saveStudentDetail = async function() {
             }
 
             let totalScore = 0;
+            
+            // 💡 โค้ดใหม่: เตรียม Array เก็บรายละเอียดคะแนนรายข้อ
+            let detailedScores = [];
+            const categoryDivs = document.querySelectorAll('#dynamicEvaluationFormContainer > div.mb-6');
+            
+            categoryDivs.forEach((catDiv, cIdx) => {
+                const catName = catDiv.querySelector('h5').innerText.replace(/^[0-9]+\s/, '').trim();
+                let itemsData = [];
+                
+                const itemRows = catDiv.querySelectorAll('.flex.flex-col.xl\\:flex-row');
+                itemRows.forEach((row, iIdx) => {
+                    const itemName = row.querySelector('.flex-1').innerText.trim();
+                    const checkedRadio = row.querySelector(`input[name="rubric_${cIdx}_${iIdx}"]:checked`);
+                    const itemScore = checkedRadio ? parseInt(checkedRadio.value) : 0;
+                    itemsData.push({ name: itemName, score: itemScore });
+                });
+                
+                detailedScores.push({ category: catName, items: itemsData });
+            });
+
             radiosChecked.forEach(r => totalScore += parseInt(r.value));
             const percent = totalGroups > 0 ? (totalScore / (totalGroups * 5)) * 100 : 0;
-            
+
             let resultVal = 'ควรปรับปรุง';
             if (percent >= 80) resultVal = 'ดีเยี่ยม';
             else if (percent >= 70) resultVal = 'ดี';
@@ -17853,12 +17979,13 @@ window.saveStudentDetail = async function() {
                         Signature: currentUser.SavedSignature,
                         EvalData: { 
                             strengths: strengths, 
-                            suggestions: "จุดควรพัฒนา: " + weakness + "\\nแนวทางแก้ไข: " + suggestions, 
+                            suggestions: "จุดควรพัฒนา: " + weakness + "แนวทางแก้ไข: " + suggestions, 
                             result: resultVal,
                             score: totalScore,
                             percent: percent,
-                            photo1: photo1, // 👈 ส่งรูป 1
-                            photo2: photo2  // 👈 ส่งรูป 2
+                            details: detailedScores, // 👈 แทรกบรรทัดนี้เพิ่มเข้าไป!
+                            photo1: photo1, 
+                            photo2: photo2  
                         }
                     }
                 };
@@ -17993,7 +18120,7 @@ window.saveStudentDetail = async function() {
             }
         };
 
-        // 💡 บันทึกบทสรุปผู้บริหาร ลงฐานข้อมูลเดิม (ซ่อนไว้ในคีย์พิเศษ)
+        // 💡 บันทึกบทสรุปผู้บริหาร ลงฐานข้อมูลเดิม (ซ่อนไว้ในคีย์พิเศษ) - V. Bulletproof JSON
         window.saveSLCAISummary = async function() {
             if (!currentViewingSLC) return;
             const text = document.getElementById('slcAISummaryText').value.trim();
@@ -18005,8 +18132,20 @@ window.saveStudentDetail = async function() {
             btn.disabled = true;
 
             try {
+                // 💡 จุดแก้บั๊ก (Safety Net): ดักจับข้อมูลเน่า / ข้อมูลว่าง / undefined
+                let logsRaw = currentViewingSLC.ObservationLogs;
                 let allLogs = {};
-                try { allLogs = JSON.parse(currentViewingSLC.ObservationLogs || "{}"); } catch(e){}
+                
+                if (!logsRaw || logsRaw === "undefined" || logsRaw === "null" || String(logsRaw).trim() === "") {
+                    allLogs = {}; // ถ้าว่างเปล่า ให้สร้าง Object เปล่ารอเลย
+                } else {
+                    try {
+                        allLogs = JSON.parse(logsRaw);
+                    } catch(e) {
+                        console.error("JSON Parse Error (แก้ให้แล้ว):", e);
+                        allLogs = {}; // ถ้าพังเพราะข้อมูลเดิมขยะ ให้รีเซ็ตใหม่ ไม่ให้โปรแกรมค้าง
+                    }
+                }
                 
                 // ยัดบทสรุปลงไปในกุญแจลับ
                 allLogs['__EXECUTIVE_SUMMARY__'] = text;
@@ -18023,10 +18162,12 @@ window.saveStudentDetail = async function() {
                 const result = await res.json();
 
                 if (result.status === 'success') {
-                    customAlert("บันทึกสรุปภาพรวมเรียบร้อยแล้ว!", "success");
-                    // อัปเดต RAM
+                    customAlert("บันทึกสรุปภาพรวมลงฐานข้อมูลเรียบร้อยแล้ว!", "success");
+                    // อัปเดต RAM ทันที จะได้ไม่ต้องรอโหลดใหม่
                     currentViewingSLC.ObservationLogs = payload.data.ObservationLogs;
-                } else throw new Error(result.message);
+                } else {
+                    throw new Error(result.message);
+                }
             } catch(e) {
                 customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
             } finally {
