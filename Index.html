@@ -254,7 +254,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.9 [June 30th, 2025 - 18:18] | TESTING-f(Supervision)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.10 [June 30th, 2025 - 13.42] | TESTING-f(Supervision)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -16479,17 +16479,42 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             }
         };
 
-        // 🚀 O(1) Speed Optimization: สร้าง Map เก็บข้อมูล User ไว้ใน RAM เลย ไม่ต้อง .find() วนลูป
+        // 🚀 O(1) Speed Optimization: สร้าง Map เก็บข้อมูล User ไว้ใน RAM (อัปเกรดกันความจำเสื่อมและช่องว่างเบิ้ล)
         let usersMapCache = null;
+        let lastUsersDBLength = 0; // 💡 จับตาดูว่า DB มีการอัปเดตคนเพิ่มไหม
+        
         function getUserFromMap(usernameOrName) {
-            if (!usersMapCache) {
+            // 💡 ถ้าระบบโหลดคนเข้า DB แล้วจำนวนเปลี่ยนไป หรือแคชพัง ให้รีเซ็ตแคชใหม่ (ล้างอาการความจำเสื่อม)
+            if (!usersMapCache || typeof usersDB_Global === 'undefined' || usersDB_Global.length !== lastUsersDBLength) {
                 usersMapCache = new Map();
-                usersDB_Global.forEach(u => {
-                    usersMapCache.set(u.Username, u);
-                    usersMapCache.set(u.FullName, u);
-                });
+                lastUsersDBLength = typeof usersDB_Global !== 'undefined' ? usersDB_Global.length : 0;
+                
+                if (typeof usersDB_Global !== 'undefined') {
+                    usersDB_Global.forEach(u => {
+                        if(u.Username) usersMapCache.set(String(u.Username).trim(), u);
+                        if(u.FullName) usersMapCache.set(String(u.FullName).trim(), u);
+                        // 💡 แอบเก็บเวอร์ชันที่ยุบช่องว่างเผื่อไว้ด้วย (Fuzzy Cache กันคนพิมพ์เว้นวรรคเกิน)
+                        if(u.FullName) usersMapCache.set(String(u.FullName).trim().replace(/\s+/g, ' '), u);
+                    });
+                }
             }
-            return usersMapCache.get(usernameOrName);
+            
+            if (!usernameOrName) return null;
+            const targetClean = String(usernameOrName).trim();
+            const targetUltraClean = targetClean.replace(/\s+/g, ' ');
+            
+            // 1. ลองหาแบบเป๊ะๆ ก่อน ถ้าไม่เจอค่อยหาแบบยุบช่องว่าง
+            let found = usersMapCache.get(targetClean) || usersMapCache.get(targetUltraClean);
+            
+            // 2. ก๊อกสุดท้าย หาแบบเถื่อนๆ วนลูปเช็ค (Fuzzy Match ขั้นสุด)
+            if (!found && typeof usersDB_Global !== 'undefined') {
+                found = usersDB_Global.find(u => 
+                    (u.FullName && String(u.FullName).trim().replace(/\s+/g, ' ') === targetUltraClean) || 
+                    (u.Username && String(u.Username).trim() === targetClean)
+                );
+                if (found) usersMapCache.set(usernameOrName, found); // 💡 จำใส่สมองไว้ รอบหน้าจะได้ไวๆ
+            }
+            return found;
         }
 
         // ⚡ ดึงรายชื่อ Buddy ด้วยความเร็ว 0.01 วิ!
@@ -16939,7 +16964,7 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             // ฟังก์ชันดึงรายชื่อ Buddy เฉพาะหน้า "เปิดชั้นเรียน (Open Class)"
         window.loadBuddiesForOpenClass = function() {
             const modelVal = document.getElementById('slc_model').value;
-            const modelInfo = usersDB_Global.find(u => u.FullName === modelVal || u.Username === modelVal);
+            const modelInfo = getUserFromMap(modelVal); // 💡 ใช้สมองกลหาชื่อแบบโคตรถึกแทนการ find ธรรมดา
             const container = document.getElementById('openclass_buddies_container'); // 💡 ชี้ไปที่ ID ใหม่!
             const groupLabel = document.getElementById('plcGroupNameLabel'); // ถ้าแกเปลี่ยน ID ตรงนี้ ก็แก้ให้ตรงด้วยนะ
             
