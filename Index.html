@@ -254,7 +254,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.10 [June 30th, 2025 - 13.42] | TESTING-f(Supervision)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.03.10 [July 1st, 2025 - 16:25] | TESTING-f(SLC)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -1697,7 +1697,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
+                        <!-- 💡 โซนข้อมูลแผนการสอน + SLC 01 Console -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
     <div class="col-span-1 md:col-span-2">
         <label class="block text-sm font-bold text-orange-900 mb-1">🎯 หัวข้อที่สอน (Topic)</label>
         <input type="text" id="slc_topic" class="w-full border border-orange-300 p-2 rounded-xl text-sm outline-none focus:border-orange-500" placeholder="เช่น การหาปริมาตรแก๊สที่ STP">
@@ -1711,9 +1712,167 @@
         <label class="block text-sm font-bold text-orange-900 mb-1">🔗 ลิงก์แผนการจัดการเรียนรู้ (ถ้ามี)</label>
         <input type="text" id="slc_lesson_plan_link" class="w-full border border-orange-300 p-2 rounded-xl text-sm outline-none focus:border-orange-500" placeholder="แปะลิงก์ Google Drive ของแผนฯ">
     </div>
-    <div class="col-span-1 md:col-span-2 mt-2">
-        <label class="block text-sm font-bold text-blue-900 mb-1">✨ ความคาดหวังของ Model Teacher ต่อนักเรียนในคาบนี้</label>
-        <textarea id="slc_teacher_expectation" rows="2" class="w-full border border-blue-300 p-2 rounded-xl text-sm outline-none focus:border-blue-500 resize-none" placeholder="เช่น คาดหวังให้นักเรียนกล้าซักถามเมื่อไม่เข้าใจ และสามารถสรุปหลักการทดลองได้ด้วยตนเอง"></textarea>
+</div>
+
+<!-- 💡 แผงคอนโซล SLC 01 ใหม่ -->
+<div class="mt-4 bg-slate-50 p-5 rounded-2xl border border-indigo-200 shadow-sm">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-indigo-200 pb-3 gap-4">
+        <div>
+            <h3 class="text-lg font-black text-indigo-900 flex items-center gap-2">📄 ข้อมูลสำหรับแบบเปิดชั้นเรียน (SLC 01)</h3>
+            <p class="text-xs text-gray-500 mt-1">ใช้ AI ช่วยสกัดข้อมูลจากแผนการสอน เพื่อลดภาระการพิมพ์</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+            <!-- ปุ่ม 1: เด้งไป Gemini Gem (ลิงก์นี้เค้าใส่ของแกไว้ให้แล้ว) -->
+            <a href="https://gemini.google.com/gem/1mQpA0ImkV5w_3AX8jKyATkVYzJwfqTcq?usp=sharing" target="_blank" class="flex-1 sm:flex-none text-xs bg-gray-800 text-white font-bold px-4 py-2 rounded-xl shadow hover:bg-gray-900 transition-colors flex items-center justify-center gap-1">
+                💬 เปิด Gemini Gem
+            </a>
+            <!-- ปุ่ม 2: Auto AI -->
+            <button type="button" onclick="autoExtractSLC01()" class="flex-1 sm:flex-none text-xs bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-4 py-2 rounded-xl shadow-md hover:scale-105 transition-transform flex items-center justify-center gap-1">
+                ✨ AI สกัดข้อมูลอัตโนมัติ
+            </button>
+        </div>
+    </div>
+
+    <!-- โซนวางข้อความดิบ -->
+    <div class="mb-6 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+        <label class="block text-xs font-bold text-indigo-800 mb-2">📥 วางเนื้อหาแผนการสอน (Copy จาก Word/PDF มาแปะที่นี่เพื่อให้ AI ช่วยสกัดข้อมูล)</label>
+        <textarea id="slc_raw_plan_text" rows="3" class="w-full bg-white border border-indigo-200 rounded-lg p-3 text-xs outline-none focus:ring-2 focus:ring-indigo-400 resize-y" placeholder="วางเนื้อหาแผนการสอนทั้งหมดที่นี่..."></textarea>
+    </div>
+
+    <!-- โซนกล่องรับข้อมูล 10 หัวข้อ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-gray-700 mb-1">มาตรฐานการเรียนรู้ / ตัวชี้วัด / ผลการเรียนรู้</label>
+            <textarea id="slc01_standard" rows="2" class="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></textarea>
+        </div>
+        <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-gray-700 mb-1">สาระสำคัญ / ความคิดรวบยอด</label>
+            <textarea id="slc01_concept" rows="2" class="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></textarea>
+        </div>
+        <div class="md:col-span-2">
+            <label class="block text-[11px] font-bold text-gray-700 mb-1">สาระการเรียนรู้</label>
+            <textarea id="slc01_content" rows="2" class="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></textarea>
+        </div>
+        
+        <div class="bg-sky-50 p-3 rounded-lg border border-sky-100">
+            <label class="block text-[11px] font-bold text-sky-800 mb-1">จุดประสงค์ด้านพุทธิพิสัย (Knowledge Domain : K)</label>
+            <textarea id="slc01_k" rows="3" class="w-full bg-white border border-sky-200 rounded-md p-2 text-xs outline-none focus:border-sky-500"></textarea>
+        </div>
+        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+            <label class="block text-[11px] font-bold text-emerald-800 mb-1">จุดประสงค์ด้านทักษะพิสัย (Skill Domain : P/S)</label>
+            <textarea id="slc01_p" rows="3" class="w-full bg-white border border-emerald-200 rounded-md p-2 text-xs outline-none focus:border-emerald-500"></textarea>
+        </div>
+        <!-- กล่อง A (เจตคติ) (ถูกย่อเหลือ 1 คอลัมน์ วางคู่กับคุณลักษณะ) -->
+        <div class="bg-amber-50 p-3 rounded-lg border border-amber-100 flex flex-col">
+            <label class="block text-[11px] font-bold text-amber-800 mb-2">จุดประสงค์ด้านจิตพิสัย (Affective Domain : A)</label>
+            <textarea id="slc01_a" class="w-full bg-white border border-amber-200 rounded-md p-2 text-xs outline-none focus:border-amber-500 flex-grow resize-none"></textarea>
+        </div>
+
+        <!-- กล่องคุณลักษณะอันพึงประสงค์ (วางคู่กับ A) -->
+        <div class="bg-amber-50/50 p-3 rounded-lg border border-amber-100 flex flex-col">
+            <label class="block text-[11px] font-bold text-amber-800 mb-2">คุณลักษณะอันพึงประสงค์</label>
+            <div class="grid grid-cols-2 gap-2 text-[10px] text-gray-700">
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="รักชาติ ศาสน์ กษัตริย์" class="rounded text-amber-500 focus:ring-amber-500"> รักชาติ ศาสน์ กษัตริย์</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="ซื่อสัตย์สุจริต" class="rounded text-amber-500 focus:ring-amber-500"> ซื่อสัตย์สุจริต</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="มีวินัย" class="rounded text-amber-500 focus:ring-amber-500"> มีวินัย</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="ใฝ่เรียนรู้" class="rounded text-amber-500 focus:ring-amber-500"> ใฝ่เรียนรู้</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="อยู่อย่างพอเพียง" class="rounded text-amber-500 focus:ring-amber-500"> อยู่อย่างพอเพียง</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="มุ่งมั่นในการทำงาน" class="rounded text-amber-500 focus:ring-amber-500"> มุ่งมั่นในการทำงาน</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="รักความเป็นไทย" class="rounded text-amber-500 focus:ring-amber-500"> รักความเป็นไทย</label>
+                <label class="flex items-center gap-1 cursor-pointer hover:text-amber-600"><input type="checkbox" name="slc01_char_cb" value="มีจิตสาธารณะ" class="rounded text-amber-500 focus:ring-amber-500"> มีจิตสาธารณะ</label>
+                <div class="col-span-2 flex flex-col gap-1 mt-1">
+                    <label class="flex items-center gap-1 cursor-pointer font-bold text-amber-700"><input type="checkbox" name="slc01_char_cb" value="อื่น ๆ" class="rounded text-amber-500 focus:ring-amber-500" onchange="toggleOtherInput(this, 'other_slc01_char')"> อื่น ๆ</label>
+                    <input type="text" id="other_slc01_char" class="hidden w-full text-[10px] p-2 border border-amber-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 bg-white" placeholder="ระบุคุณลักษณะอื่นๆ...">
+                </div>
+            </div>
+        </div>
+
+        <!-- สมรรถนะสำคัญของผู้เรียน (เลื่อนขึ้นมาต่อจาก A และคุณลักษณะ กางเต็ม 2 คอลัมน์) -->
+        <div class="md:col-span-2 bg-rose-50 p-4 rounded-xl border border-rose-200 shadow-sm">
+            <label class="block text-[11px] font-bold text-rose-800 mb-3">สมรรถนะสำคัญของผู้เรียน (Competencies : C)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-[10px] text-gray-700">
+                <!-- Comm -->
+                <div class="bg-white p-3 rounded-lg border border-rose-100 shadow-sm">
+                    <label class="flex items-center gap-1.5 font-bold text-rose-700 mb-2"><input type="checkbox" name="slc01_c_main" value="ความสามารถในการสื่อสาร" class="rounded text-rose-500 focus:ring-rose-500 w-3.5 h-3.5" onchange="toggleSubCheckboxes(this, 'c_sub_comm')"> 1. ความสามารถในการสื่อสาร</label>
+                    <div id="c_sub_comm" class="pl-5 space-y-1.5 opacity-40 pointer-events-none transition-opacity duration-300">
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การรับและส่งสาร" class="rounded text-rose-400"> การรับและส่งสาร</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การถ่ายทอดความคิด" class="rounded text-rose-400"> การถ่ายทอดความคิด</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การเลือกใช้วิธีการสื่อสาร" class="rounded text-rose-400"> การเลือกใช้วิธีการสื่อสาร</label>
+                        <label class="flex items-center gap-1 cursor-pointer font-bold"><input type="checkbox" name="slc01_c_sub" value="อื่น ๆ" class="rounded text-rose-400" onchange="toggleOtherInput(this, 'other_c_comm')"> อื่น ๆ</label>
+                        <input type="text" id="other_c_comm" class="hidden w-full text-[10px] p-1.5 border border-rose-200 rounded outline-none focus:ring-1 focus:ring-rose-400" placeholder="ระบุเพิ่มเติม...">
+                    </div>
+                </div>
+                <!-- Think -->
+                <div class="bg-white p-3 rounded-lg border border-rose-100 shadow-sm">
+                    <label class="flex items-center gap-1.5 font-bold text-rose-700 mb-2"><input type="checkbox" name="slc01_c_main" value="ความสามารถในการคิด" class="rounded text-rose-500 focus:ring-rose-500 w-3.5 h-3.5" onchange="toggleSubCheckboxes(this, 'c_sub_think')"> 2. ความสามารถในการคิด</label>
+                    <div id="c_sub_think" class="pl-5 space-y-1.5 opacity-40 pointer-events-none transition-opacity duration-300">
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การคิดวิเคราะห์" class="rounded text-rose-400"> การคิดวิเคราะห์</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การคิดสังเคราะห์" class="rounded text-rose-400"> การคิดสังเคราะห์</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การคิดสร้างสรรค์" class="rounded text-rose-400"> การคิดสร้างสรรค์</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การคิดอย่างมีวิจารณญาณ" class="rounded text-rose-400"> การคิดอย่างมีวิจารณญาณ</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="คิดเป็นระบบ" class="rounded text-rose-400"> คิดเป็นระบบ</label>
+                        <label class="flex items-center gap-1 cursor-pointer font-bold"><input type="checkbox" name="slc01_c_sub" value="อื่น ๆ" class="rounded text-rose-400" onchange="toggleOtherInput(this, 'other_c_think')"> อื่น ๆ</label>
+                        <input type="text" id="other_c_think" class="hidden w-full text-[10px] p-1.5 border border-rose-200 rounded outline-none focus:ring-1 focus:ring-rose-400" placeholder="ระบุเพิ่มเติม...">
+                    </div>
+                </div>
+                <!-- Solve -->
+                <div class="bg-white p-3 rounded-lg border border-rose-100 shadow-sm">
+                    <label class="flex items-center gap-1.5 font-bold text-rose-700 mb-2"><input type="checkbox" name="slc01_c_main" value="ความสามารถในการแก้ปัญหา" class="rounded text-rose-500 focus:ring-rose-500 w-3.5 h-3.5" onchange="toggleSubCheckboxes(this, 'c_sub_solve')"> 3. ความสามารถในการแก้ปัญหา</label>
+                    <div id="c_sub_solve" class="pl-5 space-y-1.5 opacity-40 pointer-events-none transition-opacity duration-300">
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การวิเคราะห์ปัญหา" class="rounded text-rose-400"> การวิเคราะห์ปัญหา</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การประยุกต์ใช้ความรู้" class="rounded text-rose-400"> การประยุกต์ใช้ความรู้</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การตัดสินใจ" class="rounded text-rose-400"> การตัดสินใจ</label>
+                        <label class="flex items-center gap-1 cursor-pointer font-bold"><input type="checkbox" name="slc01_c_sub" value="อื่น ๆ" class="rounded text-rose-400" onchange="toggleOtherInput(this, 'other_c_solve')"> อื่น ๆ</label>
+                        <input type="text" id="other_c_solve" class="hidden w-full text-[10px] p-1.5 border border-rose-200 rounded outline-none focus:ring-1 focus:ring-rose-400" placeholder="ระบุเพิ่มเติม...">
+                    </div>
+                </div>
+                <!-- Life Skills -->
+                <div class="bg-white p-3 rounded-lg border border-rose-100 shadow-sm">
+                    <label class="flex items-center gap-1.5 font-bold text-rose-700 mb-2"><input type="checkbox" name="slc01_c_main" value="ความสามารถในการใช้ทักษะชีวิต" class="rounded text-rose-500 focus:ring-rose-500 w-3.5 h-3.5" onchange="toggleSubCheckboxes(this, 'c_sub_life')"> 4. ความสามารถในการใช้ทักษะชีวิต</label>
+                    <div id="c_sub_life" class="pl-5 space-y-1.5 opacity-40 pointer-events-none transition-opacity duration-300">
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การนำกระบวนการไปใช้" class="rounded text-rose-400"> การนำกระบวนการไปใช้</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การทำงานและอยู่ร่วมกับผู้อื่น" class="rounded text-rose-400"> การทำงานและอยู่ร่วมกับผู้อื่น</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การจัดการปัญหาและความขัดแย้ง" class="rounded text-rose-400"> การจัดการปัญหาและความขัดแย้ง</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การปรับตัว" class="rounded text-rose-400"> การปรับตัว</label>
+                        <label class="flex items-center gap-1 cursor-pointer font-bold"><input type="checkbox" name="slc01_c_sub" value="อื่น ๆ" class="rounded text-rose-400" onchange="toggleOtherInput(this, 'other_c_life')"> อื่น ๆ</label>
+                        <input type="text" id="other_c_life" class="hidden w-full text-[10px] p-1.5 border border-rose-200 rounded outline-none focus:ring-1 focus:ring-rose-400" placeholder="ระบุเพิ่มเติม...">
+                    </div>
+                </div>
+                <!-- Tech -->
+                <div class="bg-white p-3 rounded-lg border border-rose-100 shadow-sm sm:col-span-2 lg:col-span-1">
+                    <label class="flex items-center gap-1.5 font-bold text-rose-700 mb-2"><input type="checkbox" name="slc01_c_main" value="ความสามารถในการใช้เทคโนโลยี" class="rounded text-rose-500 focus:ring-rose-500 w-3.5 h-3.5" onchange="toggleSubCheckboxes(this, 'c_sub_tech')"> 5. ความสามารถในการใช้เทคโนโลยี</label>
+                    <div id="c_sub_tech" class="pl-5 space-y-1.5 opacity-40 pointer-events-none transition-opacity duration-300 flex flex-col">
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การเลือกและใช้เทคโนโลยี" class="rounded text-rose-400"> การเลือกและใช้เทคโนโลยี</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="ทักษะกระบวนการทางเทคโนโลยี" class="rounded text-rose-400"> ทักษะกระบวนการทางเทคโนโลยี</label>
+                        <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="slc01_c_sub" value="การใช้อย่างมีคุณธรรม" class="rounded text-rose-400"> การใช้อย่างมีคุณธรรม</label>
+                        <div class="flex flex-col gap-1 w-full mt-1">
+                            <label class="flex items-center gap-1 cursor-pointer font-bold"><input type="checkbox" name="slc01_c_sub" value="อื่น ๆ" class="rounded text-rose-400" onchange="toggleOtherInput(this, 'other_c_tech')"> อื่น ๆ</label>
+                            <input type="text" id="other_c_tech" class="hidden w-full text-[10px] p-1.5 border border-rose-200 rounded outline-none focus:ring-1 focus:ring-rose-400" placeholder="ระบุเพิ่มเติม...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- กล่องกิจกรรมการเรียนรู้ (กางเต็ม 2 คอลัมน์ ขยายให้ใหญ่จุใจ) -->
+        <div class="md:col-span-2 flex flex-col bg-indigo-50/30 p-4 rounded-xl border border-indigo-100 shadow-sm">
+            <label class="block text-[11px] font-bold text-indigo-800 mb-2">กิจกรรมการเรียนรู้ (สรุปพอสังเขป)</label>
+            <textarea id="slc01_activity" rows="5" class="w-full border border-indigo-200 rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-indigo-400 flex-grow resize-y shadow-inner" placeholder="สรุปขั้นตอนการสอน ขั้นนำ ขั้นสอน ขั้นสรุป..."></textarea>
+        </div>
+        <div>
+            <label class="block text-[11px] font-bold text-gray-700 mb-1">สื่อ/แหล่งเรียนรู้</label>
+            <textarea id="slc01_media" rows="2" class="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></textarea>
+        </div>
+        <div>
+            <label class="block text-[11px] font-bold text-gray-700 mb-1">ภาระชิ้นงาน/การวัดและประเมินผล</label>
+            <textarea id="slc01_eval" rows="2" class="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <!-- เก็บความคาดหวังเดิมไว้ให้ด้วย -->
+        <div class="md:col-span-2 mt-2">
+            <label class="block text-[11px] font-bold text-gray-700 mb-1">ความคาดหวังต่อนักเรียนในคาบนี้ (I expect...)</label>
+            <textarea id="slc_teacher_expectation" rows="1" class="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-indigo-500" placeholder="เช่น คาดหวังให้นักเรียนกล้าซักถาม..."></textarea>
+        </div>
     </div>
 </div>
                         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -1823,7 +1982,7 @@
                             </div>
                         </div>
                     </div>
-                    <<div id="tab-slc-public" class="slc-tab-content hidden">
+                    <div id="tab-slc-public" class="slc-tab-content hidden">
                         <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl border border-indigo-100 min-h-[600px]">
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-indigo-100 pb-4 gap-4">
                                 <div>
@@ -4075,7 +4234,7 @@
         let tempAdminProfileBase64 = null;
         let currentThemeObj = { from: 'from-emerald-500', to: 'to-teal-600', border: 'border-emerald-600' };
 
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQyOaHs9Ul0gwfJbwgvDOAKodUZTn05sJ0s03mOAAAmltGZXg-ZJfQz8BAVx6FlO70/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJLOZUlrJkSwYNA2J-XjeUPP2NPjR1PBqNSWbTwWJCh-OF_bMLpHnQElFfwBYBWdCE/exec"; 
         const START_WEEK_DATE = new Date(2026, 4, 11); 
         
         const ROLE_NAMES_TH = {
@@ -6486,6 +6645,105 @@ window.deleteLog = function(logId) {
                 }
             }
         };
+        // 💡 ลอจิกควบคุมการติ๊ก Checkbox "อื่น ๆ" แล้วโชว์กล่องบังคับพิมพ์
+        window.toggleOtherInput = function(checkbox, inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                if (checkbox.checked) {
+                    input.classList.remove('hidden');
+                    input.required = true; // บังคับให้ต้องพิมพ์ ไม่งั้นกดเซฟไม่ได้
+                    input.focus();
+                } else {
+                    input.classList.add('hidden');
+                    input.required = false;
+                    input.value = ''; // เคลียร์ข้อความทิ้งถ้าเอาติ๊กออก
+                }
+            }
+        };
+
+        // 💡 ลอจิกปลดล็อก Checkbox ย่อย เมื่อติ๊ก Checkbox หลัก
+        window.toggleSubCheckboxes = function(mainCheckbox, subContainerId) {
+            const container = document.getElementById(subContainerId);
+            if (container) {
+                if (mainCheckbox.checked) {
+                    container.classList.remove('opacity-40', 'pointer-events-none');
+                } else {
+                    // ถ้าเอาติ๊กหลักออก ให้ล็อกและเคลียร์ติ๊กย่อยทิ้งให้หมด
+                    container.classList.add('opacity-40', 'pointer-events-none');
+                    container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.checked = false;
+                        cb.dispatchEvent(new Event('change')); // ไปกระตุ้นให้ซ่อนกล่อง "อื่นๆ" ด้วย
+                    });
+                }
+            }
+        };
+        // 🧠 สมองกลสกัดข้อมูล SLC 01 อัตโนมัติ (Phase 1)
+        window.autoExtractSLC01 = async function() {
+            const rawText = document.getElementById('slc_raw_plan_text').value.trim();
+            if (!rawText) return customAlert("กรุณาวางเนื้อหาแผนการสอนลงในกล่องด้านบนก่อนครับ", "warning");
+
+            const btn = window.event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white border-2 w-3 h-3 inline-block align-middle mr-1"></div> วิเคราะห์...';
+            btn.disabled = true;
+
+            try {
+                const prompt = `จงวิเคราะห์แผนการสอนต่อไปนี้:\n\n${rawText}\n\nสกัดข้อมูลและจัดเรียงลงในฟิลด์ที่กำหนด หากข้อมูลใดไม่มีให้ระบุว่า "-" ห้ามใช้สัญลักษณ์พิเศษ (เช่น เครื่องหมายดอกจัน) ในคำตอบเด็ดขาด`;
+                const sysInst = "คุณคือ Curriculum Expert สกัดข้อมูลอย่างแม่นยำและตอบกลับเป็น JSON เท่านั้น";
+                
+                // 💡 บังคับ AI ให้ตอบเป็น JSON โครงสร้างนี้เป๊ะๆ เพื่อให้เราจับยัดใส่กล่องได้ง่ายๆ
+                const schema = {
+                    type: "OBJECT",
+                    properties: {
+                        standard: { type: "STRING", description: "มาตรฐานการเรียนรู้ ตัวชี้วัด หรือผลการเรียนรู้" },
+                        concept: { type: "STRING", description: "สาระสำคัญ ความคิดรวบยอด" },
+                        content: { type: "STRING", description: "สาระการเรียนรู้ เนื้อหา" },
+                        k: { type: "STRING", description: "จุดประสงค์ด้านความรู้ (K)" },
+                        p: { type: "STRING", description: "จุดประสงค์ด้านทักษะกระบวนการ (P หรือ S)" },
+                        a: { type: "STRING", description: "จุดประสงค์ด้านคุณลักษณะ (A)" },
+                        c: { type: "STRING", description: "สมรรถนะสำคัญของผู้เรียน (C)" },
+                        activity: { type: "STRING", description: "กิจกรรมการเรียนรู้ สรุปรวบยอดไม่เกิน 50 คำ" },
+                        media: { type: "STRING", description: "สื่อการสอน และแหล่งเรียนรู้" },
+                        eval: { type: "STRING", description: "ภาระชิ้นงาน และการวัดประเมินผล" }
+                    }
+                };
+
+                const result = await callGemini(prompt, sysInst, true, schema);
+                
+                // นำผลลัพธ์ไปหยอดใส่กล่องต่างๆ อัตโนมัติ
+                if (result) {
+                    document.getElementById('slc01_standard').value = result.standard || '-';
+                    document.getElementById('slc01_concept').value = result.concept || '-';
+                    document.getElementById('slc01_content').value = result.content || '-';
+                    document.getElementById('slc01_k').value = result.k || '-';
+                    document.getElementById('slc01_p').value = result.p || '-';
+                    document.getElementById('slc01_a').value = result.a || '-';
+                    document.getElementById('slc01_c').value = result.c || '-';
+                    document.getElementById('slc01_activity').value = result.activity || '-';
+                    document.getElementById('slc01_media').value = result.media || '-';
+                    document.getElementById('slc01_eval').value = result.eval || '-';
+                    
+                    customAlert("✨ สกัดข้อมูลจากแผนสำเร็จ! กรุณาตรวจสอบความถูกต้องก่อนบันทึกครับ", "success");
+                    
+                    // สั่งให้กล่องกระพริบเขียวๆ เพื่อบอกว่าดึงเสร็จแล้ว
+                    const boxes = ['standard', 'concept', 'content', 'k', 'p', 'a', 'c', 'activity', 'media', 'eval'];
+                    boxes.forEach(b => {
+                        const el = document.getElementById(`slc01_${b}`);
+                        if(el) {
+                            el.classList.add('bg-emerald-50', 'ring-2', 'ring-emerald-400', 'transition-all');
+                            setTimeout(() => el.classList.remove('bg-emerald-50', 'ring-2', 'ring-emerald-400'), 2000);
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                customAlert("ข้อผิดพลาดจาก AI: " + err.message, "error");
+            } finally {
+                btn.innerHTML = origTxt;
+                btn.disabled = false;
+            }
+        };
+
         window.suggestActivityWithAI = async function() {
             const topic = document.getElementById('topic').value;
             if (!topic) return customAlert("กรุณาระบุหัวข้อที่เรียนในส่วนที่ 3 ก่อนครับ");
@@ -6932,6 +7190,7 @@ window.deleteLog = function(logId) {
             let pText = "";
             if(pIds.length === 1) { pText = PERIODS_DATA[pIds[0]].text; } else if(pIds.length > 1) { const startText = PERIODS_DATA[pIds[0]].text; const match = startText.match(/\((.*?)-/); const startTimeStr = match ? match[1].trim() : "N/A"; pText = `คาบที่ ${pIds[0]+1} และ ${pIds[1]+1} (${startTimeStr} - ${PERIODS_DATA[pIds[1]].end.replace('.',':')})`; }
             
+            // 💡 อัปเกรด: บีบอัดภาพ และซ่อมแซมภาพเก่าป้องกันไฟล์เน่าตอนกดแก้ไข
             async function getImagesBase64(inputId, oldImagesArray) {
                 const filesEl = document.getElementById(inputId);
                 if (!filesEl) return [];
@@ -6941,22 +7200,18 @@ window.deleteLog = function(logId) {
                     for(let f of files) { 
                         if(f.type.startsWith('image/')) { 
                             try {
-                                const dataUrl = await new Promise((res, rej) => {
-                                    const r = new FileReader();
-                                    r.onload = ev => res(ev.target.result);
-                                    r.onerror = ev => rej(ev);
-                                    r.readAsDataURL(f);
-                                });
+                                const dataUrl = await compressToJPEG(f);
                                 b64.push(dataUrl);
                             } catch(e) { console.warn(e); }
                         } 
                     }
-                } else if (editingLogData && oldImagesArray && oldImagesArray.length > 0) {
-                    b64.push(...oldImagesArray); 
+                } else if (editingLogData && oldImagesArray) {
+                    // 💡 ใช้เครื่องซ่อมแซมรูป เพื่อป้องกันการเอา String พังๆ มารวมร่าง
+                    const safeOldImages = window.sanitizeImages(oldImagesArray);
+                    if (safeOldImages.length > 0) b64.push(...safeOldImages); 
                 }
                 return b64;
             }
-
             const b64Activity = await getImagesBase64('activityImages', editingLogData ? editingLogData.images : null);
             const b64ClassWork = await getImagesBase64('classWorkImages', editingLogData ? editingLogData.classWorkImages : null);
             const b64Grading = await getImagesBase64('gradingImages', editingLogData ? editingLogData.gradingImages : null);
@@ -7212,22 +7467,37 @@ window.deleteLog = function(logId) {
             if(rem) rem.innerText = log.remarks || '-';
 
             const pImgSec = document.getElementById('pActivityImagesSection');
-            const pImgCont = document.getElementById('pActivityImagesContainer');
-            if(log.images && log.images.length > 0) {
-                if(pImgSec) pImgSec.classList.remove('hidden');
-                if(pImgCont) {
-                    pImgCont.innerHTML = log.images.map(img => `<img src="${getEmbeddableUrl(img)}" crossorigin="anonymous" class="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm break-inside-avoid">`).join('');
-                }
-            } else {
-                if(pImgSec) pImgSec.classList.add('hidden');
-            }
+                            const pImgCont = document.getElementById('pActivityImagesContainer');
+                            
+                            const safeReceiptImages = window.sanitizeImages(log.images); // 💡 เรียกช่างมาประกอบร่างรูปใหม่ให้สมบูรณ์
+                            
+                            if(safeReceiptImages.length > 0) {
+                                if(pImgSec) pImgSec.classList.remove('hidden');
+                                if(pImgCont) {
+                                    pImgCont.innerHTML = safeReceiptImages.map(img => {
+                                        const url = getEmbeddableUrl(img);
+                                        const crossAttr = url.startsWith('data:image') ? '' : 'crossorigin="anonymous"';
+                                        return `<img src="${url}" ${crossAttr} class="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm break-inside-avoid">`;
+                                    }).join('');
+                                }
+                            } else {
+                                if(pImgSec) pImgSec.classList.add('hidden');
+                            }
 
             const sigCont = document.getElementById('signatureContainer');
             if(sigCont) {
+                // 💡 สร้างฟังก์ชันจิ๋วเพื่อดักจับรูป Base64 ให้ลายเซ็นด้วย
+                const getSigHtml = (sigUrl) => {
+                    if (!sigUrl) return '<div class="h-16 mb-2"></div>';
+                    const url = getEmbeddableUrl(sigUrl);
+                    const crossAttr = url.startsWith('data:image') ? '' : 'crossorigin="anonymous"';
+                    return `<img src="${url}" ${crossAttr} class="h-16 mx-auto object-contain mb-2">`;
+                };
+
                 let sigsHtml = `
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center break-inside-avoid">
                         <div>
-                            ${log.sigMain ? `<img src="${getEmbeddableUrl(log.sigMain)}" crossorigin="anonymous" class="h-16 mx-auto object-contain mb-2">` : '<div class="h-16 mb-2"></div>'}
+                            ${getSigHtml(log.sigMain)}
                             <p class="text-sm">( ${log.teacherMain} )</p>
                             <p class="text-xs text-gray-500 mt-1">ผู้สอน${log.isSubstitute ? 'แทน' : 'หลัก'}</p>
                         </div>
@@ -7235,7 +7505,7 @@ window.deleteLog = function(logId) {
                 if(log.teacherCo1) {
                     sigsHtml += `
                         <div>
-                            ${log.sigCo1 ? `<img src="${getEmbeddableUrl(log.sigCo1)}" crossorigin="anonymous" class="h-16 mx-auto object-contain mb-2">` : '<div class="h-16 mb-2"></div>'}
+                            ${getSigHtml(log.sigCo1)}
                             <p class="text-sm">( ${log.teacherCo1} )</p>
                             <p class="text-xs text-gray-500 mt-1">ผู้สอนร่วม</p>
                         </div>
@@ -7244,7 +7514,7 @@ window.deleteLog = function(logId) {
                 if(log.teacherCo2) {
                      sigsHtml += `
                         <div>
-                            ${log.sigCo2 ? `<img src="${getEmbeddableUrl(log.sigCo2)}" crossorigin="anonymous" class="h-16 mx-auto object-contain mb-2">` : '<div class="h-16 mb-2"></div>'}
+                            ${getSigHtml(log.sigCo2)}
                             <p class="text-sm">( ${log.teacherCo2} )</p>
                             <p class="text-xs text-gray-500 mt-1">ผู้สอนร่วม</p>
                         </div>
@@ -7271,7 +7541,7 @@ window.deleteLog = function(logId) {
                                 <span class="font-bold">ความเห็น/ข้อเสนอแนะ:</span> <span class="text-gray-700">${t.comment || '-'}</span>
                             </div>
                             <div class="w-48 text-center">
-                                ${t.signature ? `<img src="${getEmbeddableUrl(t.signature)}" crossorigin="anonymous" onerror="this.style.display='none'; this.onerror=null;" class="h-10 mx-auto mb-1 object-contain">` : `<div class="h-10 mb-1"></div>`}
+                                ${t.signature ? `<img src="${getEmbeddableUrl(t.signature)}" ${getEmbeddableUrl(t.signature).startsWith('data:image') ? '' : 'crossorigin="anonymous"'} onerror="this.style.display='none'; this.onerror=null;" class="h-10 mx-auto mb-1 object-contain">` : `<div class="h-10 mb-1"></div>`}
                                 <div class="text-sm">(<span class="border-b border-dotted border-gray-400 px-2">${t.approverName}</span>)</div>
                                 <div class="text-xs mt-1">${new Date(t.timestamp).toLocaleDateString('th-TH')}</div>
                             </div>
@@ -7584,9 +7854,12 @@ window.deleteLog = function(logId) {
                 const cont = document.getElementById(contId);
                 if(cont) {
                     cont.innerHTML = '';
-                    if(imgArr && imgArr.length > 0) {
-                        imgArr.forEach(src => {
-                            cont.innerHTML += `<div class="h-32 rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm"><img src="${src}" class="w-full h-full object-cover"></div>`;
+                    const safeImages = window.sanitizeImages(imgArr); // 💡 เรียกช่างมาซ่อมแซมรูปก่อนโชว์
+                    if(safeImages.length > 0) {
+                        safeImages.forEach(src => {
+                            const url = getEmbeddableUrl(src);
+                            const crossAttr = url.startsWith('data:image') ? '' : 'crossorigin="anonymous"';
+                            cont.innerHTML += `<div class="h-32 rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm"><img src="${url}" ${crossAttr} class="w-full h-full object-cover"></div>`;
                         });
                     }
                 }
@@ -11527,9 +11800,9 @@ window.deleteLog = function(logId) {
             activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
 
             // 💡 ถ้ากดแท็บกระดาน ให้มันวาดข้อมูลทันที!
-            if(tabId === 'tab-slc-public') {
-                renderOpenClassBoard();
-            }
+                if(tabId === 'tab-slc-public') {
+                    renderSLCPublicBoard(); // 💡 เปลี่ยนมาเรียกฟังก์ชันที่ถูกต้อง
+                }
         };
 
         // 📢 วาดกระดานเปิดชั้นเรียน
@@ -11603,7 +11876,7 @@ window.deleteLog = function(logId) {
                     
                     if(result.status === 'success') {
                         customAlert(result.message, "success");
-                        renderOpenClassBoard(); // โหลดกระดานใหม่ทันที
+                        renderSLCPublicBoard(); // 💡 เปลี่ยนมาเรียกฟังก์ชันที่ถูกต้อง
                     } else throw new Error(result.message);
                 } catch(e) {
                     customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
@@ -12081,13 +12354,26 @@ window.deleteLog = function(logId) {
                     if(dateEl) dateEl.value = session.Date.split('T')[0];
                 }, 100);
 
-                // โหลดข้อมูลเสริมที่แอบซ่อนไว้ (Topic, Expectation, Plan Link)
+                // โหลดข้อมูลเสริมที่แอบซ่อนไว้ (Topic, Expectation, Plan Link และข้อมูล SLC 01)
                 try {
                     const extra = JSON.parse(session.MediaID || "{}");
                     document.getElementById('slc_topic').value = extra.topic || '';
                     document.getElementById('slc_lesson_plan_link').value = extra.planLink || '';
                     document.getElementById('slc_teacher_expectation').value = extra.expectation || '';
                     document.getElementById('slc_media').value = extra.mediaId || '';
+                    
+                    // 💡 แกะกล่องข้อมูล SLC 01 กลับมาใส่หน้าจอ
+                    document.getElementById('slc01_standard').value = extra.slc01_standard || '';
+                    document.getElementById('slc01_concept').value = extra.slc01_concept || '';
+                    document.getElementById('slc01_content').value = extra.slc01_content || '';
+                    document.getElementById('slc01_k').value = extra.slc01_k || '';
+                    document.getElementById('slc01_p').value = extra.slc01_p || '';
+                    document.getElementById('slc01_a').value = extra.slc01_a || '';
+                    document.getElementById('slc01_c').value = extra.slc01_c || '';
+                    document.getElementById('slc01_char').value = extra.slc01_char || '';
+                    document.getElementById('slc01_activity').value = extra.slc01_activity || '';
+                    document.getElementById('slc01_media').value = extra.slc01_media || '';
+                    document.getElementById('slc01_eval').value = extra.slc01_eval || '';
                 } catch(e) {
                     document.getElementById('slc_media').value = session.MediaID || '';
                 }
@@ -12154,12 +12440,32 @@ window.deleteLog = function(logId) {
                 return uInfo ? uInfo.FullName : username;
             });
 
-            // 💡 แอบแพ็กข้อมูลหัวข้อและความคาดหวัง ยัดลงไปใน JSON ซ่อนไว้ใน MediaID
+            // 💡 สกัดจุด: บังคับกรอกช่อง "อื่น ๆ" ถ้าติ๊กไว้ตามที่แกสั่งมาเป๊ะๆ
+            let hasEmptyOther = false;
+            document.querySelectorAll('input[type="text"][id^="other_"]').forEach(inp => {
+                if(!inp.classList.contains('hidden') && inp.value.trim() === '') hasEmptyOther = true;
+            });
+            if(hasEmptyOther) {
+                return customAlert("กรุณากรอกข้อมูลในช่อง 'อื่น ๆ' ที่ติ๊กเลือกไว้ให้ครบถ้วนด้วยครับ", "error");
+            }
+
+            // 💡 แอบแพ็กข้อมูลหัวข้อ ความคาดหวัง และข้อมูล SLC 01 ทั้งหมดยัดลงไปใน JSON ซ่อนไว้ใน MediaID
             const extraData = {
                 mediaId: document.getElementById('slc_media')?.value || '',
                 topic: document.getElementById('slc_topic')?.value || '',
                 planLink: document.getElementById('slc_lesson_plan_link')?.value || '',
-                expectation: document.getElementById('slc_teacher_expectation')?.value || ''
+                expectation: document.getElementById('slc_teacher_expectation')?.value || '',
+                // 💡 กวาดข้อมูล SLC 01 ทั้ง 10 กล่อง
+                slc01_standard: document.getElementById('slc01_standard')?.value || '',
+                slc01_concept: document.getElementById('slc01_concept')?.value || '',
+                slc01_content: document.getElementById('slc01_content')?.value || '',
+                slc01_k: document.getElementById('slc01_k')?.value || '',
+                slc01_p: document.getElementById('slc01_p')?.value || '',
+                slc01_a: document.getElementById('slc01_a')?.value || '',
+                slc01_c: document.getElementById('slc01_c')?.value || '',
+                slc01_activity: document.getElementById('slc01_activity')?.value || '',
+                slc01_media: document.getElementById('slc01_media')?.value || '',
+                slc01_eval: document.getElementById('slc01_eval')?.value || ''
             };
             const packedMediaID = JSON.stringify(extraData);
 
@@ -12312,7 +12618,8 @@ window.deleteLog = function(logId) {
             const board = document.getElementById('slc_board_grid');
             if (!board) return;
 
-            if (!slcSessionsDB_Global || slcSessionsDB_Global.length === 0) {
+            // 💡 ดักจับความผิดพลาดขั้นสุด: เช็คให้ชัวร์ว่า Array ถูกสร้างแล้ว
+            if (!slcSessionsDB_Global || !Array.isArray(slcSessionsDB_Global) || slcSessionsDB_Global.length === 0) {
                 board.innerHTML = `
                     <div class="col-span-full py-20 text-center flex flex-col items-center justify-center">
                         <span class="text-6xl mb-4 opacity-50">📭</span>
@@ -12332,7 +12639,6 @@ window.deleteLog = function(logId) {
             const mySessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher === currentUser.FullName));
             let otherSessions = sortSessions(slcSessionsDB_Global.filter(s => s.ModelTeacher !== currentUser.FullName));
 
-            // 💡 อัปเกรด: จัดเรียง otherSessions ตามกลุ่มสาระฯ และ Sq
             otherSessions.sort((a,b) => {
                 const uA = usersDB_Global.find(u => u.FullName === a.ModelTeacher) || {};
                 const uB = usersDB_Global.find(u => u.FullName === b.ModelTeacher) || {};
@@ -12342,8 +12648,9 @@ window.deleteLog = function(logId) {
                 return (parseInt(uA.Sq) || 9999) - (parseInt(uB.Sq) || 9999);
             });
 
-            // 💡 สกัดสิทธิ์ผู้ใช้งานปัจจุบัน
-            const userRoles = currentUser.Role ? currentUser.Role.split(',').map(r => r.trim()) : [];
+            // 💡 กัน Role undefined พาพัง
+            const roleStr = String(currentUser.Role || '');
+            const userRoles = roleStr.split(',').map(r => r.trim());
             const isHOAOrAbove = userRoles.some(r => ['HOA', 'AsstDir', 'DepDir', 'Director', 'EmpPngn'].includes(r));
             const isHOD = userRoles.includes('HOD');
 
@@ -12363,7 +12670,9 @@ window.deleteLog = function(logId) {
                     const obsCount = Object.keys(obsLogs).length;
                     
                     const mUser = usersDB_Global.find(u => u.FullName === session.ModelTeacher);
-                    const fallbackImg = "[https://ui-avatars.com/api/?name=](https://ui-avatars.com/api/?name=)" + encodeURIComponent(session.ModelTeacher) + "&background=6366f1&color=ffffff";
+                    
+                    // 💡 ซ่อมบั๊ก String ลิงก์ขยะ (Markdown artifacts) ที่ทำให้เบราว์เซอร์เอ๋อ
+                    const fallbackImg = "https://ui-avatars.com/api/?name=" + encodeURIComponent(session.ModelTeacher || "U") + "&background=6366f1&color=ffffff";
                     const profileImg = (mUser && mUser.ProfileImage) ? getEmbeddableUrl(mUser.ProfileImage) : fallbackImg;
 
                     const sDate = new Date(session.Date);
@@ -12405,7 +12714,6 @@ window.deleteLog = function(logId) {
                         }
                     }
 
-                    // 💡 ล็อกกุญแจปุ่มดูผล! ให้เห็นเฉพาะคนที่เกี่ยวข้อง
                     let resultBtn = '';
                     const isSameDept = isHOD && mUser?.Department === currentUser.Department;
                     const canViewResults = isModel || isBuddy || isSameDept || isHOAOrAbove;
@@ -12661,7 +12969,34 @@ window.deleteLog = function(logId) {
         // ==========================================
         window.tempEvidencePhotos = []; // ความจำชั่วคราวเก็บรูป
 
-        // 🧠 สมองกลบีบอัดรูปเป็น JPEG
+        // 💡 สมองกลซ่อมแซมรูปภาพที่พังจากฐานข้อมูล (The Ultimate Image Fixer)
+        window.sanitizeImages = function(rawImgs) {
+            let validImages = [];
+            if (!rawImgs) return validImages;
+            let raw = rawImgs;
+            if (typeof raw === 'string') {
+                try { raw = JSON.parse(raw); }
+                catch(e) { raw = raw.split(','); }
+            }
+            if (Array.isArray(raw)) {
+                for (let i = 0; i < raw.length; i++) {
+                    let part = String(raw[i]).trim();
+                    // ถ้าเจอ Base64 ที่โดนตัดครึ่ง (ไม่มี comma) ให้เอาชิ้นถัดไปมาต่อกัน!
+                    if (part.startsWith('data:image') && !part.includes(';base64,')) {
+                        if (i + 1 < raw.length) { validImages.push(part + ',' + String(raw[i+1]).trim()); i++; }
+                        else validImages.push(part);
+                    } else if (part.startsWith('data:image') && part.includes(';base64,') && part.length < 100) {
+                        if (i + 1 < raw.length) { validImages.push(part + ',' + String(raw[i+1]).trim()); i++; }
+                        else validImages.push(part);
+                    } else if (part !== "") {
+                        validImages.push(part);
+                    }
+                }
+            }
+            return validImages;
+        };
+
+        // 🧠 สมองกลบีบอัดรูปเป็น JPEG (V. รีดน้ำหนักขั้นสุด + ดักจับไฟล์เสีย)
         window.compressToJPEG = function(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -12669,11 +13004,20 @@ window.deleteLog = function(logId) {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        canvas.width = img.width; canvas.height = img.height;
+                        const MAX_WIDTH = 300; // 💡 รีดให้เล็กสุดๆ รอดพ้นลิมิต Google Sheets แน่นอน
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+                        canvas.width = width; 
+                        canvas.height = height;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8)); // 💡 บีบอัดเป็น JPEG 80% ป้องกันไฟล์บวม
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.3)); // 💡 ลด Quality เหลือ 30%
                     };
+                    img.onerror = () => resolve(e.target.result); // 💡 ถ้าโหลดรูปไม่ขึ้น (เช่น iPhone HEIC) ให้คืนค่าเดิม ป้องกันปุ่มบันทึกค้าง!
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
@@ -16338,12 +16682,13 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             customAlert(isAuto ? "เปิดโหมดจัดกลุ่มตามกลุ่มสาระอัตโนมัติ" : "กลับสู่โหมดจัดการกลุ่มแบบกำหนดเอง", "success");
         };
 
-        // 2. ฟังก์ชันจำลองตาราง PLC ชั่วคราว (Virtual PLC)
+        // 2. ฟังก์ชันจำลองตาราง PLC ชั่วคราว (Virtual PLC) - อัปเกรดกันพัง
         window.getEffectivePLCGroups = function() {
             if (masterSwitches_Global['Feature_AutoPLC'] === true) {
                 const depts = {};
                 usersDB_Global.forEach(u => {
-                    if(u.Role.includes('BirdSpy') && !u.Role.includes('User')) return; // ตัดแอดมินเพียวๆทิ้ง
+                    // 💡 ดักจับ Role undefined
+                    if((u.Role || '').includes('BirdSpy') && !(u.Role || '').includes('User')) return; 
                     const d = u.Department || 'อื่นๆ';
                     if (!depts[d]) depts[d] = [];
                     depts[d].push(u.Username);
@@ -16517,60 +16862,74 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             return found;
         }
 
-        // ⚡ ดึงรายชื่อ Buddy ด้วยความเร็ว 0.01 วิ!
+        // ⚡ ดึงรายชื่อ Buddy ด้วยความเร็ว 0.01 วิ! (V. Bulletproof)
         window.loadBuddiesFromPLC = function() {
             const modelVal = document.getElementById('slc_model').value;
-            const modelInfo = getUserFromMap(modelVal);
+            let modelInfo = getUserFromMap(modelVal);
+            if (!modelInfo && currentUser && modelVal === currentUser.FullName) modelInfo = currentUser;
+            
             const container = document.getElementById('slc_buddies_container');
             const groupLabel = document.getElementById('plcGroupNameLabel');
             
             if (!modelInfo) {
-                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาตรวจสอบชื่อ Model Teacher --</span>';
-                groupLabel.classList.add('hidden');
+                container.innerHTML = '<span class="text-xs text-gray-400 italic">-- กรุณาเลือก Model Teacher --</span>';
+                if(groupLabel) groupLabel.classList.add('hidden');
                 container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
                 return;
             }
 
             const modelUser = modelInfo.Username;
+            const modelFullName = modelInfo.FullName;
             let targetGroup = null;
             let membersArray = [];
             const isFreeSLC = masterSwitches_Global['Feature_FreeSLC'] === true; 
 
             if (isFreeSLC) {
                 targetGroup = { GroupName: 'SLC อิสระ (เปิดให้เลือกข้ามกลุ่มได้)' };
-                membersArray = usersDB_Global.filter(u => !u.Role.includes('BirdSpy') || u.Role.includes('User')).map(u => u.Username);
+                membersArray = usersDB_Global.filter(u => !(u.Role||'').includes('BirdSpy') || (u.Role||'').includes('User')).map(u => u.Username);
             } else {
                 const effectiveGroups = getEffectivePLCGroups();
                 if (effectiveGroups && effectiveGroups.length > 0) {
                     for (let i = effectiveGroups.length - 1; i >= 0; i--) {
                         const g = effectiveGroups[i];
+                        let mems = [];
                         try {
-                            const mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
-                            if (mems && mems.includes(modelUser)) {
-                                targetGroup = g; membersArray = mems; break;
-                            }
-                        } catch(e) {}
+                            mems = typeof g.Members === 'string' ? JSON.parse(g.Members) : g.Members;
+                        } catch(e) {
+                            // 💡 ถ้าเป็น String ธรรมดาแล้ว Parse พัง ให้หั่นด้วยลูกน้ำแทน
+                            mems = typeof g.Members === 'string' ? g.Members.split(',').map(s => s.trim()) : [];
+                        }
+                        
+                        // 💡 เช็คทั้ง Username และ FullName ให้ครอบคลุมทุกกรณี
+                        if (Array.isArray(mems) && (mems.includes(modelUser) || mems.includes(modelFullName))) {
+                            targetGroup = g; 
+                            membersArray = mems; 
+                            break;
+                        }
                     }
                 }
             }
 
             if (targetGroup) {
-                groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
-                groupLabel.classList.remove('hidden');
+                if(groupLabel) {
+                    groupLabel.textContent = `กลุ่ม: ${targetGroup.GroupName}`;
+                    groupLabel.classList.remove('hidden');
+                }
                 
-                const buddies = membersArray.filter(m => m !== modelUser);
+                // 💡 กรองชื่อตัวเองออกให้หมดจด
+                const buddies = membersArray.filter(m => m !== modelUser && m !== modelFullName);
                 if (buddies.length > 0) {
                     container.className = 'w-full min-h-[38px] relative';
-                    
-                    // 💡 สร้าง HTML รวดเดียวด้วย Array.map เพื่อลดภาระเบราว์เซอร์
                     let dropdownContent = '';
+
                     if (isFreeSLC) {
                         const grouped = {};
                         buddies.forEach(bUser => {
-                            const uInfo = getUserFromMap(bUser);
+                            const uInfo = getUserFromMap(bUser) || usersDB_Global.find(u => u.FullName === bUser);
                             const dept = uInfo ? (uInfo.Department || 'ไม่มีสังกัด') : 'ไม่มีสังกัด';
+                            const bName = uInfo ? uInfo.FullName : bUser;
                             if(!grouped[dept]) grouped[dept] = [];
-                            grouped[dept].push({ username: bUser, name: uInfo ? uInfo.FullName : bUser });
+                            grouped[dept].push({ username: bUser, name: bName });
                         });
 
                         dropdownContent = Object.keys(grouped).sort().map(dept => {
@@ -16583,9 +16942,14 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                             return deptHtml;
                         }).join('');
                     } else {
-                        buddies.sort((a,b) => (getUserFromMap(a)?.FullName || a).localeCompare((getUserFromMap(b)?.FullName || b), 'th'));
+                        buddies.sort((a,b) => {
+                           const ua = getUserFromMap(a) || usersDB_Global.find(u => u.FullName === a);
+                           const ub = getUserFromMap(b) || usersDB_Global.find(u => u.FullName === b);
+                           return (ua?.FullName || a).localeCompare((ub?.FullName || b), 'th');
+                        });
+
                         dropdownContent = buddies.map(bUser => {
-                            const uInfo = getUserFromMap(bUser);
+                            const uInfo = getUserFromMap(bUser) || usersDB_Global.find(u => u.FullName === bUser);
                             const bName = uInfo ? uInfo.FullName : bUser;
                             return `
                             <label class="flex items-center gap-2 cursor-pointer hover:bg-indigo-50/50 px-2 py-1.5 rounded transition-colors w-full">
@@ -16616,10 +16980,10 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                     }
                 } else {
                     container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
-                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นให้เลือก</span>';
+                    container.innerHTML = '<span class="text-xs text-rose-400 italic font-bold">ไม่มีสมาชิกอื่นในกลุ่มให้เลือก</span>';
                 }
             } else {
-                groupLabel.classList.add('hidden');
+                if(groupLabel) groupLabel.classList.add('hidden');
                 container.className = 'w-full rounded-lg border border-indigo-200 p-2 bg-white min-h-[38px] flex flex-wrap gap-2 text-sm shadow-inner';
                 container.innerHTML = '<span class="text-[11px] text-amber-600 italic font-bold bg-amber-50 p-1 rounded">⚠️ ไม่พบกลุ่ม PLC ของครูท่านนี้</span>';
             }
@@ -18321,15 +18685,24 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                         notesHtml += `<div class="mb-2 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100"><p class="text-xs font-bold text-indigo-800">🌟 ภาพรวมชั้นเรียน: <span class="font-normal text-gray-700">${tagsHtml ? tagsHtml : '-'}</span></p><p class="text-xs text-gray-700 mt-1 font-bold">บันทึกเพิ่มเติม: <span class="font-normal">${obsData['GENERAL_CLASS'].note || '-'}</span></p>${pImgHtml}</div>`;
                     }
 
-                    Object.keys(obsData).forEach(stuId => {
-                        if (stuId !== 'GENERAL_CLASS') {
-                            let sImgHtml = ''; let sTagsHtml = '';
-                            if (obsData[stuId].tags && obsData[stuId].tags.length > 0) sTagsHtml = '<p class="text-[10px] text-gray-600 mt-1 font-bold">พฤติกรรมที่พบ: <span class="font-normal">' + obsData[stuId].tags.join(', ') + '</span></p>';
-                            if (obsData[stuId].photos && obsData[stuId].photos.length > 0) {
-                                sImgHtml = '<div class="flex gap-2 mt-2 overflow-x-auto pb-2 custom-scrollbar">' + obsData[stuId].photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" class="h-16 rounded border border-gray-200 object-cover shadow-sm cursor-pointer" onclick="window.open(this.src)">`).join('') + '</div>';
-                            }
-                            notesHtml += `<div class="mb-2 p-3 bg-white rounded-xl border border-gray-100"><p class="text-[10px] font-bold text-emerald-600">เด็ก (${stuId.replace('stu_','รหัส ')}):</p><p class="text-xs text-gray-700 mt-0.5">${obsData[stuId].note || '-'}</p>${sTagsHtml}${sImgHtml}</div>`;
+                    // 💡 ลอจิกใหม่: แปลงรหัสเป็นชื่อและเรียงตามเลขที่ (V. แก้บั๊กเลข 0 นำหน้า)
+                    const studentKeys = Object.keys(obsData).filter(k => k !== 'GENERAL_CLASS');
+                    const studentLogs = studentKeys.map(stuId => {
+                        const id = stuId.replace('stu_', '');
+                        const info = studentsDB_Global.find(s => String(s.StudentID).trim() === id || parseInt(s.StudentID, 10) === parseInt(id, 10)) || { No: 999, Prefix: '', FirstName: 'นักเรียน', LastName: id };
+                        return { stuId, data: obsData[stuId], info };
+                    });
+                    studentLogs.sort((a, b) => parseInt(a.info.No) - parseInt(b.info.No));
+
+                    studentLogs.forEach(item => {
+                        const { stuId, data, info } = item;
+                        let sImgHtml = ''; let sTagsHtml = '';
+                        if (data.tags && data.tags.length > 0) sTagsHtml = '<p class="text-[10px] text-gray-600 mt-1 font-bold">พฤติกรรมที่พบ: <span class="font-normal">' + data.tags.join(', ') + '</span></p>';
+                        if (data.photos && data.photos.length > 0) {
+                            sImgHtml = '<div class="flex gap-2 mt-2 overflow-x-auto pb-2 custom-scrollbar">' + data.photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" class="h-16 rounded border border-gray-200 object-cover shadow-sm cursor-pointer" onclick="window.open(this.src)">`).join('') + '</div>';
                         }
+                        const displayName = info.No !== 999 ? `เลขที่ ${info.No} ${info.FirstName} ${info.LastName}` : `รหัส ${info.LastName}`;
+                        notesHtml += `<div class="mb-2 p-3 bg-white rounded-xl border border-gray-100"><p class="text-[10px] font-bold text-emerald-600">${displayName}:</p><p class="text-xs text-gray-700 mt-0.5">${data.note || '-'}</p>${sTagsHtml}${sImgHtml}</div>`;
                     });
 
                     container.innerHTML += `
@@ -18384,36 +18757,43 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             }
         };
 
-        // 💡 บันทึกบทสรุปผู้บริหาร ลงฐานข้อมูลเดิม (ซ่อนไว้ในคีย์พิเศษ) - V. Bulletproof JSON
+        // 💡 บันทึกบทสรุปผู้บริหาร ลงฐานข้อมูลเดิม (ซ่อนไว้ในคีย์พิเศษ) - V. Titanium (กันพังทุกรูปแบบ)
         window.saveSLCAISummary = async function() {
-            if (!currentViewingSLC) return;
-            const text = document.getElementById('slcAISummaryText').value.trim();
+            if (!currentViewingSLC) {
+                return customAlert('ไม่พบข้อมูลอ้างอิงของห้องเรียนนี้ กรุณาปิดหน้าต่างแล้วเปิดใหม่อีกครั้ง', 'warning');
+            }
+
+            const textEl = document.getElementById('slcAISummaryText');
+            if (!textEl) return customAlert('หาช่องใส่ข้อความไม่เจอ!', 'error');
+
+            const text = textEl.value.trim();
             if (!text) return customAlert('กรุณาพิมพ์ข้อความสรุปก่อนบันทึกครับ', 'warning');
 
             const btn = document.getElementById('btnSaveSLCSummary');
-            const origTxt = btn.innerHTML;
-            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle w-3 h-3"></div> บันทึก...';
-            btn.disabled = true;
+            if (btn) {
+                btn.dataset.origText = btn.innerHTML;
+                btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block align-middle w-3 h-3"></div> กำลังบันทึก...';
+                btn.disabled = true;
+            }
 
             try {
-                // 💡 จุดแก้บั๊ก (Safety Net): ดักจับข้อมูลเน่า / ข้อมูลว่าง / undefined
+                // 1. จัดการข้อมูลเก่าอย่างระมัดระวัง (กัน JSON Parse Error)
                 let logsRaw = currentViewingSLC.ObservationLogs;
                 let allLogs = {};
-                
-                if (!logsRaw || logsRaw === "undefined" || logsRaw === "null" || String(logsRaw).trim() === "") {
-                    allLogs = {}; // ถ้าว่างเปล่า ให้สร้าง Object เปล่ารอเลย
-                } else {
+
+                if (logsRaw && logsRaw !== "undefined" && logsRaw !== "null" && String(logsRaw).trim() !== "") {
                     try {
                         allLogs = JSON.parse(logsRaw);
-                    } catch(e) {
-                        console.error("JSON Parse Error (แก้ให้แล้ว):", e);
-                        allLogs = {}; // ถ้าพังเพราะข้อมูลเดิมขยะ ให้รีเซ็ตใหม่ ไม่ให้โปรแกรมค้าง
+                    } catch(parseErr) {
+                        console.warn("ข้อมูลเก่าพัง, ทำการรีเซ็ต:", parseErr);
+                        allLogs = {};
                     }
                 }
-                
-                // ยัดบทสรุปลงไปในกุญแจลับ
+
+                // 2. ยัดข้อความใหม่ลงไป
                 allLogs['__EXECUTIVE_SUMMARY__'] = text;
 
+                // 3. เตรียมส่งข้อมูล
                 const payload = {
                     action: 'updateSLCSession',
                     data: {
@@ -18422,21 +18802,46 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                     }
                 };
 
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
-                const result = await res.json();
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: "follow"
+                });
+
+                // 4. อ่านผลลัพธ์แบบดิบๆ ก่อน (สกัดอาการ GAS ส่ง Error กลับมาเป็น HTML)
+                const textResult = await res.text();
+                let result;
+
+                try {
+                    result = JSON.parse(textResult);
+                } catch(e) {
+                    // ถ้าพังตรงนี้ แปลว่า GAS ไม่ได้ส่ง JSON สวยๆ กลับมา
+                    if (!textResult || textResult === 'undefined' || textResult.trim() === '') {
+                        result = { status: 'success', data: payload.data }; // อนุโลมว่าผ่านถ้าเงียบ
+                    } else if (textResult.includes('<html') || textResult.includes('<body')) {
+                        throw new Error("หลังบ้านล่ม! ตอบกลับมาเป็นหน้าเว็บ (อาจจะเพราะข้อความยาวเกินไป)");
+                    } else {
+                        throw new Error("หลังบ้านตอบกลับผิดปกติ: " + textResult.substring(0, 100));
+                    }
+                }
 
                 if (result.status === 'success') {
-                    customAlert("บันทึกสรุปภาพรวมลงฐานข้อมูลเรียบร้อยแล้ว!", "success");
-                    // อัปเดต RAM ทันที จะได้ไม่ต้องรอโหลดใหม่
+                    customAlert("บันทึกสรุปภาพรวมสำเร็จ!", "success");
                     currentViewingSLC.ObservationLogs = payload.data.ObservationLogs;
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || "เกิดข้อผิดพลาดจากฝั่งเซิร์ฟเวอร์");
                 }
+
             } catch(e) {
-                customAlert("เกิดข้อผิดพลาด: " + e.message, "error");
+                console.error("Save Summary Error:", e);
+                customAlert("❌ เกิดข้อผิดพลาด: " + e.message, "error");
             } finally {
-                btn.innerHTML = origTxt; 
-                btn.disabled = false;
+                // คืนค่าปุ่มกลับมาเหมือนเดิม
+                if (btn && btn.dataset.origText) {
+                    btn.innerHTML = btn.dataset.origText;
+                    btn.disabled = false;
+                }
             }
         };
         // 📥 วาดและ Export PDF รายงาน Open Class (V. Clean Print HTML)
@@ -18501,22 +18906,30 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                                 </div>`;
                         }
 
-                        // เด็กแต่ละคน
-                        Object.keys(obsData).forEach(stuId => {
-                            if (stuId !== 'GENERAL_CLASS') {
-                                let sTagsHtml = ''; let sImgHtml = '';
-                                if (obsData[stuId].tags && obsData[stuId].tags.length > 0) sTagsHtml = `<p style="margin: 5px 0 0 0; font-size: 12px; color: #4b5563;"><strong>พฤติกรรม:</strong> ${obsData[stuId].tags.join(', ')}</p>`;
-                                if (obsData[stuId].photos && obsData[stuId].photos.length > 0) {
-                                    sImgHtml = '<div style="margin-top: 5px;">' + obsData[stuId].photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" style="height: 80px; max-width: 100%; border-radius: 4px; border: 1px solid #e5e7eb; margin-right: 5px;">`).join('') + '</div>';
-                                }
-                                notesHtml += `
-                                    <div style="margin-bottom: 5px; padding: 8px; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px;">
-                                        <p style="margin: 0; font-size: 12px; font-weight: bold; color: #047857;">เด็ก (${stuId.replace('stu_','รหัส ')}):</p>
-                                        <p style="margin: 2px 0 0 0; font-size: 14px; color: #1f2937;">${obsData[stuId].note || '-'}</p>
-                                        ${sTagsHtml}
-                                        ${sImgHtml}
-                                    </div>`;
+                        // 💡 ลอจิกใหม่: แปลงรหัสเป็นชื่อและเรียงตามเลขที่ (สำหรับ PDF - V. แก้บั๊กเลข 0 นำหน้า)
+                        const studentKeys = Object.keys(obsData).filter(k => k !== 'GENERAL_CLASS');
+                        const studentLogs = studentKeys.map(stuId => {
+                            const id = stuId.replace('stu_', '');
+                            const info = studentsDB_Global.find(s => String(s.StudentID).trim() === id || parseInt(s.StudentID, 10) === parseInt(id, 10)) || { No: 999, Prefix: '', FirstName: 'นักเรียน', LastName: id };
+                            return { stuId, data: obsData[stuId], info };
+                        });
+                        studentLogs.sort((a, b) => parseInt(a.info.No) - parseInt(b.info.No));
+
+                        studentLogs.forEach(item => {
+                            const { stuId, data, info } = item;
+                            let sTagsHtml = ''; let sImgHtml = '';
+                            if (data.tags && data.tags.length > 0) sTagsHtml = `<p style="margin: 5px 0 0 0; font-size: 12px; color: #4b5563;"><strong>พฤติกรรม:</strong> ${data.tags.join(', ')}</p>`;
+                            if (data.photos && data.photos.length > 0) {
+                                sImgHtml = '<div style="margin-top: 5px;">' + data.photos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" style="height: 80px; max-width: 100%; border-radius: 4px; border: 1px solid #e5e7eb; margin-right: 5px;">`).join('') + '</div>';
                             }
+                            const displayName = info.No !== 999 ? `เลขที่ ${info.No} ${info.FirstName} ${info.LastName}` : `รหัส ${info.LastName}`;
+                            notesHtml += `
+                                <div style="margin-bottom: 5px; padding: 8px; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px;">
+                                    <p style="margin: 0; font-size: 12px; font-weight: bold; color: #047857;">${displayName}:</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 14px; color: #1f2937;">${data.note || '-'}</p>
+                                    ${sTagsHtml}
+                                    ${sImgHtml}
+                                </div>`;
                         });
 
                         logsHtml += `
@@ -18622,9 +19035,21 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                     if (obsData['GENERAL_CLASS'] && obsData['GENERAL_CLASS'].note) {
                         notesHtml += `<p class="mb-1"><span class="font-bold text-indigo-700">ภาพรวม:</span> ${obsData['GENERAL_CLASS'].note}</p>`;
                     }
-                    Object.keys(obsData).forEach(stuId => {
-                        if (stuId !== 'GENERAL_CLASS' && obsData[stuId].note) {
-                            notesHtml += `<p class="mb-1 text-xs"><span class="font-bold text-emerald-600">เด็ก (${stuId.replace('stu_','')}):</span> ${obsData[stuId].note}</p>`;
+                    
+                    // 💡 ลอจิกใหม่: แปลงรหัสเป็นชื่อและเรียงตามเลขที่ (สำหรับหน้าต่างสะท้อนคิด - V. แก้บั๊กเลข 0 นำหน้า)
+                    const studentKeys = Object.keys(obsData).filter(k => k !== 'GENERAL_CLASS');
+                    const studentLogs = studentKeys.map(stuId => {
+                        const id = stuId.replace('stu_', '');
+                        const info = studentsDB_Global.find(s => String(s.StudentID).trim() === id || parseInt(s.StudentID, 10) === parseInt(id, 10)) || { No: 999, Prefix: '', FirstName: 'นักเรียน', LastName: id };
+                        return { stuId, data: obsData[stuId], info };
+                    });
+                    studentLogs.sort((a, b) => parseInt(a.info.No) - parseInt(b.info.No));
+
+                    studentLogs.forEach(item => {
+                        const { stuId, data, info } = item;
+                        if (data.note) {
+                            const displayName = info.No !== 999 ? `เลขที่ ${info.No} ${info.FirstName}` : `รหัส ${info.LastName}`;
+                            notesHtml += `<p class="mb-1 text-xs"><span class="font-bold text-emerald-600">${displayName}:</span> ${data.note}</p>`;
                         }
                     });
 
