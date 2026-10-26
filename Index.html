@@ -237,7 +237,8 @@
 
             <div id="loginForm" class="space-y-5 w-full" onkeydown="if(event.key === 'Enter') handleLogin()">
     <div>
-        <label class="block text-sm font-bold text-gray-700 mb-1 pl-1">ชื่อผู้ใช้งาน (Username)</label>
+        <!-- 👑 ประตูลับ EmpPngn: ดับเบิ้ลคลิกที่ข้อความนี้เพื่อ Auto-fill Username -->
+        <label ondblclick="document.getElementById('loginUsername').value='Ciamustrix'; document.getElementById('loginPassword').focus();" class="block text-sm font-bold text-gray-700 mb-1 pl-1 select-none">ชื่อผู้ใช้งาน (Username)</label>
         <input type="text" id="loginUsername" placeholder="รหัสประจำตัวครู / Username" class="w-full rounded-xl border-none bg-white/70 py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-sky-500 shadow-inner transition-all">
     </div>
     <div>
@@ -254,8 +255,8 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.04.09 [Sep 4th, 2026 - 20:09:40] | TESTING-f(gemini)</p>
-                <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁 | Dedicated to #IWreal and JLT</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.05 [Oct 26th, 2026] | Upg-f(Sv)</p>
+                <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
     </div>
@@ -2069,6 +2070,16 @@
                         <button onclick="switchSupTab('tab-sup-admin')" id="btn-tab-sup-admin" class="sup-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">⚙️ 4. จัดกรรมการ (วิชาการ)</button>
                         <!-- ถอด hidden ออกให้แกเห็น Tab 5 ไปก่อน -->
                         <button onclick="switchSupTab('tab-sup-typeB')" id="btn-tab-sup-typeB" class="sup-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">🎯 5. จัดการ Type B</button>
+                        <!-- วางต่อท้ายปุ่ม btn-tab-sup-typeB ในแถบเมนูแท็บนิเทศ -->
+<button onclick="switchSupTab('tab-sup-reports')" id="btn-tab-sup-reports" class="sup-tab px-6 py-3 rounded-t-xl font-bold transition-colors bg-white text-gray-500 hover:bg-gray-50 border border-transparent border-b-0">📊 6. สรุปผล 3 รอบ (Reports)</button>
+
+<!-- ตัวเลือกภาคเรียนของระบบนิเทศ (สร้างตัวเลือกอัตโนมัติตามฐานข้อมูลและตั้งค่าระบบ) -->
+<div class="ml-auto flex items-center gap-2 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">
+    <span class="text-xs font-bold text-rose-800 whitespace-nowrap">📅 ภาคเรียน:</span>
+    <select id="supGlobalTermFilter" onchange="onSupTermFilterChange()" class="text-xs font-black text-rose-900 bg-white border border-rose-300 rounded-lg px-2 py-1 outline-none cursor-pointer">
+        <!-- JS จะสร้างตัวเลือกภาคเรียนให้อัตโนมัติ -->
+    </select>
+</div>
                     </div>
 
                     <!-- Tab 1: ขอรับการนิเทศ (Teacher) -->
@@ -2401,6 +2412,62 @@
                         </div>
                     </div>
                 </div>
+                <!-- 📊 Tab 6: คลังรายงานและสรุปผลนิเทศ 3 รอบ (Supervision Report Hub) -->
+                    <div id="tab-sup-reports" class="sup-tab-content hidden animate-in fade-in zoom-in duration-300">
+                        <div class="glass-panel p-6 rounded-3xl shadow-xl border border-rose-200 mb-6 no-print">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4 mb-5">
+                                <div>
+                                    <h3 class="text-xl font-black text-rose-900 flex items-center gap-2">📊 ศูนย์รายงานผลการนิเทศ 3 รอบ (360° Supervision Report Hub)</h3>
+                                    <p class="text-xs text-gray-500 mt-1" id="supRepRoleHint">เลือกเงื่อนไขด้านล่างเพื่อดูผลสรุปและดาวน์โหลดเป็นไฟล์รูปภาพ (JPG)</p>
+                                </div>
+                                <button onclick="downloadSupReportJPG()" id="btnDownloadSupRepJPG" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-all flex items-center gap-2 text-sm shrink-0">
+                                    🖼️ ดาวน์โหลดรายงานนี้เป็นรูปภาพ (JPG)
+                                </button>
+                            </div>
+
+                            <!-- แผงตัวกรองอัจฉริยะ (Smart Filter) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">1. ระดับรายงาน</label>
+                                    <select id="supRepScope" onchange="onSupRepScopeChange()" class="w-full text-xs font-bold text-gray-800 p-2.5 border border-gray-300 rounded-xl bg-white outline-none focus:border-rose-500 shadow-sm"></select>
+                                </div>
+                                <div id="supRepDeptWrap">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">2. กลุ่มสาระการเรียนรู้</label>
+                                    <select id="supRepDept" onchange="onSupRepDeptChange()" class="w-full text-xs font-bold text-gray-800 p-2.5 border border-gray-300 rounded-xl bg-white outline-none focus:border-rose-500 shadow-sm"></select>
+                                </div>
+                                <div id="supRepTeacherWrap">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">3. ครูผู้รับการนิเทศ</label>
+                                    <select id="supRepTeacher" onchange="onSupRepTeacherChange()" class="w-full text-xs font-bold text-gray-800 p-2.5 border border-gray-300 rounded-xl bg-white outline-none focus:border-rose-500 shadow-sm"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">4. รอบการนิเทศ</label>
+                                    <select id="supRepRound" onchange="onSupRepRoundChange()" class="w-full text-xs font-bold text-indigo-900 p-2.5 border border-indigo-300 rounded-xl bg-indigo-50/50 outline-none focus:border-indigo-500 shadow-sm">
+                                        <option value="ALL_3_ROUNDS">🌟 สรุปรวมทั้ง 3 รอบ</option>
+                                        <option value="รอบที่ 1">รอบที่ 1</option>
+                                        <option value="รอบที่ 2">รอบที่ 2</option>
+                                        <option value="รอบที่ 3">รอบที่ 3</option>
+                                    </select>
+                                </div>
+                                <div id="supRepEvalWrap">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">5. มุมมองกรรมการ</label>
+                                    <select id="supRepEvaluator" onchange="renderSupReportHub()" class="w-full text-xs font-bold text-emerald-900 p-2.5 border border-emerald-300 rounded-xl bg-emerald-50/50 outline-none focus:border-emerald-500 shadow-sm">
+                                        <option value="SUMMARY_ROUND">📑 สรุปรวมกรรมการทุกคน</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- พื้นที่กระดาษรายงานสำหรับแสดงผลและแคปเป็น JPG -->
+                        <div class="overflow-x-auto pb-8">
+                            <div id="supReportPrintCanvas" class="w-full max-w-5xl bg-white text-gray-900 mx-auto rounded-2xl shadow-xl border border-gray-200 p-8 sm:p-10 thai-saraban">
+                                <!-- เนื้อหารายงานจะถูกวาดด้วย JS อัตโนมัติ -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                <!-- 🌟 เติม </div> บรรทัดนี้ 1 ตัว เพื่อปิดกล่อง view-supervision ให้สมบูรณ์! 🌟 -->
+                </div>
+
                 <!-- ========================================== -->
                 <!-- VIEW 7: จัดการระบบ (Imperial Admin Dashboard) -->
                 <!-- ========================================== -->
@@ -3005,6 +3072,58 @@
                         <div class="bg-rose-900 text-white rounded-3xl p-8 shadow-2xl border-4 border-rose-500/50">
                             <h3 class="text-xl font-black mb-6 flex items-center gap-2">🛑 MASTER SYSTEM SWITCH (แผงสับคัตเอาท์ระบบ)</h3>
                             <div id="masterSwitchGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+                        </div>
+                    </div>
+                    <!-- 📊 Tab 6: คลังรายงานและสรุปผลนิเทศ 3 รอบ (Supervision Report Hub) -->
+                    <div id="tab-sup-reports" class="sup-tab-content hidden animate-in fade-in zoom-in duration-300">
+                        <div class="glass-panel p-6 rounded-3xl shadow-xl border border-rose-200 mb-6 no-print">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4 mb-5">
+                                <div>
+                                    <h3 class="text-xl font-black text-rose-900 flex items-center gap-2">📊 ศูนย์รายงานผลการนิเทศ 3 รอบ (360° Supervision Report Hub)</h3>
+                                    <p class="text-xs text-gray-500 mt-1" id="supRepRoleHint">เลือกเงื่อนไขด้านล่างเพื่อดูผลสรุปและดาวน์โหลดเป็นไฟล์รูปภาพ (JPG)</p>
+                                </div>
+                                <button onclick="downloadSupReportJPG()" id="btnDownloadSupRepJPG" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-all flex items-center gap-2 text-sm shrink-0">
+                                    🖼️ ดาวน์โหลดรายงานนี้เป็นรูปภาพ (JPG)
+                                </button>
+                            </div>
+
+                            <!-- แผงตัวกรองอัจฉริยะ (Smart Filter) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">1. ระดับรายงาน</label>
+                                    <select id="supRepScope" onchange="onSupRepScopeChange()" class="w-full text-xs font-bold text-gray-800 p-2.5 border border-gray-300 rounded-xl bg-white outline-none focus:border-rose-500 shadow-sm"></select>
+                                </div>
+                                <div id="supRepDeptWrap">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">2. กลุ่มสาระการเรียนรู้</label>
+                                    <select id="supRepDept" onchange="onSupRepDeptChange()" class="w-full text-xs font-bold text-gray-800 p-2.5 border border-gray-300 rounded-xl bg-white outline-none focus:border-rose-500 shadow-sm"></select>
+                                </div>
+                                <div id="supRepTeacherWrap">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">3. ครูผู้รับการนิเทศ</label>
+                                    <select id="supRepTeacher" onchange="onSupRepTeacherChange()" class="w-full text-xs font-bold text-gray-800 p-2.5 border border-gray-300 rounded-xl bg-white outline-none focus:border-rose-500 shadow-sm"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">4. รอบการนิเทศ</label>
+                                    <select id="supRepRound" onchange="onSupRepRoundChange()" class="w-full text-xs font-bold text-indigo-900 p-2.5 border border-indigo-300 rounded-xl bg-indigo-50/50 outline-none focus:border-indigo-500 shadow-sm">
+                                        <option value="ALL_3_ROUNDS">🌟 สรุปรวมทั้ง 3 รอบ</option>
+                                        <option value="รอบที่ 1">รอบที่ 1</option>
+                                        <option value="รอบที่ 2">รอบที่ 2</option>
+                                        <option value="รอบที่ 3">รอบที่ 3</option>
+                                    </select>
+                                </div>
+                                <div id="supRepEvalWrap">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">5. มุมมองกรรมการ</label>
+                                    <select id="supRepEvaluator" onchange="renderSupReportHub()" class="w-full text-xs font-bold text-emerald-900 p-2.5 border border-emerald-300 rounded-xl bg-emerald-50/50 outline-none focus:border-emerald-500 shadow-sm">
+                                        <option value="SUMMARY_ROUND">📑 สรุปรวมกรรมการทุกคน</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- พื้นที่กระดาษรายงานสำหรับแสดงผลและแคปเป็น JPG -->
+                        <div class="overflow-x-auto pb-8">
+                            <div id="supReportPrintCanvas" class="w-full max-w-5xl bg-white text-gray-900 mx-auto rounded-2xl shadow-xl border border-gray-200 p-8 sm:p-10 thai-saraban">
+                                <!-- เนื้อหารายงานจะถูกวาดด้วย JS อัตโนมัติ -->
+                            </div>
                         </div>
                     </div>
                 </div> <!-- [END VIEW 7] -->
@@ -6001,6 +6120,10 @@ window.clearGeminiKeyFromLocal = function() {
             const filterVal = document.getElementById('filterTermYear')?.value || `${currentTerm}/${currentYear}`;
             const [fTerm, fYear] = filterVal.split('/');
 
+            // เช็คสิทธิ์สูงสุด EmpPngn
+            const myRoles = currentUser.Role ? currentUser.Role.split(',').map(r => r.trim()) : [];
+            const isEmp = myRoles.includes('EmpPngn');
+
             // กรองข้อมูล Logs โดยบังคับให้เทียบกันแบบตัวหนังสือ (String)
             const myLogs = sessionLogs.filter(l => 
                 l.teacherMain === currentUser.FullName && 
@@ -6012,7 +6135,7 @@ window.clearGeminiKeyFromLocal = function() {
             if(badge) badge.textContent = myLogs.length;
             
             if(myLogs.length === 0) { 
-                tbody.innerHTML = '<tr><td colspan="6" class="p-16 text-center text-gray-400 font-bold italic">-- ยังไม่มีการบันทึกกิจกรรม --</td></tr>'; 
+                tbody.innerHTML = '<tr><td colspan="6" class="p-16 text-center text-gray-400 font-bold italic">-- ยังไม่มีการบันทึกกิจกรรมในภาคเรียนนี้ --</td></tr>'; 
                 return; 
             }
             
@@ -6020,9 +6143,9 @@ window.clearGeminiKeyFromLocal = function() {
                 // ค้นหา Index จริงๆ ใน sessionLogs สำหรับคำสั่ง Edit/Delete
                 const originalIndex = sessionLogs.findIndex(sl => sl.id === l.id);
                 
-                // ตรวจสอบว่าเป็นเทอมปัจจุบันหรือไม่ (ถ้าเป็นอดีต ห้ามแก้ ห้ามลบ)
-                const isCurrentTerm = (l.term || "1") === currentTerm && (l.academicYear || "2569") === currentYear;
-                const canEdit = isCurrentTerm && (l.status === 'Pending_HOD' || l.status === 'Rejected' || l.status === 'Archived_Auto');
+                // ตรวจสอบว่าเป็นเทอมปัจจุบันหรือไม่ (ถ้าเป็นอดีต ห้ามแก้ ห้ามลบ ยกเว้น EmpPngn)
+                const isCurrentTerm = String(l.term || "1") === String(currentTerm) && String(l.academicYear || "2569") === String(currentYear);
+                const canEdit = isEmp || (isCurrentTerm && (l.status === 'Pending_HOD' || l.status === 'Rejected' || l.status === 'Archived_Auto'));
 
                 let statusColor = "text-amber-500";
                 if (l.status === 'Approved') statusColor = "text-emerald-500";
@@ -6039,7 +6162,7 @@ window.clearGeminiKeyFromLocal = function() {
                         <button onclick="deleteLog('${l.id}')" class="flex-1 text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold py-1 px-2 rounded-full border border-rose-200">ลบ</button>
                     </div>`;
                 } else if (!isCurrentTerm) {
-                    manageBtns += `<span class="text-[10px] text-gray-400 block text-center mt-1">ถูกล็อก (ข้อมูลอดีต)</span>`;
+                    manageBtns += `<span class="text-[10px] text-gray-400 block text-center mt-1">🔒 ถูกล็อก (ข้อมูลอดีต)</span>`;
                 }
                 
                 let commentBtn = '';
@@ -6071,6 +6194,10 @@ window.clearGeminiKeyFromLocal = function() {
             const filterValPlan = document.getElementById('filterTermYear')?.value || `${currentTerm}/${currentYear}`;
             const [fpTerm, fpYear] = filterValPlan.split('/');
 
+            // เช็คสิทธิ์สูงสุด EmpPngn
+            const myRoles = currentUser.Role ? currentUser.Role.split(',').map(r => r.trim()) : [];
+            const isEmp = myRoles.includes('EmpPngn');
+
             // กรองข้อมูล Plans โดยบังคับให้เทียบกันแบบตัวหนังสือ (String)
             const myPlans = sessionPlans.filter(p => 
                 p.teacherName === currentUser.FullName &&
@@ -6079,7 +6206,7 @@ window.clearGeminiKeyFromLocal = function() {
             );
             
             if(myPlans.length === 0) { 
-                tbody.innerHTML = '<tr><td colspan="6" class="p-16 text-center text-gray-400 font-bold italic">-- ยังไม่มีการส่งแผนการสอน --</td></tr>'; 
+                tbody.innerHTML = '<tr><td colspan="6" class="p-16 text-center text-gray-400 font-bold italic">-- ยังไม่มีการส่งแผนการสอนในภาคเรียนนี้ --</td></tr>'; 
                 return; 
             }
             
@@ -6090,25 +6217,32 @@ window.clearGeminiKeyFromLocal = function() {
                 const displayStatus = STATUS_TH[p.status] || STATUS_TH['Pending_HOD'];
                 const dDate = new Date(p.timestamp);
                 
+                // ตรวจสอบว่าเป็นเทอมปัจจุบันหรือไม่ (ล็อกแผนเทอมเก่า ยกเว้น EmpPngn)
+                const isCurrentTerm = String(p.term || "1") === String(currentTerm) && String(p.academicYear || "2569") === String(currentYear);
+                const canDelete = isEmp || (isCurrentTerm && (p.status === 'Rejected' || p.status === 'Pending_HOD'));
+
                 let memoBtn = '';
                 if (p.status === 'Approved') {
                     memoBtn = `<button onclick="viewPlanApprovalMemo('${p.id}')" class="text-xs w-full bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-1.5 px-3 rounded-full border border-purple-200 shadow-sm transition-colors">ใบอนุมัติ</button>`;
                 }
                 
-                // 💡 ปุ่มคำแนะนำ
                 let commentBtn = `<button onclick="viewApprovalComments('${p.id}', 'plan')" class="text-xs w-full bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold py-1.5 px-3 rounded-full border border-amber-200 shadow-sm transition-colors">คำแนะนำ</button>`;
 
-                // 💡 เช็คว่าแผนนี้มีไฟล์แนบ หรือมีลิงก์ หรือมีทั้งคู่ แล้วเสกปุ่มออกมา
                 let attachmentBtns = '';
                 if(p.files && p.files.length > 0) {
                     attachmentBtns += `<button onclick="viewPlanFiles('${p.id}')" class="text-xs w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold py-1.5 px-3 rounded-full border border-indigo-200 shadow-sm transition-colors mb-1">📄 ดูไฟล์แนบ</button>`;
                 }
                 if(p.cloudLink && p.cloudLink.trim() !== '') {
-                    // ถ้ามีลิงก์ ให้กดแล้วเด้งเปิดแท็บใหม่ (target="_blank")
                     attachmentBtns += `<a href="${p.cloudLink}" target="_blank" class="block text-center text-xs w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-bold py-1.5 px-3 rounded-full border border-sky-200 shadow-sm transition-colors mb-1">🌐 เปิดลิงก์</a>`;
                 }
-                // ถ้าไม่มีอะไรเลย (ซึ่งไม่ควรเกิด เพราะเราดักไว้แล้ว)
                 if(attachmentBtns === '') attachmentBtns = `<span class="text-[10px] text-gray-400 font-medium">ไม่มีไฟล์/ลิงก์</span>`;
+
+                let actionHtml = '<span class="text-xs text-gray-400">-</span>';
+                if (canDelete) {
+                    actionHtml = `<button onclick="deletePlan('${p.id}')" class="text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold py-1 px-3 rounded-full border border-rose-200">ลบ</button>`;
+                } else if (!isCurrentTerm) {
+                    actionHtml = `<span class="text-[10px] text-gray-400">🔒 ถูกล็อก (ข้อมูลอดีต)</span>`;
+                }
 
                 tbody.innerHTML += `
                 <tr class="hover:bg-indigo-50/50 transition-colors">
@@ -6124,7 +6258,7 @@ window.clearGeminiKeyFromLocal = function() {
                     </td>
                     <td class="px-6 py-4 text-xs font-bold ${statusColor}">${displayStatus}</td>
                     <td class="px-6 py-4 text-center space-x-1 whitespace-nowrap">
-                        ${(p.status === 'Rejected' || p.status === 'Pending_HOD') ? `<button onclick="deletePlan('${p.id}')" class="text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold py-1 px-3 rounded-full border border-rose-200">ลบ</button>` : '<span class="text-xs text-gray-400">-</span>'}
+                        ${actionHtml}
                     </td>
                 </tr>`; 
             });
@@ -10568,15 +10702,117 @@ window.deleteLog = function(logId) {
         // ==========================================
         // 1. ฟังก์ชันเปิด/ปิดแท็บ (V.รวมร่างสมบูรณ์ ไร้วงจรอุบาทว์)
         // ==========================================
+        // ==========================================
+        // 📅 ตัวช่วยเช็คภาคเรียนแบบ Dynamic (รองรับอนาคตอัตโนมัติ ไม่ต้องแก้โค้ดซ้ำ)
+        // ==========================================
+        window.getSupFilterContext = function() {
+            const sel = document.getElementById('supGlobalTermFilter');
+            const curT = String(typeof currentTerm !== 'undefined' ? currentTerm : '1').trim();
+            const curY = String(typeof currentYear !== 'undefined' ? currentYear : '2569').trim();
+            const currentTermKey = `${curT}/${curY}`;
+            const dataCount = String((supervisionDB_Global || []).length);
+
+            // 🔄 อัปเดตตัวเลือกใน Dropdown อัตโนมัติ เมื่อโหลดฐานข้อมูลเสร็จ หรือเมื่อเปลี่ยนตั้งค่าเทอมในหน้า Admin
+            if (sel && (sel.dataset.lastSystemTerm !== currentTermKey || sel.dataset.lastDataCount !== dataCount)) {
+                const prevSelected = sel.value;
+                const termSet = new Set();
+
+                // 1. กวาดทุกภาคเรียน/ปีการศึกษา ที่มีข้อมูลอยู่จริงในชีต Supervisions
+                (supervisionDB_Global || []).forEach(s => {
+                    const t = String(s.Semester || '1').trim();
+                    const y = String(s.AcademicYear || '2569').trim();
+                    if (t && y) termSet.add(`${t}/${y}`);
+                });
+
+                // 2. สร้างตัวเลือกไล่ตั้งแต่ปี 2569 ไปจนถึงปีการศึกษาปัจจุบันที่ตั้งไว้ในหน้า Admin
+                const startYear = 2569;
+                const endYear = Math.max(startYear, parseInt(curY) || startYear);
+                for (let y = startYear; y <= endYear; y++) {
+                    termSet.add(`1/${y}`);
+                    termSet.add(`2/${y}`);
+                }
+
+                // 3. ยัดภาคเรียนปัจจุบันจากตั้งค่าระบบเข้าไปเสมอ
+                termSet.add(currentTermKey);
+
+                // 4. เรียงลำดับจากปีเก่าไปปีใหม่ (เช่น 1/2569 -> 2/2569 -> 1/2570 -> 2/2570)
+                const sortedTerms = Array.from(termSet).sort((a, b) => {
+                    const [tA, yA] = a.split('/').map(Number);
+                    const [tB, yB] = b.split('/').map(Number);
+                    return yA !== yB ? yA - yB : tA - tB;
+                });
+
+                // 5. วาด <option> ใส่ Dropdown
+                sel.innerHTML = sortedTerms.map(ty => `<option value="${ty}">ภาคเรียนที่ ${ty}</option>`).join('') +
+                                `<option value="ALL">ทุกภาคเรียนรวมกัน</option>`;
+
+                // 6. ตั้งค่าตัวเลือกเริ่มต้นอย่างฉลาด:
+                // ถ้าผู้ใช้เคยกดเลือกเองแล้ว ให้จำค่าที่เลือกไว้ แต่ถ้าเพิ่งเปิดหน้าเว็บ ให้ดูว่าเทอมปัจจุบันมีข้อมูลไหม ถ้ายังไม่มีให้เปิดเทอมล่าสุดที่มีข้อมูลให้ก่อน
+                if (sel.dataset.userChanged === 'true' && prevSelected && (sortedTerms.includes(prevSelected) || prevSelected === 'ALL')) {
+                    sel.value = prevSelected;
+                } else {
+                    const hasDataInCurrent = (supervisionDB_Global || []).some(s => 
+                        String(s.Semester || '1').trim() === curT && String(s.AcademicYear || '2569').trim() === curY
+                    );
+                    if (hasDataInCurrent) {
+                        sel.value = currentTermKey;
+                    } else {
+                        const termsWithData = sortedTerms.filter(ty => {
+                            const [t, y] = ty.split('/');
+                            return (supervisionDB_Global || []).some(s => String(s.Semester || '1').trim() === t && String(s.AcademicYear || '2569').trim() === y);
+                        });
+                        sel.value = termsWithData.length > 0 ? termsWithData[termsWithData.length - 1] : currentTermKey;
+                    }
+                }
+
+                sel.dataset.lastSystemTerm = currentTermKey;
+                sel.dataset.lastDataCount = dataCount;
+            }
+
+            const val = sel ? sel.value : currentTermKey;
+            const myRoles = (currentUser && currentUser.Role) ? currentUser.Role.split(',').map(r => r.trim()) : [];
+            const isEmp = myRoles.includes('EmpPngn');
+            const isExec = myRoles.some(r => ['HOA', 'AsstDir', 'DepDir', 'Director', 'LttPngn', 'EmpPngn'].includes(r));
+            const isHOD = myRoles.includes('HOD');
+
+            return {
+                filterVal: val,
+                isEmp: isEmp,
+                isExec: isExec,
+                isHOD: isHOD,
+                matchRecord: function(s) {
+                    if (val === 'ALL') return true;
+                    const [fTerm, fYear] = val.split('/');
+                    return String(s.Semester || '1').trim() === String(fTerm).trim() &&
+                           String(s.AcademicYear || '2569').trim() === String(fYear).trim();
+                },
+                canModifyRecord: function(s) {
+                    if (isEmp) return true; // 👑 EmpPngn แก้ไขข้ามเวลาได้ทุกเทอม!
+                    const recTerm = String(s.Semester || '1').trim();
+                    const recYear = String(s.AcademicYear || '2569').trim();
+                    return recTerm === curT && recYear === curY;
+                }
+            };
+        };
+
+        window.onSupTermFilterChange = function() {
+            const sel = document.getElementById('supGlobalTermFilter');
+            if (sel) sel.dataset.userChanged = 'true'; // จำไว้ว่าผู้ใช้กดสลับเทอมด้วยตัวเองแล้ว
+            if (typeof renderSupTasks === 'function') renderSupTasks();
+            if (typeof renderSupHistory === 'function') renderSupHistory();
+            if (typeof renderSupAdminMapping === 'function') renderSupAdminMapping();
+            if (typeof renderSupCalendar === 'function') renderSupCalendar();
+            if (typeof renderSupReportHub === 'function') renderSupReportHub();
+        };
+
+        // ==========================================
+        // 🔄 สลับแท็บนิเทศ (อัปเกรดรองรับ Tab 6 Report Hub)
+        // ==========================================
         window.switchSupTab = function(tabId) {
-            // ซ่อนแท็บทั้งหมด
             document.querySelectorAll('.sup-tab-content').forEach(el => el.classList.add('hidden'));
-            
-            // โชว์แท็บที่เลือก
             const tab = document.getElementById(tabId);
             if (tab) tab.classList.remove('hidden');
             
-            // ปรับสีปุ่มแท็บ
             document.querySelectorAll('.sup-tab').forEach(el => {
                 el.classList.remove('bg-rose-600', 'text-white', 'shadow-md');
                 el.classList.add('bg-white', 'text-gray-500');
@@ -10587,11 +10823,9 @@ window.deleteLog = function(logId) {
                 activeBtn.classList.add('bg-rose-600', 'text-white', 'shadow-md');
             }
 
-            // 🧠 โหลดข้อมูลเข้าแท็บนั้นๆ อัตโนมัติ!
             if (tabId === 'tab-sup-request') {
                 if (typeof renderSupHistory === 'function') renderSupHistory();
 
-                // 💡 [NEW LOGIC] ยามเฝ้าประตู (V.2): ตรวจจับ Type A vs Type B
                 let isTypeAActive = false;
                 let alertMessage = "หมดรอบการนิเทศ Type A<br><span class='text-sm text-rose-600 font-bold mt-1 block'>ระบบยังไม่เปิดให้คุณครูยื่นขอรับการนิเทศด้วยตนเองครับ</span>";
 
@@ -10609,13 +10843,10 @@ window.deleteLog = function(logId) {
                     if (activeRound) {
                         const rType = String(activeRound.type || '').toUpperCase();
                         const rName = String(activeRound.name || '').toUpperCase();
-
-                        // ถ้าหลังบ้านแกตั้ง type เป็น B หรือชื่อรอบมีคำพวกนี้อยู่ = ล็อกประตู!
                         if (rType === 'B' || rName.includes('TYPE B') || rName.includes('แบบ B') || rName.includes('ประเมินผล')) {
                             isTypeAActive = false;
                             alertMessage = `ขณะนี้เป็นรอบ <b>"${activeRound.name}"</b><br><span class='text-sm text-rose-600 font-bold mt-1 block'>(ระบบนิเทศแบบ Type B ไม่เปิดให้คุณครูยื่นขอรับการนิเทศด้วยตนเองครับ)</span>`;
                         } else {
-                            // ถ้าตั้งค่าเป็น Type A หรือไม่มีระบุว่าเป็น B ให้ถือว่าเป็น Type A ปกติ
                             isTypeAActive = true;
                         }
                     }
@@ -10625,27 +10856,20 @@ window.deleteLog = function(logId) {
                 let alertEl = document.getElementById('supRequestClosedAlert');
 
                 if (!isTypeAActive) {
-                    // ปิดฟอร์ม และโชว์ป้ายเตือน
                     if (formEl) formEl.classList.add('hidden');
-                    
                     if (!alertEl && formEl) {
                         alertEl = document.createElement('div');
                         alertEl.id = 'supRequestClosedAlert';
                         alertEl.className = 'bg-rose-50 border-2 border-rose-200 rounded-2xl p-8 text-center shadow-sm mt-2 animate-in fade-in zoom-in duration-300';
-                        alertEl.innerHTML = `
-                            <div class="text-5xl mb-4">⚠️</div>
-                            <h4 class="text-xl font-black text-rose-900 mb-2" id="supRequestClosedMsg"></h4>
-                        `;
+                        alertEl.innerHTML = `<div class="text-5xl mb-4">⚠️</div><h4 class="text-xl font-black text-rose-900 mb-2" id="supRequestClosedMsg"></h4>`;
                         formEl.parentNode.insertBefore(alertEl, formEl);
                     } 
-                    
                     if (alertEl) {
                         alertEl.classList.remove('hidden');
                         const msgEl = document.getElementById('supRequestClosedMsg');
-                        if(msgEl) msgEl.innerHTML = alertMessage; // อัปเดตข้อความตามสถานการณ์
+                        if(msgEl) msgEl.innerHTML = alertMessage;
                     }
                 } else {
-                    // เปิดฟอร์ม และซ่อนป้ายเตือน
                     if (formEl) formEl.classList.remove('hidden');
                     if (alertEl) alertEl.classList.add('hidden');
                 }
@@ -10660,6 +10884,852 @@ window.deleteLog = function(logId) {
             }
             if (tabId === 'tab-sup-calendar' && typeof renderSupCalendar === 'function') {
                 renderSupCalendar();
+            }
+            if (tabId === 'tab-sup-reports' && typeof initSupReportHub === 'function') {
+                initSupReportHub();
+            }
+        };
+
+        // ==========================================
+        // 🕵️ วาดการ์ดภารกิจนิเทศ (อัปเกรดกรองเทอม + ล็อกเทอมเก่า)
+        // ==========================================
+        window.renderSupTasks = function() {
+            const grid = document.getElementById('supTaskGrid');
+            const badge = document.getElementById('supTaskBadge');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            const ctx = window.getSupFilterContext();
+            const myName = (currentUser.FullName || '').trim();
+
+            let myTasks = [];
+            supervisionDB_Global.forEach(s => {
+                if (!ctx.matchRecord(s)) return; // กรองตามภาคเรียนที่เลือก
+                if(s.Status === 'Pending' || s.Status === 'Assigned' || s.Status === 'Evaluated') {
+                    const s1 = String(s.Sup1_Name || '').trim();
+                    const s2 = String(s.Sup2_Name || '').trim();
+                    const s3 = String(s.Sup3_Name || '').trim();
+                    if (s1 === myName || s2 === myName || s3 === myName) {
+                        myTasks.push(s);
+                    } else {
+                        try {
+                            const sups = JSON.parse(s.Supervisors || "[]").map(x => String(x).trim());
+                            if(sups.includes(myName)) myTasks.push(s);
+                        } catch(e){}
+                    }
+                }
+            });
+
+            let pendingCount = 0;
+            myTasks.forEach(t => {
+                let myStatus = 'Accepted'; 
+                if (String(t.Sup1_Name || '').trim() === myName) myStatus = t.Sup1_Status;
+                else if (String(t.Sup2_Name || '').trim() === myName) myStatus = t.Sup2_Status;
+                else if (String(t.Sup3_Name || '').trim() === myName) myStatus = t.Sup3_Status;
+
+                let evals = {}; try{ evals = JSON.parse(t.EvaluationData || "{}"); }catch(e){}
+                const hasEvaluated = Object.keys(evals).some(k => k.trim() === myName);
+                if(myStatus === 'Pending' || (myStatus === 'Accepted' && !hasEvaluated)) pendingCount++;
+            });
+            
+            if(badge) { badge.textContent = pendingCount; badge.classList.toggle('hidden', pendingCount === 0); }
+
+            if(myTasks.length === 0) {
+                grid.innerHTML = '<div class="col-span-full py-16 text-center text-amber-600 font-bold opacity-50"><div class="text-4xl mb-2">☕</div>ไม่มีภารกิจนิเทศในภาคเรียนที่เลือกครับ</div>';
+                return;
+            }
+
+            myTasks.sort((a,b) => new Date(a.TargetDate) - new Date(b.TargetDate)).forEach(t => {
+                let myStatus = 'Accepted'; 
+                if (String(t.Sup1_Name || '').trim() === myName) myStatus = t.Sup1_Status;
+                else if (String(t.Sup2_Name || '').trim() === myName) myStatus = t.Sup2_Status;
+                else if (String(t.Sup3_Name || '').trim() === myName) myStatus = t.Sup3_Status;
+
+                if (myStatus === 'Rejected') return;
+
+                const dDate = new Date(t.TargetDate).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
+                let evals = {}; try{ evals = JSON.parse(t.EvaluationData || "{}"); }catch(e){}
+                const isDone = Object.keys(evals).some(k => k.trim() === myName);
+                const rName = t.Round || (typeof getSupRoundName === 'function' ? getSupRoundName(t.TargetDate) : 'รอบที่ 1');
+                const roundBadge = `<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-purple-200 ml-1">${rName}</span>`;
+                const canMod = ctx.canModifyRecord(t);
+
+                let actionHtml = '';
+                let borderClass = 'border-amber-300';
+                let topBadge = '';
+
+                if (isDone) {
+                    borderClass = 'border-emerald-200 opacity-90';
+                    topBadge = '<div class="absolute -right-6 -top-2 bg-emerald-500 text-white text-[10px] font-bold py-1 px-8 transform rotate-45 shadow">ประเมินแล้ว</div>';
+                    actionHtml = `
+                        <div class="flex items-center gap-2">
+                            <button onclick="viewSupReceipt('${t.SupID}')" class="bg-sky-100 hover:bg-sky-200 text-sky-700 px-3 py-1 rounded-lg text-[11px] font-bold border border-sky-200">📄 ดูผล</button>
+                            ${ctx.isEmp ? `<button onclick="openSupEvalModal('${t.SupID}', '${t.TeacherName}')" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-amber-300">✏️ แก้ไข (Emp)</button>` : `<span class="text-emerald-500 font-bold text-xs">✅ เสร็จสิ้น</span>`}
+                        </div>`;
+                } else if (!canMod) {
+                    borderClass = 'border-gray-200 opacity-75';
+                    actionHtml = `<span class="text-gray-400 font-bold text-[10px] bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">🔒 ปิดภาคเรียนแล้ว</span>`;
+                } else if (myStatus === 'Pending') {
+                    borderClass = 'border-rose-300 shadow-rose-100 bg-rose-50/30';
+                    topBadge = '<div class="absolute -right-8 -top-2 bg-rose-500 text-white text-[10px] font-bold py-1 px-10 transform rotate-45 shadow animate-pulse">รอตอบรับ</div>';
+                    actionHtml = `
+                        <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                            <button onclick="window.respondToSupRequest('${t.SupID}', 'Rejected')" class="flex-1 sm:flex-none bg-white text-gray-500 border border-gray-300 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-gray-100 transition-colors">❌ ปฏิเสธ</button>
+                            <button onclick="window.respondToSupRequest('${t.SupID}', 'Accepted')" class="flex-1 sm:flex-none bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow hover:bg-emerald-600 transition-colors">✅ รับนิเทศ</button>
+                        </div>
+                    `;
+                } else {
+                    const timeInfo = window.getSupTimeStatus(t.TargetDate, t.Period);
+                    if (!timeInfo.canEval && !ctx.isEmp) {
+                        actionHtml = `<span class="text-amber-600 font-bold text-[10px] bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">${timeInfo.text}</span>`;
+                    } else {
+                        const extraAlert = timeInfo.state === 'LATE' ? `<div class="text-rose-500 text-[9px] font-bold mt-1 text-right animate-pulse">${timeInfo.text}</div>` : `<div class="text-emerald-600 text-[9px] font-bold mt-1 text-right">${timeInfo.text}</div>`;
+                        actionHtml = `
+                            <div class="flex flex-col items-end w-full sm:w-auto mt-3 sm:mt-0">
+                                <button onclick="openSupEvalModal('${t.SupID}', '${t.TeacherName}')" class="bg-amber-500 text-white px-5 py-1.5 rounded-lg text-[11px] font-bold shadow hover:bg-amber-600 transition-colors flex items-center gap-1">📝 ประเมิน</button>
+                                ${extraAlert}
+                            </div>
+                        `;
+                    }
+                }
+
+                grid.innerHTML += `
+                <div id="card-${t.SupID}" class="bg-white border ${borderClass} p-4 rounded-2xl shadow-sm relative overflow-hidden transition-all hover:shadow-md">
+                    ${topBadge}
+                    <div class="text-xs font-bold text-gray-500 mb-1">ผู้ขอรับการนิเทศ: <span class="text-gray-800 text-sm">${t.TeacherName}</span></div>
+                    <div class="text-xs text-indigo-600 font-bold mb-3 bg-indigo-50 px-2 py-1 rounded inline-block">${t.SubjectData} (คาบ ${t.Period}) ${roundBadge}</div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 pt-3 border-t border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-bold">📅 ${dDate}</span>
+                        ${actionHtml}
+                    </div>
+                </div>`;
+            });
+        };
+
+        // ==========================================
+        // 📊 ศูนย์รายงานผลการนิเทศ 3 รอบ (Supervision Report Hub - 7 โหมดครบวงจร)
+        // ==========================================
+        window.initSupReportHub = function() {
+            const ctx = window.getSupFilterContext();
+            const scopeSel = document.getElementById('supRepScope');
+            const deptSel = document.getElementById('supRepDept');
+            if (!scopeSel || !deptSel) return;
+
+            // 1. ตั้งค่าระดับรายงานตามสิทธิ์ (User / HOD / แก๊งบริหาร)
+            let scopeOptions = `<option value="individual">👤 ผลระดับรายบุคคล (ครูผู้สอน)</option>`;
+            if (ctx.isHOD || ctx.isExec) {
+                scopeOptions += `<option value="department">🏫 ผลสรุประดับกลุ่มสาระการเรียนรู้</option>`;
+            }
+            if (ctx.isExec) {
+                scopeOptions += `<option value="school">🏛️ ผลสรุประดับโรงเรียน (ทุกกลุ่มสาระฯ)</option>`;
+            }
+            scopeSel.innerHTML = scopeOptions;
+
+            // 2. ตั้งค่ารายชื่อกลุ่มสาระฯ
+            const allDepts = ['ภาษาไทย', 'คณิตศาสตร์', 'วิทยาศาสตร์และเทคโนโลยี', 'สังคมศึกษา ศาสนา และวัฒนธรรม', 'สุขศึกษาและพลศึกษา', 'ศิลปะ', 'การงานอาชีพ', 'ภาษาต่างประเทศ'];
+            if (ctx.isExec) {
+                deptSel.innerHTML = allDepts.map(d => `<option value="${d}">${d}</option>`).join('');
+                if (allDepts.includes(currentUser.Department)) deptSel.value = currentUser.Department;
+                deptSel.disabled = false;
+            } else {
+                deptSel.innerHTML = `<option value="${currentUser.Department}">${currentUser.Department}</option>`;
+                deptSel.value = currentUser.Department;
+                deptSel.disabled = true;
+            }
+
+            window.onSupRepScopeChange();
+        };
+
+        window.onSupRepScopeChange = function() {
+            const scope = document.getElementById('supRepScope').value;
+            const deptWrap = document.getElementById('supRepDeptWrap');
+            const teacherWrap = document.getElementById('supRepTeacherWrap');
+            const evalWrap = document.getElementById('supRepEvalWrap');
+
+            if (scope === 'individual') {
+                deptWrap.classList.remove('hidden');
+                teacherWrap.classList.remove('hidden');
+                window.onSupRepDeptChange();
+            } else if (scope === 'department') {
+                deptWrap.classList.remove('hidden');
+                teacherWrap.classList.add('hidden');
+                evalWrap.classList.add('hidden');
+                window.renderSupReportHub();
+            } else if (scope === 'school') {
+                deptWrap.classList.add('hidden');
+                teacherWrap.classList.add('hidden');
+                evalWrap.classList.add('hidden');
+                window.renderSupReportHub();
+            }
+        };
+        // ==========================================
+        // 🧮 Helper: ดึงรายชื่อครูในหมวด (เรียง HOD ขึ้นก่อน ตามด้วย Sq)
+        // ==========================================
+        window.getSortedDeptTeachers = function(deptName) {
+            const deptUsers = (usersDB_Global || []).filter(u => 
+                u.Status !== 'Inactive' && 
+                u.Status !== 'ระงับการใช้งาน' && 
+                String(u.Department || '').trim() === String(deptName).trim()
+            );
+
+            deptUsers.sort((a, b) => {
+                const aIsHOD = String(a.Role || '').includes('HOD');
+                const bIsHOD = String(b.Role || '').includes('HOD');
+                
+                // 1. หัวหน้าหมวด (HOD) ขึ้นก่อน
+                if (aIsHOD && !bIsHOD) return -1;
+                if (!aIsHOD && bIsHOD) return 1;
+                
+                // 2. ถ้าเป็นลูกหมวดเหมือนกัน ให้เรียงตาม Sq (ใช้ Username เช่น T001, T002)
+                const sqA = String(a.Username || '');
+                const sqB = String(b.Username || '');
+                return sqA.localeCompare(sqB);
+            });
+
+            return deptUsers.map(u => String(u.FullName || '').trim());
+        };
+        window.onSupRepDeptChange = function() {
+            const ctx = window.getSupFilterContext();
+            const dept = document.getElementById('supRepDept').value;
+            const teacherSel = document.getElementById('supRepTeacher');
+            if (!teacherSel) return;
+
+            if (!ctx.isExec && !ctx.isHOD) {
+                // ครูทั่วไป: ล็อกเป็นชื่อตัวเองเท่านั้น
+                const myName = (currentUser.FullName || '').trim();
+                teacherSel.innerHTML = `<option value="${myName}">${myName}</option>`;
+                teacherSel.disabled = true;
+            } else {
+                // 💡 โค้ดที่เปลี่ยน: HOD หรือ แก๊งบริหาร: ดึงรายชื่อเรียงตาม HOD -> Sq
+                const deptTeachers = window.getSortedDeptTeachers(dept);
+
+                teacherSel.innerHTML = deptTeachers.map(t => `<option value="${t}">${t}</option>`).join('');
+                const myName = (currentUser.FullName || '').trim();
+                if (deptTeachers.includes(myName)) teacherSel.value = myName;
+                teacherSel.disabled = false;
+            }
+            window.onSupRepTeacherChange();
+        };
+
+        window.onSupRepTeacherChange = function() {
+            window.onSupRepRoundChange();
+        };
+
+        window.onSupRepRoundChange = function() {
+            const scope = document.getElementById('supRepScope').value;
+            const roundVal = document.getElementById('supRepRound').value;
+            const evalWrap = document.getElementById('supRepEvalWrap');
+            const evalSel = document.getElementById('supRepEvaluator');
+
+            if (scope === 'individual' && roundVal !== 'ALL_3_ROUNDS') {
+                evalWrap.classList.remove('hidden');
+                // ค้นหากรรมการของครูคนนี้ในรอบที่เลือก
+                const teacherName = (document.getElementById('supRepTeacher').value || '').trim();
+                const rec = window.findTeacherRoundRecord(teacherName, roundVal);
+                let opts = `<option value="SUMMARY_ROUND">📑 สรุปผลรวมใน${roundVal} (รวมกรรมการทุกคน)</option>`;
+                if (rec) {
+                    let evals = {}; try { evals = JSON.parse(rec.EvaluationData || "{}"); } catch(e){}
+                    Object.keys(evals).forEach((evName, idx) => {
+                        opts += `<option value="${evName.trim()}">👤 กรรมการคนที่ ${idx+1}: ${evName.trim()}</option>`;
+                    });
+                }
+                evalSel.innerHTML = opts;
+            } else {
+                evalWrap.classList.add('hidden');
+            }
+            window.renderSupReportHub();
+        };
+
+        // Helper: ค้นหาแถวข้อมูลนิเทศของครูในรอบนั้นๆ
+        window.findTeacherRoundRecord = function(teacherName, roundName) {
+            const ctx = window.getSupFilterContext();
+            const tClean = String(teacherName || '').trim();
+            const matches = (supervisionDB_Global || []).filter(s => {
+                if (!ctx.matchRecord(s)) return false;
+                const sTeacher = String(s.TeacherName || '').trim();
+                const sRound = String(s.Round || (typeof getSupRoundName === 'function' ? getSupRoundName(s.TargetDate) : 'รอบที่ 1')).trim();
+                return sTeacher === tClean && sRound === roundName;
+            });
+            // ให้ความสำคัญกับแถวที่ Evaluated ก่อน
+            return matches.find(m => m.Status === 'Evaluated') || matches[0] || null;
+        };
+
+        // Helper: คำนวณสถิติจากก้อน Record
+        window.computeRecordStats = function(rec) {
+            if (!rec) return null;
+            let evals = {}; try { evals = JSON.parse(rec.EvaluationData || "{}"); } catch(e){}
+            let sigs = {}; try { sigs = JSON.parse(rec.Signatures || "{}"); } catch(e){}
+            const evaluators = Object.keys(evals);
+            if (evaluators.length === 0) return { rec, evaluated: false, evaluators: [], avgPercent: 0, avgScore: 0, domainAvgs: [0,0,0,0], level: 'รอการประเมิน', evals, sigs };
+
+            let sumPercent = 0, sumScore = 0;
+            let domainSums = [0, 0, 0, 0];
+            let domainCounts = [0, 0, 0, 0];
+
+            evaluators.forEach(k => {
+                const ev = evals[k];
+                sumPercent += parseFloat(ev.percent || 0);
+                sumScore += parseFloat(ev.score || 0);
+                if (Array.isArray(ev.details)) {
+                    ev.details.forEach((cat, cIdx) => {
+                        if (cIdx < 4 && Array.isArray(cat.items)) {
+                            const catSum = cat.items.reduce((acc, it) => acc + parseFloat(it.score || 0), 0);
+                            domainSums[cIdx] += catSum;
+                            domainCounts[cIdx]++;
+                        }
+                    });
+                }
+            });
+
+            const count = evaluators.length;
+            const avgPercent = sumPercent / count;
+            const avgScore = sumScore / count;
+            const domainAvgs = domainSums.map((s, i) => domainCounts[i] > 0 ? (s / domainCounts[i]) : 0);
+
+            let level = 'ควรปรับปรุง';
+            if (avgPercent >= 80) level = 'ดีเยี่ยม';
+            else if (avgPercent >= 70) level = 'ดี';
+            else if (avgPercent >= 60) level = 'พอใช้';
+
+            return { rec, evaluated: true, evaluators, avgPercent, avgScore, domainAvgs, level, evals, sigs };
+        };
+
+        // Helper: แยกข้อความ 3 ข้อ (รองรับทั้ง JSON ใหม่ และข้อความเก่าที่มัดรวม)
+        window.extractThreeFeedbacks = function(ev) {
+            const s = ev.strengths || '-';
+            let w = ev.weakness || '';
+            let d = ev.development || '';
+            if (!w && !d && ev.suggestions) {
+                if (ev.suggestions.includes('แนวทางแก้ไข:')) {
+                    const parts = ev.suggestions.split('แนวทางแก้ไข:');
+                    w = parts[0].replace('จุดควรพัฒนา:', '').trim();
+                    d = (parts[1] || '-').trim();
+                } else {
+                    w = ev.suggestions;
+                    d = '-';
+                }
+            }
+            return { strengths: s, weakness: w || '-', development: d || '-' };
+        };
+
+        // ==========================================
+        // 🎨 วาดแผ่นรายงานลงบน #supReportPrintCanvas
+        // ==========================================
+        window.renderSupReportHub = function() {
+            const canvas = document.getElementById('supReportPrintCanvas');
+            if (!canvas) return;
+
+            const ctx = window.getSupFilterContext();
+            const scope = document.getElementById('supRepScope').value;
+            const dept = document.getElementById('supRepDept').value;
+            const teacher = (document.getElementById('supRepTeacher')?.value || '').trim();
+            const roundVal = document.getElementById('supRepRound').value;
+            const evaluatorVal = document.getElementById('supRepEvaluator')?.value || 'SUMMARY_ROUND';
+            const termLabel = ctx.filterVal === 'ALL' ? 'รวมทุกภาคเรียน' : `ภาคเรียนที่ ${ctx.filterVal}`;
+
+            const headerHtml = (title, subtitle) => `
+                <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
+                    <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" class="w-16 h-16 mx-auto object-contain mb-2" alt="โลโก้โรงเรียน">
+                    <h2 class="text-2xl font-black text-gray-900">${title}</h2>
+                    <h3 class="text-base font-bold text-gray-700 mt-0.5">${subtitle}</h3>
+                    <p class="text-xs font-bold text-rose-700 mt-1">โรงเรียนวังตะเคียนวิทยาคม | ${termLabel}</p>
+                </div>
+            `;
+
+            // --------------------------------------------------
+            // 👤 กรณีที่ 1: รายงานระดับรายบุคคล (Individual)
+            // --------------------------------------------------
+            if (scope === 'individual') {
+                const uObj = (usersDB_Global || []).find(u => String(u.FullName || '').trim() === teacher) || {};
+                const tDept = uObj.Department || dept || '-';
+
+                // โหมด 1A: รายบุคคล - สรุปรวมทั้ง 3 รอบ
+                if (roundVal === 'ALL_3_ROUNDS') {
+                    const rounds = ['รอบที่ 1', 'รอบที่ 2', 'รอบที่ 3'];
+                    const rStats = rounds.map(r => ({ round: r, stat: window.computeRecordStats(window.findTeacherRoundRecord(teacher, r)) }));
+                    const validStats = rStats.filter(x => x.stat && x.stat.evaluated);
+                    const overallAvg = validStats.length > 0 ? (validStats.reduce((a, b) => a + b.stat.avgPercent, 0) / validStats.length).toFixed(2) : '0.00';
+
+                    let overallLevel = 'รอการประเมิน';
+                    if (validStats.length > 0) {
+                        const num = parseFloat(overallAvg);
+                        overallLevel = num >= 80 ? 'ดีเยี่ยม' : num >= 70 ? 'ดี' : num >= 60 ? 'พอใช้' : 'ควรปรับปรุง';
+                    }
+
+                    let tableRows = rStats.map(x => {
+                        if (!x.stat || !x.stat.evaluated) {
+                            return `<tr class="border-b"><td class="p-2.5 font-bold">${x.round}</td><td colspan="6" class="p-2.5 text-center text-gray-400 italic">ยังไม่มีผลการประเมินในรอบนี้</td></tr>`;
+                        }
+                        const st = x.stat;
+                        return `
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-2.5 font-bold text-rose-800">${x.round}<div class="text-[10px] text-gray-500 font-normal">${st.rec.SubjectData || ''}</div></td>
+                                <td class="p-2.5 text-center">${st.domainAvgs[0].toFixed(1)}</td>
+                                <td class="p-2.5 text-center">${st.domainAvgs[1].toFixed(1)}</td>
+                                <td class="p-2.5 text-center">${st.domainAvgs[2].toFixed(1)}</td>
+                                <td class="p-2.5 text-center">${st.domainAvgs[3].toFixed(1)}</td>
+                                <td class="p-2.5 text-center font-black text-indigo-700">${st.avgPercent.toFixed(2)}%</td>
+                                <td class="p-2.5 text-center font-bold text-emerald-700">${st.level}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    let roundDetailsHtml = rStats.map(x => {
+                        if (!x.stat || !x.stat.evaluated) return '';
+                        const st = x.stat;
+                        const dDate = new Date(st.rec.TargetDate).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
+                        const evalCards = st.evaluators.map((evName, idx) => {
+                            const ev = st.evals[evName];
+                            const fb = window.extractThreeFeedbacks(ev);
+                            return `
+                                <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200 mb-2">
+                                    <div class="flex justify-between items-center border-b border-gray-200 pb-1.5 mb-2">
+                                        <span class="font-bold text-xs text-gray-800">👤 กรรมการคนที่ ${idx+1}: ${evName}</span>
+                                        <span class="text-xs font-black text-rose-600">${ev.score} คะแนน (${Number(ev.percent).toFixed(1)}% - ${ev.result})</span>
+                                    </div>
+                                    <div class="space-y-1 text-xs">
+                                        <div><span class="font-bold text-emerald-700">1. 🟢 จุดเด่น:</span> ${fb.strengths}</div>
+                                        <div><span class="font-bold text-amber-700">2. 🟡 จุดที่ควรพัฒนา:</span> ${fb.weakness}</div>
+                                        <div><span class="font-bold text-sky-700">3. 🔵 แนวทางพัฒนา:</span> ${fb.development}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        return `
+                            <div class="mb-5 border border-rose-200 rounded-2xl p-4 bg-white">
+                                <div class="flex justify-between items-center border-b border-rose-100 pb-2 mb-3">
+                                    <h4 class="font-black text-rose-800 text-sm">📌 ${x.round} | วิชา: ${st.rec.SubjectData} (${dDate} คาบ ${st.rec.Period})</h4>
+                                    <span class="bg-rose-100 text-rose-800 text-xs font-black px-3 py-1 rounded-full">เฉลี่ย ${st.avgPercent.toFixed(2)}% (${st.level})</span>
+                                </div>
+                                ${evalCards}
+                            </div>
+                        `;
+                    }).join('');
+
+                    canvas.innerHTML = `
+                        ${headerHtml('รายงานสรุปผลการนิเทศการจัดการเรียนรู้ (รวม 3 รอบ)', `ผู้รับการนิเทศ: ${teacher} | กลุ่มสาระการเรียนรู้${tDept}`)}
+                        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                            <div class="bg-rose-50 p-4 rounded-xl border border-rose-200">
+                                <div class="text-xs font-bold text-gray-500">จำนวนรอบที่ประเมินแล้ว</div>
+                                <div class="text-2xl font-black text-rose-700 mt-1">${validStats.length} / 3 รอบ</div>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
+                                <div class="text-xs font-bold text-gray-500">คะแนนเฉลี่ยสะสมรวม 3 รอบ</div>
+                                <div class="text-2xl font-black text-indigo-700 mt-1">${overallAvg}%</div>
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                                <div class="text-xs font-bold text-gray-500">ระดับคุณภาพภาพรวม</div>
+                                <div class="text-2xl font-black text-emerald-700 mt-1">${overallLevel}</div>
+                            </div>
+                        </div>
+
+                        <h4 class="font-black text-sm text-gray-800 mb-2">📊 ตารางเปรียบเทียบพัฒนาการรายด้าน (คะแนนเต็มด้านละ 25 คะแนน)</h4>
+                        <table class="w-full text-xs border border-gray-300 mb-6">
+                            <thead class="bg-gray-100 text-gray-800 font-bold">
+                                <tr class="border-b">
+                                    <th class="p-2.5 text-left">รอบการนิเทศ</th>
+                                    <th class="p-2.5 text-center">ด้านที่ 1<br>(วางแผน)</th>
+                                    <th class="p-2.5 text-center">ด้านที่ 2<br>(จัดการเรียนรู้)</th>
+                                    <th class="p-2.5 text-center">ด้านที่ 3<br>(สื่อ/นวัตกรรม)</th>
+                                    <th class="p-2.5 text-center">ด้านที่ 4<br>(วัดและประเมิน)</th>
+                                    <th class="p-2.5 text-center">เฉลี่ยรวม (%)</th>
+                                    <th class="p-2.5 text-center">ระดับคุณภาพ</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+
+                        <h4 class="font-black text-sm text-gray-800 mb-3">💬 รายละเอียดผลการนิเทศและข้อเสนอแนะจากคณะกรรมการทั้ง 3 รอบ</h4>
+                        ${roundDetailsHtml || '<div class="p-8 text-center text-gray-400 italic border rounded-xl">ยังไม่มีข้อมูลการประเมิน</div>'}
+                    `;
+                    return;
+                }
+
+                // โหมด 1B และ 1C: รายบุคคล - เลือกรอบใดรอบหนึ่ง (สรุปรวมในรอบ หรือ แยกกรรมการรายคน)
+                const rec = window.findTeacherRoundRecord(teacher, roundVal);
+                const st = window.computeRecordStats(rec);
+                if (!st || !st.evaluated) {
+                    canvas.innerHTML = `
+                        ${headerHtml(`รายงานผลการนิเทศการจัดการเรียนรู้ (${roundVal})`, `ผู้รับการนิเทศ: ${teacher} | กลุ่มสาระการเรียนรู้${tDept}`)}
+                        <div class="py-16 text-center text-gray-400 font-bold italic border-2 border-dashed rounded-2xl">ยังไม่มีข้อมูลผลการประเมินของ ${teacher} ใน${roundVal}</div>
+                    `;
+                    return;
+                }
+
+                const dDate = new Date(st.rec.TargetDate).toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
+
+                // โหมด 1B: แสดงเฉพาะกรรมการคนที่เลือก (1 คน)
+                if (evaluatorVal !== 'SUMMARY_ROUND' && st.evals[evaluatorVal]) {
+                    const ev = st.evals[evaluatorVal];
+                    const fb = window.extractThreeFeedbacks(ev);
+                    const sigUrl = st.sigs[evaluatorVal] ? getEmbeddableUrl(st.sigs[evaluatorVal]) : '';
+
+                    let detailsRows = '';
+                    if (Array.isArray(ev.details)) {
+                        ev.details.forEach(cat => {
+                            detailsRows += `<tr class="bg-rose-50 font-bold text-rose-900 border-b"><td class="p-2" colspan="2">${cat.category}</td></tr>`;
+                            (cat.items || []).forEach(it => {
+                                detailsRows += `<tr class="border-b"><td class="p-2 pl-5">▪ ${it.name}</td><td class="p-2 text-center font-bold text-rose-700 w-20">${it.score} / 5</td></tr>`;
+                            });
+                        });
+                    }
+
+                    let photosHtml = '';
+                    if (ev.photo1 || ev.photo2) {
+                        photosHtml = `<div class="grid grid-cols-2 gap-4 my-4">
+                            ${ev.photo1 ? `<img src="${getEmbeddableUrl(ev.photo1)}" crossorigin="anonymous" class="w-full h-44 object-cover rounded-xl border shadow-sm">` : ''}
+                            ${ev.photo2 ? `<img src="${getEmbeddableUrl(ev.photo2)}" crossorigin="anonymous" class="w-full h-44 object-cover rounded-xl border shadow-sm">` : ''}
+                        </div>`;
+                    }
+
+                    canvas.innerHTML = `
+                        ${headerHtml(`แบบรายงานผลการนิเทศการจัดการเรียนรู้ (${roundVal})`, `ผู้รับการนิเทศ: ${teacher} | กลุ่มสาระการเรียนรู้${tDept}`)}
+                        <div class="grid grid-cols-2 gap-2 text-sm bg-gray-50 p-4 rounded-xl border mb-4">
+                            <div><b>รายวิชา/ชั้น:</b> ${st.rec.SubjectData}</div>
+                            <div><b>วันที่นิเทศ:</b> ${dDate} (คาบที่ ${st.rec.Period})</div>
+                            <div><b>ผู้ประเมิน (กรรมการ):</b> ${evaluatorVal}</div>
+                            <div><b>คะแนนรวม:</b> <span class="font-black text-rose-600">${ev.score} คะแนน (${Number(ev.percent).toFixed(1)}% - ระดับ${ev.result})</span></div>
+                        </div>
+                        <table class="w-full text-xs border border-gray-300 mb-4">
+                            <thead class="bg-gray-100 font-bold"><tr class="border-b"><th class="p-2 text-left">รายการประเมิน</th><th class="p-2 text-center w-20">คะแนน</th></tr></thead>
+                            <tbody>${detailsRows}</tbody>
+                        </table>
+                        <div class="space-y-2 text-sm bg-white p-4 rounded-xl border border-gray-200 mb-4">
+                            <div><span class="font-bold text-emerald-700">1. 🟢 ข้อค้นพบ / จุดเด่น:</span> <p class="pl-4 mt-0.5 text-xs leading-relaxed">${fb.strengths}</p></div>
+                            <div><span class="font-bold text-amber-700">2. 🟡 จุดที่ควรพัฒนา:</span> <p class="pl-4 mt-0.5 text-xs leading-relaxed">${fb.weakness}</p></div>
+                            <div><span class="font-bold text-sky-700">3. 🔵 แนวทางพัฒนาและต่อยอด:</span> <p class="pl-4 mt-0.5 text-xs leading-relaxed">${fb.development}</p></div>
+                        </div>
+                        ${photosHtml}
+                        <div class="flex justify-end mt-6">
+                            <div class="text-center w-56">
+                                ${sigUrl ? `<img src="${sigUrl}" crossorigin="anonymous" class="h-14 mx-auto mb-1 object-contain">` : '<div class="h-14"></div>'}
+                                <div class="text-sm font-bold">(${evaluatorVal})</div>
+                                <div class="text-xs text-gray-500">กรรมการนิเทศ</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // โหมด 1C: สรุปผลรวมในรอบนั้น (รวมกรรมการทั้ง 3 คน)
+                let allPhotos = [];
+                const evalBlocks = st.evaluators.map((evName, idx) => {
+                    const ev = st.evals[evName];
+                    const fb = window.extractThreeFeedbacks(ev);
+                    const sigUrl = st.sigs[evName] ? getEmbeddableUrl(st.sigs[evName]) : '';
+                    if (ev.photo1) allPhotos.push(ev.photo1);
+                    if (ev.photo2) allPhotos.push(ev.photo2);
+
+                    return `
+                        <div class="border border-gray-200 rounded-xl p-4 mb-3 bg-gray-50/60">
+                            <div class="flex justify-between items-center border-b pb-2 mb-2">
+                                <span class="font-bold text-sm text-gray-800">👤 กรรมการคนที่ ${idx+1}: ${evName}</span>
+                                <span class="bg-rose-100 text-rose-800 font-black text-xs px-3 py-1 rounded-full">${ev.score} คะแนน (${Number(ev.percent).toFixed(1)}% - ${ev.result})</span>
+                            </div>
+                            <div class="space-y-1.5 text-xs">
+                                <div><b class="text-emerald-700">1. 🟢 จุดเด่น:</b> ${fb.strengths}</div>
+                                <div><b class="text-amber-700">2. 🟡 จุดที่ควรพัฒนา:</b> ${fb.weakness}</div>
+                                <div><b class="text-sky-700">3. 🔵 แนวทางพัฒนา:</b> ${fb.development}</div>
+                            </div>
+                            <div class="text-right mt-2">
+                                ${sigUrl ? `<img src="${sigUrl}" crossorigin="anonymous" class="h-10 inline-block object-contain">` : ''}
+                                <span class="text-[11px] text-gray-500 block">ลงชื่อ ${evName}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const uniquePhotos = [...new Set(allPhotos)].slice(0, 4);
+                const photoGrid = uniquePhotos.length > 0 ? `
+                    <h4 class="font-bold text-xs text-gray-700 mt-4 mb-2">📸 ภาพบรรยากาศการนิเทศ</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        ${uniquePhotos.map(p => `<img src="${getEmbeddableUrl(p)}" crossorigin="anonymous" class="w-full h-32 object-cover rounded-xl border">`).join('')}
+                    </div>
+                ` : '';
+
+                canvas.innerHTML = `
+                    ${headerHtml(`รายงานสรุปผลการนิเทศประจำ${roundVal}`, `ผู้รับการนิเทศ: ${teacher} | กลุ่มสาระการเรียนรู้${tDept}`)}
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-center">
+                        <div class="bg-gray-50 p-3 rounded-xl border"><div class="text-[11px] text-gray-500">รายวิชา / ห้อง</div><div class="font-black text-sm mt-1">${st.rec.SubjectData}</div></div>
+                        <div class="bg-gray-50 p-3 rounded-xl border"><div class="text-[11px] text-gray-500">วันที่ / คาบ</div><div class="font-black text-sm mt-1">${dDate} (คาบ ${st.rec.Period})</div></div>
+                        <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-200"><div class="text-[11px] text-indigo-700">คะแนนเฉลี่ยรวม</div><div class="font-black text-xl text-indigo-800 mt-0.5">${st.avgPercent.toFixed(2)}%</div></div>
+                        <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200"><div class="text-[11px] text-emerald-700">สรุประดับคุณภาพ</div><div class="font-black text-xl text-emerald-800 mt-0.5">${st.level}</div></div>
+                    </div>
+                    <h4 class="font-black text-sm text-gray-800 mb-2">💬 ความเห็นและผลการประเมินจากคณะกรรมการ (${st.evaluators.length} ท่าน)</h4>
+                    ${evalBlocks}
+                    ${photoGrid}
+                `;
+                return;
+            }
+
+            // --------------------------------------------------
+            // 🏫 กรณีที่ 2: รายงานระดับกลุ่มสาระการเรียนรู้ (Department)
+            // --------------------------------------------------
+            if (scope === 'department') {
+                // 💡 โค้ดที่เปลี่ยน: ดึงรายชื่อครูในหมวดเรียงตาม HOD -> Sq
+                const deptTeachers = window.getSortedDeptTeachers(dept);
+
+                if (roundVal === 'ALL_3_ROUNDS') {
+                    // สรุปภายในกลุ่มสาระฯ รวมทุกรอบ
+                    let rSums = [0, 0, 0], rCounts = [0, 0, 0];
+                    let rowsHtml = deptTeachers.map((tName, idx) => {
+                        const s1 = window.computeRecordStats(window.findTeacherRoundRecord(tName, 'รอบที่ 1'));
+                        const s2 = window.computeRecordStats(window.findTeacherRoundRecord(tName, 'รอบที่ 2'));
+                        const s3 = window.computeRecordStats(window.findTeacherRoundRecord(tName, 'รอบที่ 3'));
+                        const arr = [s1, s2, s3];
+                        let tSum = 0, tCnt = 0;
+                        arr.forEach((st, rIdx) => {
+                            if (st && st.evaluated) {
+                                tSum += st.avgPercent; tCnt++;
+                                rSums[rIdx] += st.avgPercent; rCounts[rIdx]++;
+                            }
+                        });
+                        const tAvg = tCnt > 0 ? (tSum / tCnt) : null;
+                        const tLevel = tAvg === null ? '-' : tAvg >= 80 ? 'ดีเยี่ยม' : tAvg >= 70 ? 'ดี' : tAvg >= 60 ? 'พอใช้' : 'ควรปรับปรุง';
+
+                        return `
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-2 text-center">${idx+1}</td>
+                                <td class="p-2 font-bold">${tName}</td>
+                                <td class="p-2 text-center">${s1 && s1.evaluated ? s1.avgPercent.toFixed(1) + '%' : '-'}</td>
+                                <td class="p-2 text-center">${s2 && s2.evaluated ? s2.avgPercent.toFixed(1) + '%' : '-'}</td>
+                                <td class="p-2 text-center">${s3 && s3.evaluated ? s3.avgPercent.toFixed(1) + '%' : '-'}</td>
+                                <td class="p-2 text-center font-black text-indigo-700">${tAvg !== null ? tAvg.toFixed(2) + '%' : '-'}</td>
+                                <td class="p-2 text-center font-bold text-emerald-700">${tLevel}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    const rAvgs = rSums.map((s, i) => rCounts[i] > 0 ? (s / rCounts[i]).toFixed(2) + '%' : '-');
+
+                    canvas.innerHTML = `
+                        ${headerHtml('รายงานสรุปผลการนิเทศระดับกลุ่มสาระการเรียนรู้ (รวมทั้ง 3 รอบ)', `กลุ่มสาระการเรียนรู้${dept} | จำนวนบุคลากร ${deptTeachers.length} ท่าน`)}
+                        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                            <div class="bg-rose-50 p-3.5 rounded-xl border border-rose-200"><div class="text-xs font-bold text-gray-500">ค่าเฉลี่ย รอบที่ 1</div><div class="text-2xl font-black text-rose-700 mt-1">${rAvgs[0]}</div><div class="text-[10px] text-gray-400">ประเมินแล้ว ${rCounts[0]} ท่าน</div></div>
+                            <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-200"><div class="text-xs font-bold text-gray-500">ค่าเฉลี่ย รอบที่ 2</div><div class="text-2xl font-black text-indigo-700 mt-1">${rAvgs[1]}</div><div class="text-[10px] text-gray-400">ประเมินแล้ว ${rCounts[1]} ท่าน</div></div>
+                            <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200"><div class="text-xs font-bold text-gray-500">ค่าเฉลี่ย รอบที่ 3</div><div class="text-2xl font-black text-emerald-700 mt-1">${rAvgs[2]}</div><div class="text-[10px] text-gray-400">ประเมินแล้ว ${rCounts[2]} ท่าน</div></div>
+                        </div>
+                        <table class="w-full text-xs border border-gray-300">
+                            <thead class="bg-gray-100 font-bold">
+                                <tr class="border-b">
+                                    <th class="p-2 text-center w-12">ที่</th>
+                                    <th class="p-2 text-left">ชื่อ - นามสกุล</th>
+                                    <th class="p-2 text-center">รอบที่ 1</th>
+                                    <th class="p-2 text-center">รอบที่ 2</th>
+                                    <th class="p-2 text-center">รอบที่ 3</th>
+                                    <th class="p-2 text-center">เฉลี่ยรวม 3 รอบ</th>
+                                    <th class="p-2 text-center">ระดับคุณภาพ</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    `;
+                    return;
+                } else {
+                    // สรุประดับกลุ่มสาระฯ รายรอบ
+                    let evalCount = 0, sumPct = 0;
+                    let rowsHtml = deptTeachers.map((tName, idx) => {
+                        const st = window.computeRecordStats(window.findTeacherRoundRecord(tName, roundVal));
+                        if (st && st.evaluated) { evalCount++; sumPct += st.avgPercent; }
+                        return `
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-2 text-center">${idx+1}</td>
+                                <td class="p-2 font-bold">${tName}</td>
+                                <td class="p-2">${st && st.rec ? st.rec.SubjectData : '-'}</td>
+                                <td class="p-2 text-center">${st && st.evaluated ? st.domainAvgs.map(d => d.toFixed(1)).join(' / ') : '-'}</td>
+                                <td class="p-2 text-center font-black text-indigo-700">${st && st.evaluated ? st.avgPercent.toFixed(2) + '%' : '-'}</td>
+                                <td class="p-2 text-center font-bold text-emerald-700">${st && st.evaluated ? st.level : '<span class="text-gray-400 font-normal">รอประเมิน</span>'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    const deptAvg = evalCount > 0 ? (sumPct / evalCount).toFixed(2) + '%' : '-';
+                    canvas.innerHTML = `
+                        ${headerHtml(`รายงานสรุปผลการนิเทศระดับกลุ่มสาระการเรียนรู้ (${roundVal})`, `กลุ่มสาระการเรียนรู้${dept}`)}
+                        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                            <div class="bg-gray-50 p-3.5 rounded-xl border"><div class="text-xs text-gray-500">ครูในกลุ่มสาระฯ</div><div class="text-2xl font-black mt-1">${deptTeachers.length} ท่าน</div></div>
+                            <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200"><div class="text-xs text-emerald-700">ประเมินเสร็จสิ้น</div><div class="text-2xl font-black text-emerald-800 mt-1">${evalCount} ท่าน</div></div>
+                            <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-200"><div class="text-xs text-indigo-700">คะแนนเฉลี่ยของกลุ่มสาระฯ</div><div class="text-2xl font-black text-indigo-800 mt-1">${deptAvg}</div></div>
+                        </div>
+                        <table class="w-full text-xs border border-gray-300">
+                            <thead class="bg-gray-100 font-bold">
+                                <tr class="border-b">
+                                    <th class="p-2 text-center w-10">ที่</th>
+                                    <th class="p-2 text-left">ชื่อ - นามสกุล</th>
+                                    <th class="p-2 text-left">รายวิชาที่รับการนิเทศ</th>
+                                    <th class="p-2 text-center">คะแนนเฉลี่ย 4 ด้าน (1/2/3/4)</th>
+                                    <th class="p-2 text-center">ร้อยละ</th>
+                                    <th class="p-2 text-center">ระดับคุณภาพ</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    `;
+                    return;
+                }
+            }
+
+            // --------------------------------------------------
+            // 🏛️ กรณีที่ 3: รายงานระดับโรงเรียน (School-wide)
+            // --------------------------------------------------
+            if (scope === 'school') {
+                // 💡 โค้ดที่เปลี่ยน: เรียงลำดับ 8 กลุ่มสาระ ตามที่ระบุเป๊ะๆ
+                const allDepts = ['ภาษาไทย', 'คณิตศาสตร์', 'วิทยาศาสตร์และเทคโนโลยี', 'สังคมศึกษา ศาสนา และวัฒนธรรม', 'สุขศึกษาและพลศึกษา', 'ศิลปะ', 'การงานอาชีพ', 'ภาษาต่างประเทศ'];
+                const roundsToUse = roundVal === 'ALL_3_ROUNDS' ? ['รอบที่ 1', 'รอบที่ 2', 'รอบที่ 3'] : [roundVal];
+                const titleText = roundVal === 'ALL_3_ROUNDS' ? 'รายงานสรุปผลการนิเทศระดับโรงเรียน (รวมทุกกลุ่มสาระฯ ทั้ง 3 รอบ)' : `รายงานสรุปผลการนิเทศระดับโรงเรียน ประจำ${roundVal}`;
+
+                let schoolTotalTeachers = 0;
+                let schoolRCounts = [0, 0, 0], schoolRSums = [0, 0, 0];
+
+                let deptRows = allDepts.map((dName, idx) => {
+                    // 💡 โค้ดที่เปลี่ยน: ดึงรายชื่อครูในหมวดเรียงตาม HOD -> Sq เพื่อเอาไปคำนวณ
+                    const dTeachers = window.getSortedDeptTeachers(dName);
+
+                    schoolTotalTeachers += dTeachers.length;
+
+                    const rData = ['รอบที่ 1', 'รอบที่ 2', 'รอบที่ 3'].map((rName, rIdx) => {
+                        let sum = 0, cnt = 0;
+                        dTeachers.forEach(tName => {
+                            const st = window.computeRecordStats(window.findTeacherRoundRecord(tName, rName));
+                            if (st && st.evaluated) {
+                                sum += st.avgPercent;
+                                cnt++;
+                                schoolRSums[rIdx] += st.avgPercent;
+                                schoolRCounts[rIdx]++;
+                            }
+                        });
+                        return { cnt, avg: cnt > 0 ? (sum / cnt) : null };
+                    });
+
+                    // คำนวณค่าเฉลี่ยตามโหมดที่เลือก (รายรอบ หรือ รวม 3 รอบ)
+                    let activeSum = 0, activeCnt = 0;
+                    roundsToUse.forEach(rName => {
+                        const rIdx = ['รอบที่ 1', 'รอบที่ 2', 'รอบที่ 3'].indexOf(rName);
+                        if (rIdx > -1 && rData[rIdx].avg !== null) {
+                            activeSum += rData[rIdx].avg;
+                            activeCnt++;
+                        }
+                    });
+                    const finalAvg = activeCnt > 0 ? (activeSum / activeCnt) : null;
+                    const level = finalAvg === null ? '-' : finalAvg >= 80 ? 'ดีเยี่ยม' : finalAvg >= 70 ? 'ดี' : finalAvg >= 60 ? 'พอใช้' : 'ควรปรับปรุง';
+
+                    if (roundVal === 'ALL_3_ROUNDS') {
+                        return `
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-2.5 text-center">${idx+1}</td>
+                                <td class="p-2.5 font-bold">${dName}</td>
+                                <td class="p-2.5 text-center">${dTeachers.length}</td>
+                                <td class="p-2.5 text-center">${rData[0].avg !== null ? `${rData[0].avg.toFixed(1)}% <span class="text-[10px] text-gray-400">(${rData[0].cnt})</span>` : '-'}</td>
+                                <td class="p-2.5 text-center">${rData[1].avg !== null ? `${rData[1].avg.toFixed(1)}% <span class="text-[10px] text-gray-400">(${rData[1].cnt})</span>` : '-'}</td>
+                                <td class="p-2.5 text-center">${rData[2].avg !== null ? `${rData[2].avg.toFixed(1)}% <span class="text-[10px] text-gray-400">(${rData[2].cnt})</span>` : '-'}</td>
+                                <td class="p-2.5 text-center font-black text-indigo-700">${finalAvg !== null ? finalAvg.toFixed(2) + '%' : '-'}</td>
+                                <td class="p-2.5 text-center font-bold text-emerald-700">${level}</td>
+                            </tr>
+                        `;
+                    } else {
+                        const rIdx = ['รอบที่ 1', 'รอบที่ 2', 'รอบที่ 3'].indexOf(roundVal);
+                        const targetR = rData[rIdx] || { cnt: 0, avg: null };
+                        return `
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-2.5 text-center">${idx+1}</td>
+                                <td class="p-2.5 font-bold">${dName}</td>
+                                <td class="p-2.5 text-center">${dTeachers.length}</td>
+                                <td class="p-2.5 text-center font-bold text-emerald-700">${targetR.cnt} / ${dTeachers.length}</td>
+                                <td class="p-2.5 text-center font-black text-indigo-700">${targetR.avg !== null ? targetR.avg.toFixed(2) + '%' : '-'}</td>
+                                <td class="p-2.5 text-center font-bold text-rose-700">${level}</td>
+                            </tr>
+                        `;
+                    }
+                }).join('');
+
+                const sAvgs = schoolRSums.map((s, i) => schoolRCounts[i] > 0 ? (s / schoolRCounts[i]).toFixed(2) + '%' : '-');
+
+                canvas.innerHTML = `
+                    ${headerHtml(titleText, `สรุปข้อมูลทั้ง 8 กลุ่มสาระการเรียนรู้ | บุคลากรครูรวม ${schoolTotalTeachers} ท่าน`)}
+                    <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                        <div class="bg-rose-50 p-4 rounded-xl border border-rose-200"><div class="text-xs font-bold text-gray-500">เฉลี่ยทั้งโรงเรียน (รอบที่ 1)</div><div class="text-2xl font-black text-rose-700 mt-1">${sAvgs[0]}</div><div class="text-[10px] text-gray-500">ประเมินแล้ว ${schoolRCounts[0]} รายการ</div></div>
+                        <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200"><div class="text-xs font-bold text-gray-500">เฉลี่ยทั้งโรงเรียน (รอบที่ 2)</div><div class="text-2xl font-black text-indigo-700 mt-1">${sAvgs[1]}</div><div class="text-[10px] text-gray-500">ประเมินแล้ว ${schoolRCounts[1]} รายการ</div></div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200"><div class="text-xs font-bold text-gray-500">เฉลี่ยทั้งโรงเรียน (รอบที่ 3)</div><div class="text-2xl font-black text-emerald-700 mt-1">${sAvgs[2]}</div><div class="text-[10px] text-gray-500">ประเมินแล้ว ${schoolRCounts[2]} รายการ</div></div>
+                    </div>
+                    <table class="w-full text-xs border border-gray-300">
+                        <thead class="bg-gray-100 font-bold">
+                            ${roundVal === 'ALL_3_ROUNDS' ? `
+                                <tr class="border-b">
+                                    <th class="p-2.5 text-center w-10">ที่</th>
+                                    <th class="p-2.5 text-left">กลุ่มสาระการเรียนรู้</th>
+                                    <th class="p-2.5 text-center">จำนวนครู</th>
+                                    <th class="p-2.5 text-center">รอบที่ 1</th>
+                                    <th class="p-2.5 text-center">รอบที่ 2</th>
+                                    <th class="p-2.5 text-center">รอบที่ 3</th>
+                                    <th class="p-2.5 text-center">เฉลี่ยรวม 3 รอบ</th>
+                                    <th class="p-2.5 text-center">ระดับคุณภาพ</th>
+                                </tr>
+                            ` : `
+                                <tr class="border-b">
+                                    <th class="p-2.5 text-center w-10">ที่</th>
+                                    <th class="p-2.5 text-left">กลุ่มสาระการเรียนรู้</th>
+                                    <th class="p-2.5 text-center">จำนวนครูทั้งหมด</th>
+                                    <th class="p-2.5 text-center">ประเมินแล้ว</th>
+                                    <th class="p-2.5 text-center">คะแนนเฉลี่ย (${roundVal})</th>
+                                    <th class="p-2.5 text-center">ระดับคุณภาพ</th>
+                                </tr>
+                            `}
+                        </thead>
+                        <tbody>${deptRows}</tbody>
+                    </table>
+                `;
+            }
+        };
+
+        // ==========================================
+        // 🖼️ ฟังก์ชันดาวน์โหลดแผ่นรายงานเป็นรูปภาพ (JPG)
+        // ==========================================
+        window.downloadSupReportJPG = async function() {
+            const target = document.getElementById('supReportPrintCanvas');
+            const btn = document.getElementById('btnDownloadSupRepJPG');
+            if (!target || typeof html2canvas === 'undefined') {
+                return typeof customAlert === 'function' ? customAlert("ไม่พบโมดูลสร้างรูปภาพ html2canvas", "error") : alert("ไม่พบ html2canvas");
+            }
+
+            const origTxt = btn ? btn.innerHTML : '';
+            if (btn) { btn.innerHTML = '⏳ กำลังสร้างไฟล์รูปภาพ JPG...'; btn.disabled = true; }
+
+            try {
+                const scope = document.getElementById('supRepScope').value;
+                const dept = document.getElementById('supRepDept').value;
+                const teacher = (document.getElementById('supRepTeacher')?.value || '').trim();
+                const roundVal = document.getElementById('supRepRound').value;
+                const evalVal = document.getElementById('supRepEvaluator')?.value || '';
+
+                let fileName = `รายงานนิเทศ_${roundVal}`;
+                if (scope === 'individual') {
+                    fileName = `ผลการนิเทศ_${teacher}_${roundVal === 'ALL_3_ROUNDS' ? 'รวม3รอบ' : roundVal}`;
+                    if (roundVal !== 'ALL_3_ROUNDS' && evalVal !== 'SUMMARY_ROUND') {
+                        fileName += `_กรรมการ_${evalVal}`;
+                    }
+                } else if (scope === 'department') {
+                    fileName = `สรุปนิเทศกลุ่มสาระ_${dept}_${roundVal === 'ALL_3_ROUNDS' ? 'รวม3รอบ' : roundVal}`;
+                } else if (scope === 'school') {
+                    fileName = `สรุปนิเทศระดับโรงเรียน_${roundVal === 'ALL_3_ROUNDS' ? 'รวมทุกรอบทุกกลุ่มสาระ' : roundVal}`;
+                }
+
+                const canvasImg = await html2canvas(target, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const link = document.createElement('a');
+                link.download = `${fileName.replace(/\s+/g, '_')}.jpg`;
+                link.href = canvasImg.toDataURL('image/jpeg', 0.95);
+                link.click();
+            } catch (err) {
+                console.error(err);
+                if (typeof customAlert === 'function') customAlert("สร้างไฟล์ภาพไม่สำเร็จ: " + err.message, "error");
+            } finally {
+                if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
             }
         };
         // 2. ฟังก์ชันเตรียมหน้าจอก่อนเปิดใช้งาน (ตัวที่แกกดแล้ว Error นี่แหละ!)
@@ -10806,14 +11876,25 @@ window.deleteLog = function(logId) {
             if(!tbody) return;
             tbody.innerHTML = '';
             
-            const mySups = supervisionDB_Global.filter(s => s.TeacherName === currentUser.FullName);
+            // 💡 เรียกใช้ Smart Filter Context (กรองเทอม + สิทธิ์ Time-Freeze)
+            const ctx = window.getSupFilterContext();
+            
+            // กรองข้อมูล: 1. ต้องเป็นของตัวเอง 2. ต้องตรงกับภาคเรียนที่เลือกใน Dropdown
+            const mySups = (supervisionDB_Global || []).filter(s => 
+                String(s.TeacherName || '').trim() === (currentUser.FullName || '').trim() &&
+                ctx.matchRecord(s)
+            );
+
             if (mySups.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-400 italic font-bold">-- ยังไม่มีประวัติการขอรับการนิเทศ --</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-gray-400 italic font-bold">-- ยังไม่มีประวัติการขอรับการนิเทศในภาคเรียนนี้ --</td></tr>';
                 return;
             }
 
             mySups.sort((a,b) => new Date(b.ReqDate) - new Date(a.ReqDate)).forEach(s => {
                 const isRejected = (s.Sup1_Status === 'Rejected' || s.Sup2_Status === 'Rejected' || s.Sup3_Status === 'Rejected');
+                
+                // ตรวจสอบว่าเทอมนี้ถูกล็อกหรือยัง?
+                const canMod = ctx.canModifyRecord(s);
 
                 let statusBadge = '';
                 if (isRejected) {
@@ -10827,13 +11908,18 @@ window.deleteLog = function(logId) {
                 }
 
                 const dDate = new Date(s.TargetDate).toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'2-digit' });
-                const roundBadge = typeof getSupRoundName === 'function' ? `<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-purple-200 ml-1 whitespace-nowrap">${getSupRoundName(s.TargetDate)}</span>` : '';
+                const rName = s.Round || (typeof getSupRoundName === 'function' ? getSupRoundName(s.TargetDate) : 'รอบที่ 1');
+                const roundBadge = `<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-purple-200 ml-1 whitespace-nowrap">${rName}</span>`;
                 
-                // 💡 ลอจิกปุ่ม: ถ้ายังไม่ประเมิน ให้มีปุ่มลบ!
+                // 💡 ลอจิกปุ่ม: กรองตามสิทธิ์และสถานะ
                 let actionBtn = '<span class="text-gray-300">-</span>';
                 if (s.Status === 'Evaluated') {
                     actionBtn = `<button onclick="viewSupReceipt('${s.SupID}')" class="bg-emerald-500 text-white px-3 py-1 rounded-full text-[10px] font-bold shadow hover:bg-emerald-600">ดูผล</button>`;
+                } else if (!canMod) {
+                    // ถ้าปิดเทอมไปแล้ว แต่ยังค้างสถานะอื่นอยู่ ให้โชว์ว่าล็อกแทนปุ่มยกเลิก
+                    actionBtn = `<span class="text-[9px] text-gray-400 bg-gray-100 px-2 py-1 rounded-lg border border-gray-200">🔒 ปิดเทอมแล้ว</span>`;
                 } else {
+                    // กรณียังไม่ปิดเทอม (หรือเป็น EmpPngn) ให้โชว์ปุ่มจัดการปกติ
                     let patchBtn = isRejected ? `<button onclick="window.openPatchModal('${s.SupID}')" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow hover:bg-rose-600 w-full mb-1">🔄 เปลี่ยนคน</button>` : '';
                     actionBtn = `
                         <div class="flex flex-col items-center justify-center">
@@ -11692,108 +12778,7 @@ window.deleteLog = function(logId) {
             if(tabName === 'mine' && typeof renderSupHistory === 'function') renderSupHistory();
             if(tabName === 'others' && typeof renderSupTasks === 'function') renderSupTasks();
         };
-        // 🎯 วาดการ์ดภารกิจนิเทศของฉัน (Supervisor Inbox)
-        window.renderSupTasks = function() {
-            const grid = document.getElementById('supTaskGrid');
-            const badge = document.getElementById('supTaskBadge');
-            if(!grid) return;
-            grid.innerHTML = '';
-
-            let myTasks = [];
-            supervisionDB_Global.forEach(s => {
-                if(s.Status === 'Pending' || s.Status === 'Assigned' || s.Status === 'Evaluated') {
-                    if (s.Sup1_Name === currentUser.FullName || s.Sup2_Name === currentUser.FullName || s.Sup3_Name === currentUser.FullName) {
-                        myTasks.push(s);
-                    } else {
-                        try {
-                            const sups = JSON.parse(s.Supervisors || "[]");
-                            if(sups.includes(currentUser.FullName)) myTasks.push(s);
-                        } catch(e){}
-                    }
-                }
-            });
-
-            let pendingCount = 0;
-            myTasks.forEach(t => {
-                let myStatus = 'Accepted'; 
-                if (t.Sup1_Name === currentUser.FullName) myStatus = t.Sup1_Status;
-                else if (t.Sup2_Name === currentUser.FullName) myStatus = t.Sup2_Status;
-                else if (t.Sup3_Name === currentUser.FullName) myStatus = t.Sup3_Status;
-
-                let evals = {}; try{ evals = JSON.parse(t.EvaluationData || "{}"); }catch(e){}
-                if(myStatus === 'Pending' || (myStatus === 'Accepted' && !evals[currentUser.FullName])) pendingCount++;
-            });
-            
-            if(badge) { badge.textContent = pendingCount; badge.classList.toggle('hidden', pendingCount === 0); }
-
-            if(myTasks.length === 0) {
-                grid.innerHTML = '<div class="col-span-full py-16 text-center text-amber-600 font-bold opacity-50"><div class="text-4xl mb-2">☕</div>ไม่มีภารกิจนิเทศครับ</div>';
-                return;
-            }
-
-            myTasks.sort((a,b) => new Date(a.TargetDate) - new Date(b.TargetDate)).forEach(t => {
-                let myStatus = 'Accepted'; 
-                if (t.Sup1_Name === currentUser.FullName) myStatus = t.Sup1_Status;
-                else if (t.Sup2_Name === currentUser.FullName) myStatus = t.Sup2_Status;
-                else if (t.Sup3_Name === currentUser.FullName) myStatus = t.Sup3_Status;
-
-                if (myStatus === 'Rejected') return;
-
-                const dDate = new Date(t.TargetDate).toLocaleDateString('th-TH', { day:'numeric', month:'short' });
-                let evals = {}; try{ evals = JSON.parse(t.EvaluationData || "{}"); }catch(e){}
-                const isDone = !!evals[currentUser.FullName];
-                const roundBadge = typeof getSupRoundName === 'function' ? `<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-purple-200 ml-1">${getSupRoundName(t.TargetDate)}</span>` : '';
-
-                let actionHtml = '';
-                let borderClass = 'border-amber-300';
-                let topBadge = '';
-
-                if (myStatus === 'Pending') {
-                    borderClass = 'border-rose-300 shadow-rose-100 bg-rose-50/30';
-                    topBadge = '<div class="absolute -right-8 -top-2 bg-rose-500 text-white text-[10px] font-bold py-1 px-10 transform rotate-45 shadow animate-pulse">รอตอบรับ</div>';
-                    actionHtml = `
-                        <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
-                            <button onclick="window.respondToSupRequest('${t.SupID}', 'Rejected')" class="flex-1 sm:flex-none bg-white text-gray-500 border border-gray-300 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-gray-100 transition-colors">❌ ปฏิเสธ</button>
-                            <button onclick="window.respondToSupRequest('${t.SupID}', 'Accepted')" class="flex-1 sm:flex-none bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow hover:bg-emerald-600 transition-colors">✅ รับนิเทศ</button>
-                        </div>
-                    `;
-                } else if (isDone) {
-                    borderClass = 'border-emerald-200 opacity-80';
-                    topBadge = '<div class="absolute -right-6 -top-2 bg-emerald-500 text-white text-[10px] font-bold py-1 px-8 transform rotate-45 shadow">ประเมินแล้ว</div>';
-                    actionHtml = `<span class="text-emerald-500 font-bold text-xs">✅ เสร็จสิ้น</span>`;
-                } else {
-                    // 💡 เช็คสถานะเวลา!
-                    const timeInfo = window.getSupTimeStatus(t.TargetDate, t.Period);
-                    
-                    if (!timeInfo.canEval) {
-                        // ยังไม่ถึงเวลาเรียน ซ่อนปุ่มประเมิน
-                        actionHtml = `<span class="text-amber-600 font-bold text-[10px] bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">${timeInfo.text}</span>`;
-                    } else {
-                        // ถึงเวลา / เลยเวลาเรียนแล้ว โชว์ปุ่มประเมิน + ข้อความ
-                        const extraAlert = timeInfo.state === 'LATE' ? `<div class="text-rose-500 text-[9px] font-bold mt-1 text-right animate-pulse">${timeInfo.text}</div>` : `<div class="text-emerald-600 text-[9px] font-bold mt-1 text-right">${timeInfo.text}</div>`;
-                        actionHtml = `
-                            <div class="flex flex-col items-end w-full sm:w-auto mt-3 sm:mt-0">
-                                <button onclick="openSupEvalModal('${t.SupID}', '${t.TeacherName}')" class="bg-amber-500 text-white px-5 py-1.5 rounded-lg text-[11px] font-bold shadow hover:bg-amber-600 transition-colors flex items-center gap-1">📝 ประเมิน</button>
-                                ${extraAlert}
-                            </div>
-                        `;
-                    }
-                }
-
-                // 💡 เพิ่ม id ให้กล่องการ์ด เพื่อใช้ทำ Effect ตอนกดปุ่ม
-                grid.innerHTML += `
-                <div id="card-${t.SupID}" class="bg-white border ${borderClass} p-4 rounded-2xl shadow-sm relative overflow-hidden transition-all hover:shadow-md">
-                    ${topBadge}
-                    <div class="text-xs font-bold text-gray-500 mb-1">ผู้ขอรับการนิเทศ: <span class="text-gray-800 text-sm">${t.TeacherName}</span></div>
-                    <div class="text-xs text-indigo-600 font-bold mb-3 bg-indigo-50 px-2 py-1 rounded inline-block">${t.SubjectData} (คาบ ${t.Period}) ${roundBadge}</div>
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 pt-3 border-t border-gray-100">
-                        <span class="text-[10px] text-gray-400 font-bold">📅 ${dDate}</span>
-                        ${actionHtml}
-                    </div>
-                </div>`;
-            });
-        };
-
+        
         // 🚀 ฟังก์ชันยิง API แบบมี Effect เปลี่ยนกล่องการ์ดทันที (Optimistic UI)
         window.respondToSupRequest = async function(supId, responseStatus) {
             const cardEl = document.getElementById(`card-${supId}`);
@@ -15012,43 +15997,56 @@ window.deleteLog = function(logId) {
         };
 
         window.renderAdminTimetableMatrix = function() {
-            const teacher = document.getElementById('matrixTeacherSelect').value;
-            const tbody = document.getElementById('matrixTableBody');
-            if(!teacher) { tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-gray-400 italic">กรุณาเลือกครูผู้สอน</td></tr>'; return; }
+    const teacher = document.getElementById('matrixTeacherSelect').value;
+    const tbody = document.getElementById('matrixTableBody');
+    if (!teacher) { 
+        tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-gray-400 italic">กรุณาเลือกครูผู้สอน</td></tr>'; 
+        return; 
+    }
 
-            const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
-            let html = '';
+    const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
+    let html = '';
 
-            days.forEach(day => {
-                const tt = timetableDB_Global.find(t => t.TeacherName === teacher && t.Day === day) || {};
-                html += `<tr class="hover:bg-emerald-50/30">
-                            <td class="px-2 py-3 font-bold bg-gray-50 border-r">${day}</td>`;
+    const curT = String(typeof currentTerm !== 'undefined' ? currentTerm : '1').trim();
+    const curY = String(typeof currentYear !== 'undefined' ? currentYear : '2569').trim();
+
+    days.forEach(day => {
+        // กรองตารางสอนตามชื่อครู, วัน, ภาคเรียน และปีการศึกษาปัจจุบัน
+        const tt = (timetableDB_Global || []).find(t => 
+            String(t.TeacherName || '').trim() === teacher.trim() && 
+            String(t.Day || '').trim() === day &&
+            String(t.Semester || '1').trim() === curT &&
+            String(t.AcademicYear || '2569').trim() === curY
+        ) || {};
+
+        html += `<tr class="hover:bg-emerald-50/30">
+                    <td class="px-2 py-3 font-bold bg-gray-50 border-r">${day}</td>`;
+        
+        for (let i = 1; i <= 9; i++) {
+            const val = tt[`Period${i}`] || '';
+            let display = `<span class="text-gray-300">+ ว่าง</span>`;
+            
+            if (val) {
+                const parts = val.split(';');
+                const subCode = parts[0] ? parts[0].trim() : '';
+                const level = parts[1] ? parts[1].trim() : '';
+                const room = parts[2] ? parts[2].trim() : '';
                 
-                for(let i=1; i<=9; i++) {
-                    const val = tt[`Period${i}`] || '';
-                    let display = `<span class="text-gray-300">+ ว่าง</span>`;
-                    
-                    if (val) {
-                        const parts = val.split(';');
-                        const subCode = parts[0] ? parts[0].trim() : '';
-                        const level = parts[1] ? parts[1].trim() : '';
-                        const room = parts[2] ? parts[2].trim() : '';
-                        
-                        display = `<span class="font-bold text-emerald-700">${subCode}</span><br><span class="text-xs text-gray-500 bg-gray-100 px-1 rounded font-bold">${level}</span>`;
-                        if (room) display += `<br><span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 rounded border border-emerald-100 mt-0.5 inline-block">${room}</span>`;
-                    }
-                    
-                    html += `<td class="border-r border-gray-100 p-1 cursor-pointer hover:bg-emerald-100 transition-colors" 
-                                 onclick="openMatrixSlotModal('${teacher}', '${day}', ${i}, '${val}')">
-                                <div class="w-full h-full min-h-[50px] flex flex-col justify-center items-center text-xs p-1 rounded border border-transparent hover:border-emerald-300 text-center leading-tight">
-                                    ${display}
-                                </div>
-                             </td>`;
-                }
-                html += `</tr>`;
-            });
-            tbody.innerHTML = html;
-        };
+                display = `<span class="font-bold text-emerald-700">${subCode}</span><br><span class="text-xs text-gray-500 bg-gray-100 px-1 rounded font-bold">${level}</span>`;
+                if (room) display += `<br><span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 rounded border border-emerald-100 mt-0.5 inline-block">${room}</span>`;
+            }
+            
+            html += `<td class="border-r border-gray-100 p-1 cursor-pointer hover:bg-emerald-100 transition-colors" 
+                         onclick="openMatrixSlotModal('${teacher}', '${day}', ${i}, '${val}')">
+                        <div class="w-full h-full min-h-[50px] flex flex-col justify-center items-center text-xs p-1 rounded border border-transparent hover:border-emerald-300 text-center leading-tight">
+                            ${display}
+                        </div>
+                     </td>`;
+        }
+        html += `</tr>`;
+    });
+    tbody.innerHTML = html;
+};
 
         // Modal โคตรล้ำของตารางสอน (ใช้วิธีสร้างสดผ่าน Swal.fire เพื่อความไว)
         window.openMatrixSlotModal = function(teacher, day, period, currentValue) {
@@ -15181,35 +16179,6 @@ window.deleteLog = function(logId) {
                 } else throw new Error(result.message);
             } catch(err) { customAlert("เกิดข้อผิดพลาด: " + err.message); } 
             finally { btn.innerHTML = origTxt; btn.disabled = false; }
-        };
-
-        window.renderAdminTimetableMatrix = function() {
-            const teacher = document.getElementById('matrixTeacherSelect').value;
-            const tbody = document.getElementById('matrixTableBody');
-            if(!teacher) { tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-gray-400 italic">กรุณาเลือกครูผู้สอน</td></tr>'; return; }
-
-            const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
-            let html = '';
-
-            days.forEach(day => {
-                const tt = timetableDB_Global.find(t => t.TeacherName === teacher && t.Day === day) || {};
-                html += `<tr class="hover:bg-emerald-50/30">
-                            <td class="px-2 py-3 font-bold bg-gray-50 border-r">${day}</td>`;
-                
-                for(let i=1; i<=9; i++) {
-                    const val = tt[`Period${i}`] || '';
-                    const display = val ? `<span class="font-bold text-emerald-700">${val.split(';')[0]}</span><br><span class="text-xs text-gray-500">${val.split(';')[1]||''}</span>` : `<span class="text-gray-300">+ ว่าง</span>`;
-                    
-                    html += `<td class="border-r border-gray-100 p-1 cursor-pointer hover:bg-emerald-100 transition-colors" 
-                                 onclick="openMatrixSlotModal('${teacher}', '${day}', ${i}, '${val}')">
-                                <div class="w-full h-full min-h-[50px] flex flex-col justify-center items-center text-xs p-1 rounded border border-transparent hover:border-emerald-300">
-                                    ${display}
-                                </div>
-                             </td>`;
-                }
-                html += `</tr>`;
-            });
-            tbody.innerHTML = html;
         };
 
         // Modal โคตรล้ำของตารางสอน (ใช้วิธีสร้างสดผ่าน Swal.fire เพื่อความไว)
@@ -18296,6 +19265,8 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                     Object.keys(daysMap).forEach(dayPrefix => {
                         let rowObj = { 
                             "TeacherName": t.fullName, 
+                            "Semester": currentTerm,          // 💡 เพิ่มบรรทัดนี้
+                            "AcademicYear": currentYear,      // 💡 เพิ่มบรรทัดนี้
                             "Day": daysMap[dayPrefix],
                             "Period1": "", "Period2": "", "Period3": "", "Period4": "", "Period5": "",
                             "Period6": "", "Period7": "", "Period8": "", "Period9": ""
