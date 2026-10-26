@@ -212,6 +212,51 @@
           display: none !important;
         }
       }
+      /* =========================================================
+           🌌 WKS V2.0: LOGIN CARD ALIGNMENT FIX (จัดกล่องให้เนียนกริ๊บ)
+           ========================================================= */
+
+        /* 1. จัดกึ่งกลางหน้าจอแบบ Flexbox ให้การ์ดแม่นิ่งสนิท ไม่ลอยเคว้ง */
+        #view-login {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 100vh !important;
+            padding: 1.5rem !important;
+        }
+
+        /* 2. ล็อกกรอบการ์ดหลัก (Parent Container) ให้ห่อหุ้มทุกองค์ประกอบข้างในพอดีเป๊ะ */
+        #view-login > div:not(.wks-bg-layer) {
+            position: relative !important;
+            z-index: 10 !important;
+            width: 100% !important;
+            max-width: 440px !important; /* กำหนดความกว้างมาตรฐานสวยๆ */
+            margin: auto !important;
+            padding: 2.5rem 2rem !important; /* เว้นขอบด้านในให้หายใจทั่วท้อง ไม่เบียด */
+            background: rgba(255, 255, 255, 0.88) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            border-radius: 2rem !important;
+            border: 2px solid rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.35),
+                0 0 40px rgba(56, 189, 248, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 1) !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 3. จัดระเบียบกล่องลูกและปุ่ม "เข้าสู่ระบบ" ภายในไม่ให้ล้นออกนอกขอบ */
+        #view-login form,
+        #view-login .space-y-4,
+        #view-login div {
+            box-sizing: border-box !important;
+        }
+
+        /* 4. ปรับปุ่มเข้าสู่ระบบให้ขอบโค้งมนกลมกลืนกับการ์ด */
+        #view-login button[type="submit"],
+        #view-login button:has(span) {
+            border-radius: 1rem !important;
+        }
     </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col relative">
@@ -2480,6 +2525,67 @@
                         </button>
                         <h2 class="text-3xl font-black text-gray-800 drop-shadow-sm tracking-tighter">⚙️ การตั้งค่าและจัดการระบบ</h2>
                     </div>
+                    <!-- 🌌 WKS V2.0: แถบควบคุมมิติเวลา & โคลนนิ่งข้อมูลข้ามภาคเรียน (Global Admin Nexus Bar) -->
+                    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-3xl shadow-2xl border border-indigo-500/40 mb-8">
+                        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                            <!-- ฝั่งซ้าย: สวิตช์เลือกดูภาคเรียนในหน้า Admin -->
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="bg-indigo-500/20 border border-indigo-400/40 px-3.5 py-2 rounded-2xl flex items-center gap-2">
+                                    <span class="text-xl">⏳</span>
+                                    <div>
+                                        <div class="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">ภาคเรียนหลักของระบบปัจจุบัน</div>
+                                        <div id="nexusSystemCurrentBadge" class="text-sm font-black text-emerald-400">ภาคเรียนที่ 1/2569</div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white/10 border border-white/20 px-4 py-2 rounded-2xl flex items-center gap-3">
+                                    <label class="text-xs font-bold text-sky-200 whitespace-nowrap">👁️ กำลังดู/จัดการข้อมูลภาคเรียน:</label>
+                                    <select id="adminGlobalTermSelector" onchange="onAdminGlobalTermChange()" class="bg-slate-800 text-amber-300 font-black text-sm px-3 py-1.5 rounded-xl border border-amber-400/50 outline-none cursor-pointer">
+                                    </select>
+                                </div>
+
+                                <div id="nexusTermDataStats" class="text-xs font-bold text-gray-300 bg-black/30 px-3.5 py-2 rounded-xl border border-white/10">
+                                    กำลังคำนวณสถิติข้อมูล...
+                                </div>
+                            </div>
+
+                            <!-- ฝั่งขวา: ปุ่มเปิดแผงโคลนนิ่งการตั้งค่าจากภาคเรียนเก่า -->
+                            <button onclick="document.getElementById('nexusCloneDrawer').classList.toggle('hidden')" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-lg transition-all flex items-center gap-2 shrink-0">
+                                🪄 ดึงการตั้งค่า/ฐานข้อมูลจากภาคเรียนเก่า ▾
+                            </button>
+                        </div>
+
+                        <!-- ลิ้นชักเครื่องมือโคลนนิ่งข้อมูลข้ามภาคเรียน -->
+                        <div id="nexusCloneDrawer" class="hidden mt-4 pt-4 border-t border-white/15 animate-in fade-in duration-200">
+                            <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                                <div class="text-xs font-black text-amber-300 mb-3 flex items-center gap-2">
+                                    <span>⚡ เครื่องมือคัดลอกการตั้งค่าและข้อมูลตั้งต้นข้ามภาคเรียน (Clone Engine)</span>
+                                    <span class="text-[10px] font-normal text-gray-300">*ใช้เมื่อขึ้นภาคเรียนใหม่แล้วต้องการใช้ข้อมูลตั้งต้นจากภาคเรียนก่อนหน้า</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                    <div class="md:col-span-3 flex items-center gap-2">
+                                        <span class="text-xs font-bold text-gray-300 whitespace-nowrap">ต้นทาง:</span>
+                                        <select id="cloneSourceTermSelect" class="w-full bg-slate-800 text-white text-xs font-bold p-2.5 rounded-xl border border-gray-600 outline-none"></select>
+                                    </div>
+                                    <div class="md:col-span-3 flex items-center gap-2">
+                                        <span class="text-xs font-bold text-emerald-300 whitespace-nowrap">ไปยังปลายทาง:</span>
+                                        <select id="cloneTargetTermSelect" class="w-full bg-slate-800 text-emerald-300 text-xs font-bold p-2.5 rounded-xl border border-emerald-500/50 outline-none"></select>
+                                    </div>
+                                    <div class="md:col-span-4 flex flex-wrap gap-3 text-xs font-bold text-gray-200">
+                                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="chkCloneSubjects" checked class="rounded text-amber-500"> รายวิชา</label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="chkCloneTimetable" checked class="rounded text-amber-500"> ตารางสอน</label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="chkClonePLC" checked class="rounded text-amber-500"> กลุ่ม PLC</label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="chkCloneSettings" checked class="rounded text-amber-500"> กติกานิเทศ & ละเว้นสอนแทน</label>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <button onclick="executeSemesterClone(event)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-2.5 px-3 rounded-xl text-xs shadow-md transition-all">
+                                            🚀 เริ่มคัดลอกทันที
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- ⚙️ Card Menu Grid (จัดการ Layout ใหม่ให้สวยงาม ไม่เหมือนเด็กโยนของเล่น) -->
                     <div id="adminCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 transition-all duration-500">
@@ -2577,6 +2683,34 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- 🎓 WKS V2.0: ระบบดึงข้อมูลนักเรียนข้ามภาคเรียน & เลื่อนชั้นเรียนอัตโนมัติ -->
+                                <div class="mt-6 pt-6 border-t border-emerald-200 space-y-3">
+                                    <h4 class="text-sm font-black text-indigo-900 flex items-center gap-1.5">🎓 ส่งต่อนักเรียนข้ามเทอม / เลื่อนชั้นปีใหม่</h4>
+                                    <p class="text-[11px] text-gray-500">ดึงรายชื่อนักเรียนจากภาคเรียนก่อนหน้าโดยไม่ต้องอัปโหลดไฟล์ใหม่</p>
+                                    
+                                    <div class="grid grid-cols-2 gap-2 text-xs">
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-gray-500 mb-1">ดึงจากภาคเรียน</label>
+                                            <select id="stuMigrateSrcSelect" class="w-full p-2 rounded-lg border border-gray-300 font-bold text-gray-700 bg-gray-50"></select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-indigo-700 mb-1">เข้าสู่ภาคเรียน</label>
+                                            <select id="stuMigrateTgtSelect" class="w-full p-2 rounded-lg border border-indigo-300 font-bold text-indigo-900 bg-indigo-50"></select>
+                                        </div>
+                                    </div>
+
+                                    <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 cursor-pointer">
+                                        <input type="checkbox" id="chkPromoteAdvisors" checked class="rounded text-amber-600">
+                                        <span>เลื่อนห้องครูที่ปรึกษา (AdvisorRoom) ตามเด็กอัตโนมัติเมื่อเลื่อนชั้นปี</span>
+                                    </label>
+
+                                    <button onclick="runStudentTermMigration('same_grade', event)" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs shadow transition-all flex items-center justify-center gap-1.5">
+                                        📥 1. ดึงนักเรียนเข้าเทอมใหม่ (คงระดับชั้นเดิม)
+                                    </button>
+                                    <button onclick="runStudentTermMigration('promote_grade', event)" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black py-2.5 px-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+                                        🚀 2. เลื่อนชั้นเรียนขึ้นปีการศึกษาใหม่ (+1 ชั้น / ม.6 จบ)
+                                    </button>
+                                </div>
 
                             <!-- โซนขวา: ค้นหาและแก้ไขรายคน -->
 <div class="lg:col-span-2 bg-white rounded-3xl p-8 shadow-xl border border-emerald-100 h-fit">
@@ -2790,30 +2924,73 @@
                         </div>
                     </div>
 
-                    <!-- [4] SECTION: CONFIG & SECURITY -->
+                    <!-- [4] SECTION: CONFIG & SECURITY (WKS V2.0 TIME NEXUS) -->
                     <div id="admin-sec-config" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div class="bg-white rounded-3xl p-8 shadow-xl border border-rose-100">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <!-- การ์ดซ้าย (5 คอลัมน์): ตั้งค่าภาคเรียนปัจจุบัน + วันเปิด/วันปิด -->
+                            <div class="lg:col-span-5 bg-white rounded-3xl p-8 shadow-xl border border-rose-100 h-fit">
                                 <h3 class="text-xl font-bold text-rose-800 mb-6 flex items-center gap-2">⏳ ตั้งค่าภาคเรียนปัจจุบัน</h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                                    <div><label class="block text-xs font-bold text-gray-500 mb-1">ภาคเรียนที่</label><select id="adminTermSelect" class="w-full rounded-xl border-gray-300 p-3 text-sm font-bold"><option value="1">1</option><option value="2">2</option></select></div>
-                                    <div><label class="block text-xs font-bold text-gray-500 mb-1">ปีการศึกษา</label><input type="number" id="adminYearInput" class="w-full rounded-xl border-gray-300 p-3 text-sm font-bold"></div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <div>
-    <label class="block text-xs font-bold text-gray-500 mb-1">วันเปิดภาคเรียน</label>
-    <div class="relative">
-        <!-- ช่องโชว์ภาษาไทย -->
-        <input type="text" id="adminStartDateDisplay" readonly class="w-full rounded-xl border border-gray-300 py-2.5 px-3 focus:ring-2 focus:ring-sky-500 outline-none text-sm bg-white cursor-pointer font-bold text-sky-700" placeholder="เลือกวันที่...">
-        <!-- ช่องปฏิทินซ่อนตัว (Opacity 0) แบบขยายร่าง -->
-        <input type="date" id="adminStartDate" class="date-picker-cover absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateAdminStartDateDisplay()">
-        <!-- ไอคอนปฏิทิน -->
-        <div class="absolute right-3 top-2.5 pointer-events-none text-gray-400 text-lg">📅</div>
-    </div>
-</div>
-                                </div> <!-- ปิด Grid 3 คอลัมน์ตรงนี้ -->
-                                <button onclick="adminUpdateSettings()" class="w-full py-3 bg-rose-600 text-white font-bold rounded-xl shadow-lg hover:bg-rose-700 transition-colors mt-4">⚙️ บันทึกการตั้งค่ามิติเวลา</button>
-                            </div> <!-- ปิดการ์ดที่ 1 (ตั้งค่ามิติเวลา) ตรงนี้ -->
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">ภาคเรียนที่</label>
+                                        <select id="adminTermSelect" class="w-full rounded-xl border border-gray-300 p-3 text-sm font-bold">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">ปีการศึกษา</label>
+                                        <input type="number" id="adminYearInput" class="w-full rounded-xl border border-gray-300 p-3 text-sm font-bold">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-emerald-700 mb-1">🟢 วันเปิดภาคเรียน</label>
+                                        <div class="relative">
+                                            <input type="text" id="adminStartDateDisplay" readonly class="w-full rounded-xl border border-emerald-300 py-2.5 px-3 focus:ring-2 focus:ring-emerald-500 outline-none text-xs bg-emerald-50/40 cursor-pointer font-bold text-emerald-800" placeholder="เลือกวันเปิดเทอม...">
+                                            <input type="date" id="adminStartDate" class="date-picker-cover absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateAdminStartDateDisplay()">
+                                            <div class="absolute right-3 top-2.5 pointer-events-none text-gray-400 text-sm">📅</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-rose-700 mb-1">🔴 วันปิดภาคเรียน</label>
+                                        <div class="relative">
+                                            <input type="text" id="adminEndDateDisplay" readonly class="w-full rounded-xl border border-rose-300 py-2.5 px-3 focus:ring-2 focus:ring-rose-500 outline-none text-xs bg-rose-50/40 cursor-pointer font-bold text-rose-800" placeholder="เลือกวันปิดเทอม...">
+                                            <input type="date" id="adminEndDate" class="date-picker-cover absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateAdminEndDateDisplay()">
+                                            <div class="absolute right-3 top-2.5 pointer-events-none text-gray-400 text-sm">📅</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="adminUpdateSettingsV2(event)" class="w-full py-3.5 bg-rose-600 text-white font-black rounded-xl shadow-lg hover:bg-rose-700 transition-colors mt-2">
+                                    ⚙️ บันทึกภาคเรียนและวันเปิด-ปิดภาคเรียน
+                                </button>
+                            </div>
+
+                            <!-- การ์ดขวา (7 คอลัมน์): ทำเนียบภาคเรียนทั้งหมดในระบบ -->
+                            <div class="lg:col-span-7 bg-white rounded-3xl p-8 shadow-xl border border-indigo-100 h-fit">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-indigo-900 flex items-center gap-2">📜 ทำเนียบภาคเรียนในระบบ</h3>
+                                        <p class="text-xs text-gray-500 mt-0.5">แสดงจำนวนภาคเรียนทั้งหมด วันเปิด-ปิด และปริมาณข้อมูลในแต่ละภาคเรียน</p>
+                                    </div>
+                                    <span id="totalSemestersCountBadge" class="bg-indigo-100 text-indigo-800 text-xs font-black px-3.5 py-1.5 rounded-full border border-indigo-200">0 ภาคเรียน</span>
+                                </div>
+                                <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner">
+                                    <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
+                                        <thead class="bg-gray-50 font-bold text-gray-700">
+                                            <tr>
+                                                <th class="px-3 py-3">ภาคเรียน</th>
+                                                <th class="px-3 py-3">วันเปิดภาคเรียน</th>
+                                                <th class="px-3 py-3">วันปิดภาคเรียน</th>
+                                                <th class="px-3 py-3 text-center">ข้อมูลในระบบ</th>
+                                                <th class="px-3 py-3 text-center">จัดการ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="semesterRegistryTableBody" class="divide-y divide-gray-100 bg-white">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
-                    </div> <!-- 💡 ปิดแค่ admin-sec-config พอ! อย่าปิดเกิน! -->
+                    </div>
 
                 <!-- [6] 🛡️ SECTION: ADVANCED EXCLUSIONS (EmpPngn ONLY) -->
                     <div id="admin-sec-exclusions" class="admin-tab-content hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -22898,6 +23075,565 @@ ${scoreDataText}
             }
         };
         // (ส่วน runSchedulerLogic และ saveAllTypeBDrafts ใช้ของเดิมที่ให้ไปรอบที่แล้วได้เลย เพราะตอนนี้มันรันเฉพาะลูกหมวดแล้ว!)   
+        // ============================================================================
+        // 🌌 WKS SYSTEM V2.0 (PATCHED): TIME NEXUS, PERMANENT REGISTRY & SUP TERM SYNC
+        // ============================================================================
+        window.adminViewingTerm = null;
+        window.adminViewingYear = null;
+        window.currentEndDate = '';
+
+        // 1. แปลงวันที่ปิดภาคเรียนเป็นภาษาไทย
+        window.updateAdminEndDateDisplay = function() {
+            const val = document.getElementById('adminEndDate')?.value;
+            const disp = document.getElementById('adminEndDateDisplay');
+            if (!disp) return;
+            if (!val) { disp.value = ''; return; }
+            const d = new Date(val);
+            disp.value = d.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        };
+
+        // 2. Helper อ่าน/เขียนทำเนียบภาคเรียนแยกแต่ละเทอม (ผสานทั้ง Server + LocalStorage ป้องกันข้อมูลหาย 100%)
+        window.getSavedSemesterRegistryMap = function() {
+            const regMap = {};
+            // ดึงจาก localStorage ก่อน
+            try {
+                const localReg = JSON.parse(localStorage.getItem('WKS_SemesterRegistry_V2') || '{}');
+                Object.assign(regMap, localReg);
+            } catch (e) {}
+
+            // ดึงจาก Server (masterSwitches_Global) มาผสาน
+            if (typeof masterSwitches_Global !== 'undefined' && Array.isArray(masterSwitches_Global['SemesterRegistry'])) {
+                masterSwitches_Global['SemesterRegistry'].forEach(r => {
+                    const k = `${String(r.term).trim()}/${String(r.year).trim()}`;
+                    regMap[k] = {
+                        term: String(r.term).trim(),
+                        year: String(r.year).trim(),
+                        startDate: r.startDate || (regMap[k] ? regMap[k].startDate : ''),
+                        endDate: r.endDate || (regMap[k] ? regMap[k].endDate : '')
+                    };
+                });
+            }
+            return regMap;
+        };
+
+        window.saveToLocalSemesterRegistry = function(term, year, startDate, endDate) {
+            try {
+                const regMap = window.getSavedSemesterRegistryMap();
+                const k = `${String(term).trim()}/${String(year).trim()}`;
+                regMap[k] = {
+                    term: String(term).trim(),
+                    year: String(year).trim(),
+                    startDate: startDate || '',
+                    endDate: endDate || ''
+                };
+                localStorage.setItem('WKS_SemesterRegistry_V2', JSON.stringify(regMap));
+            } catch (e) {}
+        };
+
+        // 3. Helper ตรวจสอบว่าแถวข้อมูลนั้นอยู่ในภาคเรียน (term, year) ที่เลือกหรือไม่
+        window.isRowInTerm = function(row, targetTerm, targetYear) {
+            if (!row) return false;
+            const t = String(targetTerm || '1').trim();
+            const y = String(targetYear || '2569').trim();
+
+            if (row.Semester !== undefined && row.AcademicYear !== undefined && String(row.Semester).trim() !== '' && String(row.AcademicYear).trim() !== '') {
+                return String(row.Semester).trim() === t && String(row.AcademicYear).trim() === y;
+            }
+            if (row.term !== undefined && row.academicYear !== undefined && String(row.term).trim() !== '' && String(row.academicYear).trim() !== '') {
+                return String(row.term).trim() === t && String(row.academicYear).trim() === y;
+            }
+            if (row.SemSave !== undefined && String(row.SemSave).trim() !== '') {
+                const ss = String(Math.trunc(Number(row.SemSave) || 0));
+                if (ss.length === 6) {
+                    return ss.substring(0, 4) === y && String(parseInt(ss.substring(4, 6), 10)) === t;
+                }
+            }
+            return t === '1' && y === '2569';
+        };
+
+        // 4. สำรองฐานข้อมูลดิบทั้งหมดไว้ในหน่วยความจำ
+        window.backupRawDatabasesV2 = function() {
+            if (typeof studentsDB_Global !== 'undefined' && (!window._rawStudentsDB || studentsDB_Global.length > window._rawStudentsDB.length)) {
+                window._rawStudentsDB = [...studentsDB_Global];
+            }
+            if (typeof subjectsDB_Global !== 'undefined' && (!window._rawSubjectsDB || subjectsDB_Global.length > window._rawSubjectsDB.length)) {
+                window._rawSubjectsDB = [...subjectsDB_Global];
+            }
+            if (typeof timetableDB_Global !== 'undefined' && (!window._rawTimetableDB || timetableDB_Global.length > window._rawTimetableDB.length)) {
+                window._rawTimetableDB = [...timetableDB_Global];
+            }
+            if (typeof plcDB_Global !== 'undefined' && (!window._rawPlcDB || plcDB_Global.length > window._rawPlcDB.length)) {
+                window._rawPlcDB = [...plcDB_Global];
+            }
+            if (typeof sessionLogs !== 'undefined' && (!window._rawSessionLogs || sessionLogs.length > window._rawSessionLogs.length)) {
+                window._rawSessionLogs = [...sessionLogs];
+            }
+            if (typeof sessionPlans !== 'undefined' && (!window._rawSessionPlans || sessionPlans.length > window._rawSessionPlans.length)) {
+                window._rawSessionPlans = [...sessionPlans];
+            }
+        };
+
+        // 5. รวบรวมรายชื่อภาคเรียนทั้งหมด โดยไม่เอาวันที่ของเทอมอื่นมาทับกันเด็ดขาด!
+        window.getAllAvailableSemestersV2 = function() {
+            window.backupRawDatabasesV2();
+            const savedReg = window.getSavedSemesterRegistryMap();
+            const map = new Map();
+
+            const addTerm = (t, y, start = '', end = '') => {
+                const cleanT = String(t || '1').trim();
+                const cleanY = String(y || '2569').trim();
+                if (!cleanT || !cleanY || isNaN(Number(cleanY))) return;
+                const key = `${cleanT}/${cleanY}`;
+                const saved = savedReg[key] || {};
+                const existing = map.get(key) || {
+                    term: cleanT,
+                    year: cleanY,
+                    startDate: saved.startDate || '',
+                    endDate: saved.endDate || ''
+                };
+                if (start) existing.startDate = start;
+                if (end) existing.endDate = end;
+                map.set(key, existing);
+            };
+
+            // ใส่เทอมพื้นฐาน 1/2569 และ 2/2569 เสมอ (โดยดึงวันที่ของใครของมันจาก savedReg)
+            addTerm('1', '2569');
+            addTerm('2', '2569');
+
+            // สำหรับเทอมปัจจุบัน ถ้ายังไม่มีใน savedReg ค่อยใช้ currentStartDate
+            if (typeof currentTerm !== 'undefined' && typeof currentYear !== 'undefined') {
+                const curKey = `${String(currentTerm).trim()}/${String(currentYear).trim()}`;
+                const curSaved = savedReg[curKey];
+                addTerm(
+                    currentTerm,
+                    currentYear,
+                    curSaved?.startDate || (typeof currentStartDate !== 'undefined' ? currentStartDate : ''),
+                    curSaved?.endDate || window.currentEndDate || ''
+                );
+            }
+
+            // ดึงทุกเทอมที่เคยบันทึกไว้ใน savedReg
+            Object.values(savedReg).forEach(r => addTerm(r.term, r.year, r.startDate, r.endDate));
+
+            // กวาดจากฐานข้อมูลทุกตาราง
+            const scanArr = (arr) => {
+                (arr || []).forEach(r => {
+                    if (r.Semester && r.AcademicYear) addTerm(r.Semester, r.AcademicYear);
+                    else if (r.term && r.academicYear) addTerm(r.term, r.academicYear);
+                    else if (r.SemSave) {
+                        const ss = String(Math.trunc(Number(r.SemSave) || 0));
+                        if (ss.length === 6) addTerm(parseInt(ss.substring(4, 6), 10), ss.substring(0, 4));
+                    }
+                });
+            };
+            scanArr(window._rawStudentsDB);
+            scanArr(window._rawSubjectsDB);
+            scanArr(window._rawTimetableDB);
+            scanArr(window._rawSessionLogs);
+            scanArr(window._rawSessionPlans);
+            if (typeof supervisionDB_Global !== 'undefined') scanArr(supervisionDB_Global);
+
+            return Array.from(map.values()).sort((a, b) => Number(a.year) !== Number(b.year) ? Number(a.year) - Number(b.year) : Number(a.term) - Number(b.term));
+        };
+
+        // 6. ซิงค์ตัวเลือกภาคเรียนในหน้านิเทศ (แก้ปัญหาข้อ 3 ให้มีเทอม 1/2569, 2/2569 ให้สลับตลอดเวลา)
+        window.populateSupervisionTermDropdown = function() {
+            const sel = document.getElementById('supGlobalTermFilter');
+            if (!sel) return;
+            const prevVal = sel.value;
+            const terms = window.getAllAvailableSemestersV2();
+
+            sel.innerHTML = terms.map(t => `<option value="${t.term}/${t.year}">ภาคเรียนที่ ${t.term}/${t.year}</option>`).join('') +
+                            `<option value="ALL">ทุกภาคเรียนรวมกัน</option>`;
+
+            if (sel.dataset.userChanged === 'true' && prevVal && (terms.some(t => `${t.term}/${t.year}` === prevVal) || prevVal === 'ALL')) {
+                sel.value = prevVal;
+            } else {
+                const curT = String(typeof currentTerm !== 'undefined' ? currentTerm : '1').trim();
+                const curY = String(typeof currentYear !== 'undefined' ? currentYear : '2569').trim();
+                const hasSupInCur = (supervisionDB_Global || []).some(s => String(s.Semester || '1').trim() === curT && String(s.AcademicYear || '2569').trim() === curY);
+                sel.value = hasSupInCur ? `${curT}/${curY}` : '1/2569';
+            }
+        };
+
+        // 7. วาดแถบควบคุมมิติเวลา, Dropdowns และตารางทำเนียบภาคเรียน
+        window.initAdminTimeNexusV2 = function() {
+            window.backupRawDatabasesV2();
+            const curT = String(typeof currentTerm !== 'undefined' ? currentTerm : '1').trim();
+            const curY = String(typeof currentYear !== 'undefined' ? currentYear : '2569').trim();
+            if (!window.adminViewingTerm || !window.adminViewingYear) {
+                window.adminViewingTerm = curT;
+                window.adminViewingYear = curY;
+            }
+
+            const terms = window.getAllAvailableSemestersV2();
+            const sysBadge = document.getElementById('nexusSystemCurrentBadge');
+            if (sysBadge) sysBadge.textContent = `ภาคเรียนที่ ${curT}/${curY}`;
+
+            const fillSelect = (id, selectedKey) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.innerHTML = terms.map(t => {
+                    const k = `${t.term}/${t.year}`;
+                    const isMain = (t.term === curT && t.year === curY) ? ' (ภาคเรียนปัจจุบัน)' : '';
+                    return `<option value="${k}">${k}${isMain}</option>`;
+                }).join('');
+                if (selectedKey && terms.some(t => `${t.term}/${t.year}` === selectedKey)) {
+                    el.value = selectedKey;
+                }
+            };
+
+            const viewKey = `${window.adminViewingTerm}/${window.adminViewingYear}`;
+            const prevTermObj = terms.find(t => `${t.term}/${t.year}` !== `${curT}/${curY}`) || terms[0];
+            const prevKey = prevTermObj ? `${prevTermObj.term}/${prevTermObj.year}` : '1/2569';
+
+            fillSelect('adminGlobalTermSelector', viewKey);
+            fillSelect('cloneSourceTermSelect', prevKey);
+            fillSelect('cloneTargetTermSelect', `${curT}/${curY}`);
+            fillSelect('stuMigrateSrcSelect', prevKey);
+            fillSelect('stuMigrateTgtSelect', `${curT}/${curY}`);
+
+            // ซิงค์ค่าวันเปิด-ปิดของเทอมที่แสดงในฟอร์มตั้งค่าด้วย
+            const formTerm = document.getElementById('adminTermSelect')?.value || curT;
+            const formYear = document.getElementById('adminYearInput')?.value || curY;
+            const activeTermObj = terms.find(t => t.term === String(formTerm) && t.year === String(formYear));
+            if (activeTermObj) {
+                const sInp = document.getElementById('adminStartDate');
+                const eInp = document.getElementById('adminEndDate');
+                if (sInp && activeTermObj.startDate) {
+                    sInp.value = activeTermObj.startDate;
+                    if (typeof updateAdminStartDateDisplay === 'function') updateAdminStartDateDisplay();
+                }
+                if (eInp) {
+                    eInp.value = activeTermObj.endDate || '';
+                    window.updateAdminEndDateDisplay();
+                }
+            }
+
+            // อัปเดตตารางทำเนียบภาคเรียนในหน้าความปลอดภัย
+            const regBody = document.getElementById('semesterRegistryTableBody');
+            const countBadge = document.getElementById('totalSemestersCountBadge');
+            if (countBadge) countBadge.textContent = `รวม ${terms.length} ภาคเรียน`;
+
+            if (regBody) {
+                regBody.innerHTML = terms.map(t => {
+                    const isCur = (t.term === curT && t.year === curY);
+                    const stuCnt = (window._rawStudentsDB || []).filter(r => window.isRowInTerm(r, t.term, t.year)).length;
+                    const ttCnt = (window._rawTimetableDB || []).filter(r => window.isRowInTerm(r, t.term, t.year)).length;
+                    const logCnt = (window._rawSessionLogs || []).filter(r => window.isRowInTerm(r, t.term, t.year)).length;
+                    const fmtDate = (dStr) => dStr ? new Date(dStr).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '<span class="text-gray-400">- ไม่ระบุ -</span>';
+
+                    return `
+                        <tr class="${isCur ? 'bg-rose-50/20 font-bold' : 'hover:bg-gray-50/10'}">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <span class="font-black text-amber-400">ภาคเรียนที่ ${t.term}/${t.year}</span>
+                                ${isCur ? `<span class="ml-1.5 bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black">ใช้งานอยู่</span>` : ''}
+                            </td>
+                            <td class="px-3 py-3 text-emerald-400">${fmtDate(t.startDate)}</td>
+                            <td class="px-3 py-3 text-rose-400">${fmtDate(t.endDate)}</td>
+                            <td class="px-3 py-3 text-center text-[11px] text-gray-400">
+                                นร. <b>${stuCnt}</b> | ตารางสอน <b>${ttCnt}</b> | บันทึก <b>${logCnt}</b>
+                            </td>
+                            <td class="px-3 py-3 text-center whitespace-nowrap">
+                                <button onclick="selectSemesterToEditV2('${t.term}', '${t.year}', '${t.startDate || ''}', '${t.endDate || ''}')" class="bg-indigo-500/20 hover:bg-indigo-500/40 text-amber-300 font-bold px-2.5 py-1 rounded-lg border border-amber-400/30 text-[11px]">
+                                    ✏️ เลือก/แก้ไข
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            window.populateSupervisionTermDropdown();
+            window.applyAdminTermFilterV2(window.adminViewingTerm, window.adminViewingYear);
+        };
+
+        // 8. เมื่อเปลี่ยนเลขภาคเรียนในช่องตั้งค่า ให้ดึงวันเปิด-ปิดของภาคเรียนนั้นมาแสดงอัตโนมัติ (ไม่เอาของเทอมอื่นมาปน)
+        document.addEventListener('change', function(e) {
+            if (e.target && (e.target.id === 'adminTermSelect' || e.target.id === 'adminYearInput')) {
+                const t = document.getElementById('adminTermSelect')?.value || '1';
+                const y = document.getElementById('adminYearInput')?.value || '2569';
+                const savedMap = window.getSavedSemesterRegistryMap();
+                const info = savedMap[`${t}/${y}`] || {};
+                const sInp = document.getElementById('adminStartDate');
+                const eInp = document.getElementById('adminEndDate');
+                if (sInp) {
+                    sInp.value = info.startDate || '';
+                    if (typeof updateAdminStartDateDisplay === 'function') updateAdminStartDateDisplay();
+                    if (!info.startDate && document.getElementById('adminStartDateDisplay')) document.getElementById('adminStartDateDisplay').value = '';
+                }
+                if (eInp) {
+                    eInp.value = info.endDate || '';
+                    window.updateAdminEndDateDisplay();
+                }
+            }
+        });
+
+        // 9. เมื่อคลิกปุ่ม "เลือก/แก้ไข" ในตารางทำเนียบภาคเรียน
+        window.selectSemesterToEditV2 = function(term, year, start, end) {
+            const tSel = document.getElementById('adminTermSelect');
+            const yInp = document.getElementById('adminYearInput');
+            const sInp = document.getElementById('adminStartDate');
+            const eInp = document.getElementById('adminEndDate');
+            if (tSel) tSel.value = term;
+            if (yInp) yInp.value = year;
+            if (sInp) {
+                sInp.value = start || '';
+                if (typeof updateAdminStartDateDisplay === 'function') updateAdminStartDateDisplay();
+                if (!start && document.getElementById('adminStartDateDisplay')) document.getElementById('adminStartDateDisplay').value = '';
+            }
+            if (eInp) {
+                eInp.value = end || '';
+                window.updateAdminEndDateDisplay();
+            }
+            window.adminViewingTerm = term;
+            window.adminViewingYear = year;
+            window.applyAdminTermFilterV2(term, year);
+        };
+
+        // 10. กรองข้อมูลทุกส่วนในหน้า Admin ตามภาคเรียนที่เลือก
+        window.onAdminGlobalTermChange = function() {
+            const val = document.getElementById('adminGlobalTermSelector')?.value;
+            if (!val) return;
+            const [t, y] = val.split('/');
+            window.adminViewingTerm = t;
+            window.adminViewingYear = y;
+            window.applyAdminTermFilterV2(t, y);
+        };
+
+        window.applyAdminTermFilterV2 = function(term, year) {
+            window.backupRawDatabasesV2();
+            const t = String(term || '1').trim();
+            const y = String(year || '2569').trim();
+
+            if (window._rawStudentsDB) studentsDB_Global = window._rawStudentsDB.filter(r => window.isRowInTerm(r, t, y));
+            if (window._rawSubjectsDB) subjectsDB_Global = window._rawSubjectsDB.filter(r => window.isRowInTerm(r, t, y));
+            if (window._rawTimetableDB) timetableDB_Global = window._rawTimetableDB.filter(r => window.isRowInTerm(r, t, y));
+            if (window._rawPlcDB) plcDB_Global = window._rawPlcDB.filter(r => window.isRowInTerm(r, t, y));
+            if (window._rawSessionLogs) sessionLogs = window._rawSessionLogs.filter(r => window.isRowInTerm(r, t, y));
+            if (window._rawSessionPlans) sessionPlans = window._rawSessionPlans.filter(r => window.isRowInTerm(r, t, y));
+
+            const statEl = document.getElementById('nexusTermDataStats');
+            if (statEl) {
+                const sCnt = (studentsDB_Global || []).length;
+                const subCnt = (subjectsDB_Global || []).length;
+                const ttCnt = (timetableDB_Global || []).length;
+                const lCnt = (sessionLogs || []).length;
+                statEl.innerHTML = `📊 ข้อมูลใน <b>${t}/${y}</b>: นักเรียน <b class="text-emerald-400">${sCnt}</b> คน | วิชา <b class="text-sky-400">${subCnt}</b> | ตารางสอน <b class="text-amber-400">${ttCnt}</b> | บันทึกสอน <b class="text-pink-400">${lCnt}</b>`;
+            }
+
+            try { if (typeof searchAdminStudents === 'function') searchAdminStudents(); } catch (e) {}
+            try { if (typeof renderAdminTimetableMatrix === 'function') renderAdminTimetableMatrix(); } catch (e) {}
+            try { if (typeof renderAdminAllLogs === 'function') renderAdminAllLogs(); } catch (e) {}
+            try { if (typeof renderAdminAllPlans === 'function') renderAdminAllPlans(); } catch (e) {}
+            try { if (typeof initAdvExclusions === 'function') initAdvExclusions(); } catch (e) {}
+            try { if (typeof renderSupMatrixView === 'function') renderSupMatrixView(); } catch (e) {}
+            try { if (typeof renderSupSchedule === 'function') renderSupSchedule(); } catch (e) {}
+        };
+
+        // 11. บันทึกตั้งค่าภาคเรียนปัจจุบัน + จำวันเปิด-ปิดแยกแต่ละภาคเรียนถาวร
+        window.adminUpdateSettingsV2 = async function(ev) {
+            const term = String(document.getElementById('adminTermSelect')?.value || '1').trim();
+            const year = String(document.getElementById('adminYearInput')?.value || '2569').trim();
+            const startDate = document.getElementById('adminStartDate')?.value || '';
+            const endDate = document.getElementById('adminEndDate')?.value || '';
+            const btn = ev?.currentTarget;
+            const origTxt = btn ? btn.innerHTML : '';
+
+            if (btn) { btn.innerHTML = '⏳ กำลังบันทึกมิติเวลา...'; btn.disabled = true; }
+
+            // เซฟลงหน่วยความจำแยกเทอมทันที (ทำให้เทอม 1 และเทอม 2 ไม่ทับกันเด็ดขาด!)
+            window.saveToLocalSemesterRegistry(term, year, startDate, endDate);
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'updateSettings', term, year, startDate, endDate }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                try {
+                    const res = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'saveSemesterNexus',
+                            term, year, startDate, endDate,
+                            updatedBy: currentUser?.FullName || 'Admin'
+                        }),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    });
+                    const result = await res.json();
+                    if (result.registry && typeof masterSwitches_Global !== 'undefined') {
+                        masterSwitches_Global['SemesterRegistry'] = result.registry;
+                    }
+                } catch (e) {}
+
+                currentTerm = term;
+                currentYear = year;
+                if (typeof currentStartDate !== 'undefined') currentStartDate = startDate;
+                window.currentEndDate = endDate;
+                window.adminViewingTerm = currentTerm;
+                window.adminViewingYear = currentYear;
+
+                window.initAdminTimeNexusV2();
+                if (typeof customAlert === 'function') customAlert(`บันทึกภาคเรียนที่ ${term}/${year} และวันเปิด-ปิดภาคเรียนเรียบร้อยแล้ว!`, 'success');
+            } catch (err) {
+                if (typeof customAlert === 'function') customAlert('เกิดข้อผิดพลาด: ' + err.message, 'error');
+            } finally {
+                if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+            }
+        };
+
+        // 12. สั่งรันการคัดลอกข้อมูล/ตั้งค่าจากภาคเรียนเก่า (รองรับทั้ง Backend และ Frontend Fallback)
+        window.executeSemesterClone = async function(ev) {
+            const srcVal = document.getElementById('cloneSourceTermSelect')?.value || '1/2569';
+            const tgtVal = document.getElementById('cloneTargetTermSelect')?.value || `${currentTerm}/${currentYear}`;
+            const [sourceTerm, sourceYear] = srcVal.split('/');
+            const [targetTerm, targetYear] = tgtVal.split('/');
+
+            if (sourceTerm === targetTerm && sourceYear === targetYear) {
+                return typeof customAlert === 'function' ? customAlert('ภาคเรียนต้นทางและปลายทางต้องไม่ซ้ำกันครับ', 'error') : null;
+            }
+
+            const modules = [];
+            if (document.getElementById('chkCloneSubjects')?.checked) modules.push('subjects');
+            if (document.getElementById('chkCloneTimetable')?.checked) modules.push('timetable');
+            if (document.getElementById('chkClonePLC')?.checked) modules.push('plc');
+            if (document.getElementById('chkCloneSettings')?.checked) modules.push('settings');
+
+            if (modules.length === 0) {
+                return typeof customAlert === 'function' ? customAlert('กรุณาติ๊กเลือกรายการที่ต้องการคัดลอกอย่างน้อย 1 รายการครับ', 'error') : null;
+            }
+
+            const btn = ev?.currentTarget;
+            const origTxt = btn ? btn.innerHTML : '';
+            if (btn) { btn.innerHTML = '⏳ กำลังโคลนข้อมูล...'; btn.disabled = true; }
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'cloneSemesterData',
+                        sourceTerm, sourceYear, targetTerm, targetYear,
+                        modules,
+                        updatedBy: currentUser?.FullName || 'Admin'
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    if (typeof customAlert === 'function') customAlert(result.message, 'success');
+                    window._rawSubjectsDB = null; window._rawTimetableDB = null; window._rawPlcDB = null;
+                    if (typeof fetchAllDatabasesFromGAS === 'function') await fetchAllDatabasesFromGAS();
+                    setTimeout(() => window.initAdminTimeNexusV2(), 1000);
+                } else {
+                    // Fallback กรณีลืม Deploy New Version ใน GAS: ใช้ uploadMasterData ตัวเดิมช่วยโคลนตารางสอนทันที!
+                    window.backupRawDatabasesV2();
+                    if (modules.includes('timetable') && window._rawTimetableDB) {
+                        const srcTT = window._rawTimetableDB.filter(r => window.isRowInTerm(r, sourceTerm, sourceYear)).map(r => ({
+                            ...r, Semester: targetTerm, AcademicYear: targetYear
+                        }));
+                        if (srcTT.length > 0) {
+                            await fetch(SCRIPT_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({ action: 'uploadMasterData', type: 'timetable', term: targetTerm, year: targetYear, data: srcTT }),
+                                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                            });
+                            window._rawTimetableDB = [
+                                ...window._rawTimetableDB.filter(r => !window.isRowInTerm(r, targetTerm, targetYear)),
+                                ...srcTT
+                            ];
+                        }
+                    }
+                    if (modules.includes('subjects') && window._rawSubjectsDB) {
+                        const srcSub = window._rawSubjectsDB.filter(r => window.isRowInTerm(r, sourceTerm, sourceYear)).map(r => ({
+                            ...r, Semester: targetTerm, AcademicYear: targetYear
+                        }));
+                        window._rawSubjectsDB = [
+                            ...window._rawSubjectsDB.filter(r => !window.isRowInTerm(r, targetTerm, targetYear)),
+                            ...srcSub
+                        ];
+                    }
+                    window.initAdminTimeNexusV2();
+                    if (typeof customAlert === 'function') customAlert(`คัดลอกข้อมูลจาก ${sourceTerm}/${sourceYear} ไปยัง ${targetTerm}/${targetYear} เรียบร้อยแล้ว!`, 'success');
+                }
+            } catch (err) {
+                if (typeof customAlert === 'function') customAlert('ข้อผิดพลาด: ' + err.message, 'error');
+            } finally {
+                if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+            }
+        };
+
+        // 13. สั่งรันระบบดึงนักเรียนข้ามเทอม / เลื่อนชั้นเรียนอัตโนมัติ (+1 ชั้น)
+        window.runStudentTermMigration = async function(mode, ev) {
+            const srcVal = document.getElementById('stuMigrateSrcSelect')?.value || '1/2569';
+            const tgtVal = document.getElementById('stuMigrateTgtSelect')?.value || `${currentTerm}/${currentYear}`;
+            const [sourceTerm, sourceYear] = srcVal.split('/');
+            const [targetTerm, targetYear] = tgtVal.split('/');
+            const promoteAdvisors = !!document.getElementById('chkPromoteAdvisors')?.checked;
+
+            const btn = ev?.currentTarget;
+            const origTxt = btn ? btn.innerHTML : '';
+            if (btn) { btn.innerHTML = '⏳ กำลังประมวลผลนักเรียน...'; btn.disabled = true; }
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'migrateStudentAndTeacherTerm',
+                        mode, sourceTerm, sourceYear, targetTerm, targetYear, promoteAdvisors
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    if (typeof customAlert === 'function') customAlert(result.message, 'success');
+                    window._rawStudentsDB = null;
+                    if (typeof fetchAllDatabasesFromGAS === 'function') await fetchAllDatabasesFromGAS();
+                    setTimeout(() => {
+                        window.adminViewingTerm = targetTerm;
+                        window.adminViewingYear = targetYear;
+                        window.initAdminTimeNexusV2();
+                    }, 1000);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                if (typeof customAlert === 'function') customAlert('ข้อผิดพลาด: ' + err.message, 'error');
+            } finally {
+                if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+            }
+        };
+
+        // 14. ดักจับตอนเปลี่ยนหน้าจอ (ปลุกทั้ง Admin Time Nexus และ Supervision Dropdown อัตโนมัติ!)
+        (function hookSwitchViewForV2() {
+            const origSwitchView = window.switchView;
+            if (typeof origSwitchView === 'function') {
+                window.switchView = function(viewId) {
+                    origSwitchView(viewId);
+                    if (viewId === 'view-admin') {
+                        window.adminViewingTerm = String(typeof currentTerm !== 'undefined' ? currentTerm : '1');
+                        window.adminViewingYear = String(typeof currentYear !== 'undefined' ? currentYear : '2569');
+                        setTimeout(() => window.initAdminTimeNexusV2(), 150);
+                    } else if (viewId === 'view-supervision') {
+                        setTimeout(() => {
+                            window.populateSupervisionTermDropdown();
+                            if (typeof onSupTermFilterChange === 'function') onSupTermFilterChange();
+                        }, 100);
+                    } else if (window._rawStudentsDB) {
+                        window.applyAdminTermFilterV2(currentTerm, currentYear);
+                    }
+                };
+            }
+            const origInitSup = window.initSupervisionSystem;
+            if (typeof origInitSup === 'function') {
+                window.initSupervisionSystem = function() {
+                    window.populateSupervisionTermDropdown();
+                    origInitSup();
+                };
+            }
+        })();
     </script>
     <!-- 🎯 [เฟส 4] หน้าต่างประเมินการนิเทศ (Supervision Evaluation Modal) -->
     <div id="supervisionEvalModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center">
