@@ -300,7 +300,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.05 [Oct 26th, 2026] | Upg-f(Sv)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.05 [Oct 27th, 2026] | Upg-f(Sv)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -16173,57 +16173,50 @@ window.deleteLog = function(logId) {
             finally { btn.innerHTML = origTxt; btn.disabled = false; }
         };
 
+        // ---------------------------------------------------------
+        // 👁️ 3. แสดงตารางสอน Matrix ในหน้า Admin (V2.0)
+        // ---------------------------------------------------------
         window.renderAdminTimetableMatrix = function() {
-    const teacher = document.getElementById('matrixTeacherSelect').value;
-    const tbody = document.getElementById('matrixTableBody');
-    if (!teacher) { 
-        tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-gray-400 italic">กรุณาเลือกครูผู้สอน</td></tr>'; 
-        return; 
-    }
+            const teacher = document.getElementById('matrixTeacherSelect').value;
+            const tbody = document.getElementById('matrixTableBody');
+            if(!teacher) { tbody.innerHTML = '<tr><td colspan="10" class="py-10 text-gray-400 italic">กรุณาเลือกครูผู้สอน</td></tr>'; return; }
 
-    const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
-    let html = '';
+            const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์"];
+            let html = '';
 
-    const curT = String(typeof currentTerm !== 'undefined' ? currentTerm : '1').trim();
-    const curY = String(typeof currentYear !== 'undefined' ? currentYear : '2569').trim();
-
-    days.forEach(day => {
-        // กรองตารางสอนตามชื่อครู, วัน, ภาคเรียน และปีการศึกษาปัจจุบัน
-        const tt = (timetableDB_Global || []).find(t => 
-            String(t.TeacherName || '').trim() === teacher.trim() && 
-            String(t.Day || '').trim() === day &&
-            String(t.Semester || '1').trim() === curT &&
-            String(t.AcademicYear || '2569').trim() === curY
-        ) || {};
-
-        html += `<tr class="hover:bg-emerald-50/30">
-                    <td class="px-2 py-3 font-bold bg-gray-50 border-r">${day}</td>`;
-        
-        for (let i = 1; i <= 9; i++) {
-            const val = tt[`Period${i}`] || '';
-            let display = `<span class="text-gray-300">+ ว่าง</span>`;
-            
-            if (val) {
-                const parts = val.split(';');
-                const subCode = parts[0] ? parts[0].trim() : '';
-                const level = parts[1] ? parts[1].trim() : '';
-                const room = parts[2] ? parts[2].trim() : '';
+            // 💡 แก้แล้ว: ไม่ต้องไป Filter เลขเทอมซ้ำซ้อน 
+            // เพราะตัวแปร timetableDB_Global มันถูกกรองให้เหลือแต่ข้อมูลของเทอมนั้นไว้ตั้งแต่บนแถบ Admin Bar แล้ว!
+            days.forEach(day => {
+                const tt = (timetableDB_Global || []).find(t => String(t.TeacherName || '').trim() === teacher.trim() && String(t.Day || '').trim() === day) || {};
                 
-                display = `<span class="font-bold text-emerald-700">${subCode}</span><br><span class="text-xs text-gray-500 bg-gray-100 px-1 rounded font-bold">${level}</span>`;
-                if (room) display += `<br><span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 rounded border border-emerald-100 mt-0.5 inline-block">${room}</span>`;
-            }
-            
-            html += `<td class="border-r border-gray-100 p-1 cursor-pointer hover:bg-emerald-100 transition-colors" 
-                         onclick="openMatrixSlotModal('${teacher}', '${day}', ${i}, '${val}')">
-                        <div class="w-full h-full min-h-[50px] flex flex-col justify-center items-center text-xs p-1 rounded border border-transparent hover:border-emerald-300 text-center leading-tight">
-                            ${display}
-                        </div>
-                     </td>`;
-        }
-        html += `</tr>`;
-    });
-    tbody.innerHTML = html;
-};
+                html += `<tr class="hover:bg-emerald-50/30">
+                            <td class="px-2 py-3 font-bold bg-gray-50 border-r">${day}</td>`;
+                
+                for(let i=1; i<=9; i++) {
+                    const val = tt[`Period${i}`] || '';
+                    let display = `<span class="text-gray-300">+ ว่าง</span>`;
+                    
+                    if (val) {
+                        const parts = val.split(';');
+                        const subCode = parts[0] ? parts[0].trim() : '';
+                        const level = parts[1] ? parts[1].trim() : '';
+                        const room = parts[2] ? parts[2].trim() : '';
+                        
+                        display = `<span class="font-bold text-emerald-700">${subCode}</span><br><span class="text-xs text-gray-500 bg-gray-100 px-1 rounded font-bold">${level}</span>`;
+                        if (room) display += `<br><span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1 rounded border border-emerald-100 mt-0.5 inline-block">${room}</span>`;
+                    }
+                    
+                    html += `<td class="border-r border-gray-100 p-1 cursor-pointer hover:bg-emerald-100 transition-colors" 
+                                 onclick="openMatrixSlotModal('${teacher}', '${day}', ${i}, '${val}')">
+                                <div class="w-full h-full min-h-[50px] flex flex-col justify-center items-center text-xs p-1 rounded border border-transparent hover:border-emerald-300 text-center leading-tight">
+                                    ${display}
+                                </div>
+                             </td>`;
+                }
+                html += `</tr>`;
+            });
+            tbody.innerHTML = html;
+        };
 
         // Modal โคตรล้ำของตารางสอน (ใช้วิธีสร้างสดผ่าน Swal.fire เพื่อความไว)
         window.openMatrixSlotModal = function(teacher, day, period, currentValue) {
@@ -19339,23 +19332,17 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             return result;
         };
         
-        // ====================================================
-        // 🚀 TRW TIMETABLE EXTRACTOR (V5.4: The Clean Format - Room Info Removed)
-        // ====================================================
-        // ====================================================
-        // 🚀 TRW TIMETABLE EXTRACTOR (V5.5: 3-Tier Data Structure)
-        // ====================================================
+        // ---------------------------------------------------------
+        // 📥 1. อัปโหลดตารางสอนจาก TRW (V2.0 - อัปโหลดเข้าเทอมที่กำลังเปิดดู)
+        // ---------------------------------------------------------
         window.uploadTimetableFromTRW = async function() {
             const fileInput = document.getElementById('adminTimetableTRW');
             if (!fileInput || fileInput.files.length === 0) return customAlert('กรุณาเลือกไฟล์ .trw ก่อนครับ');
-
-            if (!usersDB_Global || usersDB_Global.length === 0) {
-                return customAlert('⚠️ ฐานข้อมูลครูว่างเปล่า! กรุณาไปอัปโหลด Excel ข้อมูลบุคลากร เข้าระบบก่อนครับ', 'error');
-            }
+            if (!usersDB_Global || usersDB_Global.length === 0) return customAlert('⚠️ ฐานข้อมูลครูว่างเปล่า!', 'error');
 
             const btn = window.event.currentTarget;
             const origTxt = btn.innerHTML;
-            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังสกัดข้อมูล 3 มิติ...`;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังสกัดข้อมูล...`;
             btn.disabled = true;
 
             try {
@@ -19426,13 +19413,12 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                 }
                 
                 let extractedData = [];
-                let matchCount = 0;
-                const dbTeachers = usersDB_Global.map(u => {
-                    const tCode = u.TeacherCode || u.teachercode || u['รหัสครู'] || u['รหัสตารางสอน'] || null;
-                    return { fullName: u.FullName, code: String(tCode).trim() };
-                });
-
+                const dbTeachers = usersDB_Global.map(u => ({ fullName: u.FullName, code: String(u.TeacherCode || u.teachercode || u['รหัสครู'] || u['รหัสตารางสอน'] || '').trim() }));
                 const daysMap = { 'T1': 'จันทร์', 'T2': 'อังคาร', 'T3': 'พุธ', 'T4': 'พฤหัสบดี', 'T5': 'ศุกร์' };
+
+                // 💡 จุดสำคัญ: ดึงเลขเทอม/ปี จากแถบควบคุมที่กำลังเปิดดูอยู่ (Admin Viewing Term)
+                const activeT = window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1');
+                const activeY = window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569');
 
                 for (let t of dbTeachers) {
                     if (!t.code || t.code === 'null') continue; 
@@ -19442,8 +19428,8 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                     Object.keys(daysMap).forEach(dayPrefix => {
                         let rowObj = { 
                             "TeacherName": t.fullName, 
-                            "Semester": currentTerm,          // 💡 เพิ่มบรรทัดนี้
-                            "AcademicYear": currentYear,      // 💡 เพิ่มบรรทัดนี้
+                            "Semester": activeT,
+                            "AcademicYear": activeY,
                             "Day": daysMap[dayPrefix],
                             "Period1": "", "Period2": "", "Period3": "", "Period4": "", "Period5": "",
                             "Period6": "", "Period7": "", "Period8": "", "Period9": ""
@@ -19454,52 +19440,113 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                             const pCode = (p + 1).toString().padStart(2, '0');
                             const colName = `${dayPrefix}${pCode}`; 
                             const cellData = teacherRecord[colName];
-
                             if (cellData && cellData.length > 1) {
                                 const cleanData = cellData.replace(/[\x00-\x1F\x7F-\x9F]/g, "").trim();
-                                
                                 if (cleanData.match(/^[ก-ฮ][0-9]{5}/)) {
                                     const parts = cleanData.split(/\s+/);
-                                    const subCode = parts[0] || '';
                                     let level = parts[1] || '';
                                     if (level.match(/^[1-6]\//)) level = "ม." + level; 
-                                    
-                                    // 💡 ลอจิก V5.5: ดึงเลขสถานที่/ห้องเรียน (เช่น 115, 227, สนามบาส)
-                                    let phyRoom = parts[2] || ''; 
-                                    
-                                    // 💡 เก็บรูปแบบ 3 ชั้น: รหัสวิชา ; ระดับชั้น ; ห้องเรียน
-                                    rowObj[`Period${p}`] = `${subCode} ; ${level} ; ${phyRoom}`;
+                                    rowObj[`Period${p}`] = `${parts[0] || ''} ; ${level} ; ${parts[2] || ''}`;
                                 } else {
-                                    // เคสกิจกรรม
-                                    let activityName = cleanData.split(/\s\s+/)[0]; 
-                                    activityName = activityName.replace(/[0-9].*$/, '').trim(); 
-                                    // ใส่ ; สองอันเพื่อรักษารูปแบบ 3 ชั้นเอาไว้เผื่ออนาคต
-                                    rowObj[`Period${p}`] = `${activityName} ; ; `; 
+                                    rowObj[`Period${p}`] = `${cleanData.split(/\s\s+/)[0].replace(/[0-9].*$/, '').trim()} ; ; `; 
                                 }
                                 hasClass = true;
                             }
                         }
                         if (hasClass) extractedData.push(rowObj);
                     });
-                    if(extractedData.filter(d => d.TeacherName === t.fullName).length > 0) matchCount++;
                 }
 
                 if (extractedData.length === 0) throw new Error("ไม่พบข้อมูลที่ตรงกับรายชื่อครูครับ");
 
                 btn.innerHTML = `<div class="loader loader-white mr-2 border-2 inline-block align-middle"></div> กำลังบันทึก...`;
-                const payload = { action: "uploadMasterData", type: "timetable", term: currentTerm, year: currentYear, data: extractedData };
+                
+                // 💡 ชี้เป้าไปที่ activeT และ activeY
+                const payload = { action: "uploadMasterData", type: "timetable", term: activeT, year: activeY, data: extractedData };
+                
                 const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    customAlert(`🔥 นำเข้าสำเร็จ! เก็บข้อมูลเลขห้องเรียนลงฐานข้อมูลเรียบร้อยแล้วครับ`, 'success');
+                    customAlert(`🔥 นำเข้าตารางสอนภาคเรียนที่ ${activeT}/${activeY} สำเร็จ!`, 'success');
                     fileInput.value = '';
-                    fetchAllDatabasesFromGAS(); 
+                    window._rawTimetableDB = null; // รีเซ็ตแคชเพื่อให้มันดึงข้อมูลใหม่
+                    await fetchAllDatabasesFromGAS(); 
                 } else throw new Error(result.message);
 
             } catch (error) {
                 customAlert("ข้อผิดพลาด: " + error.message, "error");
             } finally {
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
+
+        // ---------------------------------------------------------
+        // 📥 2. อัปโหลดจากไฟล์ Excel (V2.0 - อัปโหลดเข้าเทอมที่กำลังเปิดดู)
+        // ---------------------------------------------------------
+        window.uploadMasterData = async function(type) {
+            const inputId = type === 'student' ? 'adminStudentExcel' : 'adminTimetableExcel';
+            const fileInput = document.getElementById(inputId);
+            if (!fileInput || fileInput.files.length === 0) return customAlert('กรุณาเลือกไฟล์ Excel ก่อนครับ');
+
+            const btn = window.event.currentTarget;
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = `<div class="loader loader-white mr-2 border-2"></div> กำลังอ่านไฟล์...`;
+            btn.disabled = true;
+
+            try {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                        
+                        if (jsonData.length === 0) throw new Error("ไฟล์ Excel ว่างเปล่า หรือไม่มีข้อมูลครับ");
+                        btn.innerHTML = `<div class="loader loader-white mr-2 border-2"></div> กำลังเซฟลงฐานข้อมูล...`;
+
+                        // 💡 ดึงเลขเทอม/ปี จากแถบควบคุม
+                        const activeT = window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1');
+                        const activeY = window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569');
+
+                        // 💡 ฝัง Semester / AcademicYear ลงไปในข้อมูล Excel ทุกแถว เพื่อความชัวร์ 100%
+                        const enhancedData = jsonData.map(r => ({
+                            ...r,
+                            Semester: activeT,
+                            AcademicYear: activeY
+                        }));
+
+                        const payload = {
+                            action: "uploadMasterData",
+                            type: type,
+                            term: activeT,
+                            year: activeY,
+                            data: enhancedData
+                        };
+
+                        const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow" });
+                        const textResult = await response.text();
+                        const result = JSON.parse(textResult);
+
+                        if (result.status === 'success') {
+                            customAlert(`นำเข้าข้อมูล ${type === 'student' ? 'นักเรียน' : 'ตารางสอน'} เทอม ${activeT}/${activeY} เรียบร้อยแล้วครับ`, 'success');
+                            fileInput.value = '';
+                            if (type === 'student') window._rawStudentsDB = null;
+                            if (type === 'timetable') window._rawTimetableDB = null;
+                            await fetchAllDatabasesFromGAS();
+                        } else throw new Error(result.message);
+                    } catch (err) {
+                        customAlert("ข้อผิดพลาด: " + err.message, "error");
+                    } finally {
+                        btn.innerHTML = origTxt; btn.disabled = false;
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                customAlert("เกิดข้อผิดพลาดในการอ่านไฟล์", "error");
                 btn.innerHTML = origTxt; btn.disabled = false;
             }
         };
