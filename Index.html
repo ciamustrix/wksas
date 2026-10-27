@@ -300,7 +300,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.05 [Oct 27th, 2026 - 12:03] | Upg-f(Sv)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.06 [Oct 27th, 2026] | Upg-f(Sv)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -416,7 +416,7 @@
                                 <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" alt="โลโก้โรงเรียน" class="w-20 h-20 object-contain rounded-full">
                             </div>
                             <h1 class="text-2xl sm:text-3xl font-bold mb-2 drop-shadow-sm">ส่งแผนการจัดการเรียนรู้</h1>
-                            <h2 class="text-lg font-medium mb-2 drop-shadow-sm">โรงเรียนวังตะเคียนวิทยาคม ภาคเรียนที่ 1 ปีการศึกษา 2569</h2>
+                            <h2 class="text-lg font-medium mb-2 drop-shadow-sm">โรงเรียนวังตะเคียนวิทยาคม ภาคเรียนที่ <span class="sys-display-term">1</span> ปีการศึกษา <span class="sys-display-year">2569</span></h2>
                         </div>
 
                         <form id="lessonPlanSubmitForm" class="p-6 sm:p-10 space-y-8">
@@ -517,7 +517,7 @@
                                 <img src="https://lh3.googleusercontent.com/d/1K_uNHV6Hehk7Xk4YZv9KTaRVaPIRR50E" crossorigin="anonymous" alt="โลโก้โรงเรียน" class="w-24 sm:w-28 h-24 sm:h-28 object-contain rounded-full">
                             </div>
                             <h1 class="text-2xl sm:text-3xl font-bold mb-2 drop-shadow-sm">แบบบันทึกการจัดกิจกรรมการเรียนรู้</h1>
-                            <h2 class="text-xl sm:text-2xl font-medium mb-4 drop-shadow-sm">โรงเรียนวังตะเคียนวิทยาคม ภาคเรียนที่ 1 ปีการศึกษา 2569</h2>
+                            <h2 class="text-xl sm:text-2xl font-medium mb-4 drop-shadow-sm">โรงเรียนวังตะเคียนวิทยาคม ภาคเรียนที่ <span class="sys-display-term">1</span> ปีการศึกษา <span class="sys-display-year">2569</span></h2>
                             <div class="inline-flex items-center bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/40 shadow-sm">
                                 <span id="realtime-clock" class="text-sm sm:text-base font-medium tracking-wide">กำลังโหลดเวลา...</span>
                             </div>
@@ -23504,6 +23504,10 @@ ${scoreDataText}
             const t = String(term || '1').trim();
             const y = String(year || '2569').trim();
 
+            // 💡 เติม 2 บรรทัดนี้: วิ่งไปอัปเดตข้อความหัวเว็บทุกหน้าให้เป็นไดนามิกตามเทอม!
+            document.querySelectorAll('.sys-display-term').forEach(el => el.textContent = t);
+            document.querySelectorAll('.sys-display-year').forEach(el => el.textContent = y);
+
             if (window._rawStudentsDB) studentsDB_Global = window._rawStudentsDB.filter(r => window.isRowInTerm(r, t, y));
             if (window._rawSubjectsDB) subjectsDB_Global = window._rawSubjectsDB.filter(r => window.isRowInTerm(r, t, y));
             if (window._rawTimetableDB) timetableDB_Global = window._rawTimetableDB.filter(r => window.isRowInTerm(r, t, y));
@@ -23527,8 +23531,6 @@ ${scoreDataText}
             try { if (typeof initAdvExclusions === 'function') initAdvExclusions(); } catch (e) {}
             try { if (typeof renderSupMatrixView === 'function') renderSupMatrixView(); } catch (e) {}
             try { if (typeof renderSupSchedule === 'function') renderSupSchedule(); } catch (e) {}
-            
-            // 💡 เติม 2 บรรทัดนี้: บังคับให้โหลดการตั้งค่ากติกานิเทศ (Supervision Control) ให้ตรงกับเทอมที่กำลังดู
             try { if (typeof initSupControlPanel === 'function') initSupControlPanel(); } catch (e) {}
             try { if (typeof loadSupConfigToForm === 'function') loadSupConfigToForm(); } catch (e) {}
         };
