@@ -300,7 +300,7 @@
             
             <div class="mt-8 text-center border-t border-gray-200/50 pt-4">
                 <p class="text-xs text-gray-500 font-medium mb-1">โรงเรียนวังตะเคียนวิทยาคม | ฝ่ายบริหารงานวิชาการ</p>
-                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.05 [Oct 27th, 2026] | Upg-f(Sv)</p>
+                <p class="text-[10px] text-sky-700/60 font-bold tracking-wide">V 1.03.05 [Oct 27th, 2026 - 12:03] | Upg-f(Sv)</p>
                 <p class="text-xs text-gray-500 font-medium mb-1">Dev. by Thuntathorn 😁</p>
             </div>
         </div>
@@ -20274,25 +20274,31 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             return `วัน${days[d.getDay()]}ที่ ${d.getDate()} ${months[d.getMonth()]} พ.ศ. ${d.getFullYear() + 543} (สัปดาห์ที่ ${getSchoolWeek(dateStr)})`;
         };
 
-        // 🧠 สมองกลวาดหน้าต่างรอบการนิเทศแบบ Dynamic (อัปเกรดวิชามาร CSS บังคับปฏิทินเด้ง)
+        // ---------------------------------------------------------
+        // 1. ฟังก์ชันวาดข้อมูลลงฟอร์ม (ดึงข้อมูลแยกตามเทอมที่กำลังดู)
+        // ---------------------------------------------------------
         window.initSupControlPanel = function() {
             const container = document.getElementById('dynamicRoundsContainer');
             if(!container) return;
+
+            // 💡 สร้างกุญแจสำหรับดึงข้อมูลให้ตรงกับเทอมที่เปิดดูอยู่
+            const curT = String(window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1')).trim();
+            const curY = String(window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569')).trim();
+            const configKey = (curT === '1' && curY === '2569') ? 'SupervisionMaster' : `SupervisionMaster_${curT}_${curY}`;
             
-            // ถ้า DB ยังว่างเปล่า ให้เสกโครงสร้าง JSON แบบใหม่ขึ้นมา
-            if(!masterSwitches_Global['SupervisionMaster']) {
-                masterSwitches_Global['SupervisionMaster'] = {
+            // ถ้า DB ของเทอมนั้นยังว่างเปล่า ให้เสกโครงสร้าง JSON ใหม่
+            if(!masterSwitches_Global[configKey]) {
+                masterSwitches_Global[configKey] = {
                     rounds: [
                         { id: "R1", name: "รอบที่ 1: ขอรับการนิเทศเอง", type: "self", start: "", end: "", formTemplate: "formA" },
-                        { id: "R2", name: "รอบที่ 2: ระบบจัดตั้งกรรมการอัตโนมัติ", type: "auto", start: "", end: "", formTemplate: "formB" }
+                        { id: "R2", name: "รอบที่ 2: ระบบจัดตั้งอัตโนมัติ", type: "auto", start: "", end: "", formTemplate: "formB" }
                     ],
-                    settings: { quota: 5, blackout: "" }
+                    settings: { quota: { exec: 5, acad: 5, head: 3, teacher: 2 }, blackout: "", buddyRule: "none", mentorRule: "dept_senior" }
                 };
             }
             
-            const conf = masterSwitches_Global['SupervisionMaster'];
+            const conf = masterSwitches_Global[configKey];
             
-            // 💡 วิชามาร CSS: ถ่างไอคอนปฏิทินให้คลุมทั้งกล่องแล้วทำให้โปร่งใส
             let html = `
             <style>
                 .click-anywhere-date { position: relative; }
@@ -20323,12 +20329,12 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">วันที่เริ่มต้น</label>
                             <input type="date" value="${r.start}" onchange="updateRoundData(${index}, 'start', this.value)" class="click-anywhere-date w-full text-sm p-2 rounded-lg border border-gray-300 outline-none cursor-pointer hover:border-rose-400 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors">
-                            <p id="date_display_${index}_start" class="text-[10px] text-emerald-600 font-bold mt-1">${formatThaiDateFull(r.start)}</p>
+                            <p id="date_display_${index}_start" class="text-[10px] text-emerald-600 font-bold mt-1">${typeof formatThaiDateFull === 'function' && r.start ? formatThaiDateFull(r.start) : (r.start ? new Date(r.start).toLocaleDateString('th-TH') : '')}</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">วันที่สิ้นสุด</label>
                             <input type="date" value="${r.end}" onchange="updateRoundData(${index}, 'end', this.value)" class="click-anywhere-date w-full text-sm p-2 rounded-lg border border-gray-300 outline-none cursor-pointer hover:border-rose-400 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors">
-                            <p id="date_display_${index}_end" class="text-[10px] text-emerald-600 font-bold mt-1">${formatThaiDateFull(r.end)}</p>
+                            <p id="date_display_${index}_end" class="text-[10px] text-emerald-600 font-bold mt-1">${typeof formatThaiDateFull === 'function' && r.end ? formatThaiDateFull(r.end) : (r.end ? new Date(r.end).toLocaleDateString('th-TH') : '')}</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">รูปแบบฟอร์มประเมิน</label>
@@ -20343,29 +20349,106 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
             
             container.innerHTML = html;
             
-            // ดึงค่าโควตาและวันแบล็กลิสต์ (อัปเกรดดึงข้อมูลแยก 4 กลุ่ม)
-            const q = conf.settings.quota;
+            // ดึงค่าโควตาและวันแบล็กลิสต์มาใส่ในฟอร์มให้ตรงกับเทอม
+            if (!conf.settings) conf.settings = {};
+            const q = conf.settings.quota || {};
             const setQ = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
             
-            if(typeof q === 'object' && q !== null) {
+            if(typeof q === 'object' && Object.keys(q).length > 0) {
                 setQ('supc_q_exec', q.exec || 5);
                 setQ('supc_q_acad', q.acad || 5);
                 setQ('supc_q_head', q.head || 3);
                 setQ('supc_q_teacher', q.teacher || 2);
             } else {
-                // Migration: แปลงระบบเก่าที่เป็นตัวเลขเดี่ยวๆ เข้า 4 กลุ่มอัตโนมัติ
                 const oldQ = q || 5;
                 setQ('supc_q_exec', oldQ); setQ('supc_q_acad', oldQ); setQ('supc_q_head', 3); setQ('supc_q_teacher', 2);
             }
             
             const blackEl = document.getElementById('supc_blackout');
             if(blackEl) blackEl.value = conf.settings.blackout || '';
-            // โหลดค่าเงื่อนไข Buddy
             const buddyRuleEl = document.getElementById('supc_buddy_rule');
             if(buddyRuleEl) buddyRuleEl.value = conf.settings.buddyRule || 'none';
-            // โหลดค่าเงื่อนไข Mentor
             const mentorRuleEl = document.getElementById('supc_mentor_rule');
             if(mentorRuleEl) mentorRuleEl.value = conf.settings.mentorRule || 'dept_senior';
+        };
+
+        // ---------------------------------------------------------
+        // 2. ฟังก์ชันเซฟกติกานิเทศ (แยกเซฟตามกุญแจเทอม)
+        // ---------------------------------------------------------
+        window.saveSupConfig = async function(e) {
+            const btn = e.currentTarget;
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังบันทึก...'; 
+            btn.disabled = true;
+
+            try {
+                // 💡 สร้างกุญแจให้ตรงกับเทอมปัจจุบันที่เปิดดู
+                const curT = String(window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1')).trim();
+                const curY = String(window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569')).trim();
+                const configKey = (curT === '1' && curY === '2569') ? 'SupervisionMaster' : `SupervisionMaster_${curT}_${curY}`;
+
+                if (!masterSwitches_Global[configKey]) masterSwitches_Global[configKey] = { rounds: [], settings: {} };
+                if (!masterSwitches_Global[configKey].settings) masterSwitches_Global[configKey].settings = {};
+
+                // รวบรวมค่า Settings นอกรอบการนิเทศ 
+                masterSwitches_Global[configKey].settings.buddyRule = document.getElementById('supc_buddy_rule')?.value || 'none';
+                masterSwitches_Global[configKey].settings.mentorRule = document.getElementById('supc_mentor_rule')?.value || 'dept_senior';
+                masterSwitches_Global[configKey].settings.quota = {
+                    exec: document.getElementById('supc_q_exec')?.value || 5,
+                    acad: document.getElementById('supc_q_acad')?.value || 5,
+                    head: document.getElementById('supc_q_head')?.value || 3,
+                    teacher: document.getElementById('supc_q_teacher')?.value || 2
+                };
+                masterSwitches_Global[configKey].settings.blackout = document.getElementById('supc_blackout')?.value || '';
+                
+                const payload = { action: 'updateMasterSwitch', switches: masterSwitches_Global };
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                const result = await res.json();
+                
+                if(result.status === 'success') {
+                    customAlert(`บันทึกกติกาและโควตากรรมการของเทอม ${curT}/${curY} เรียบร้อยแล้วครับ!`, "success");
+                } else throw new Error("บันทึกไม่สำเร็จ");
+            } catch(err) { 
+                customAlert("เกิดข้อผิดพลาด: " + err.message, "error"); 
+            } finally { 
+                btn.innerHTML = origText; btn.disabled = false; 
+            }
+        };
+
+        // 💡 เสริมทัพความชัวร์ 100%: ให้ฟังก์ชัน updateRoundData รู้จักกุญแจกาลเวลาด้วย
+        window.updateRoundData = function(index, field, value) {
+            const curT = String(window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1')).trim();
+            const curY = String(window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569')).trim();
+            const configKey = (curT === '1' && curY === '2569') ? 'SupervisionMaster' : `SupervisionMaster_${curT}_${curY}`;
+
+            if(masterSwitches_Global[configKey] && masterSwitches_Global[configKey].rounds[index]) {
+                masterSwitches_Global[configKey].rounds[index][field] = value;
+                if(field === 'start' || field === 'end') {
+                    const dEl = document.getElementById(`date_display_${index}_${field}`);
+                    if(dEl && typeof formatThaiDateFull === 'function') dEl.innerText = formatThaiDateFull(value);
+                }
+            }
+        };
+
+        window.removeSupervisionRound = function(index) {
+            if(!confirm("⚠️ แน่ใจหรือไม่ที่จะลบการนิเทศรอบนี้ทิ้ง?")) return;
+            const curT = String(window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1')).trim();
+            const curY = String(window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569')).trim();
+            const configKey = (curT === '1' && curY === '2569') ? 'SupervisionMaster' : `SupervisionMaster_${curT}_${curY}`;
+
+            masterSwitches_Global[configKey].rounds.splice(index, 1);
+            window.initSupControlPanel();
+        };
+
+        window.addNewSupervisionRound = function() {
+            const curT = String(window.adminViewingTerm || (typeof currentTerm !== 'undefined' ? currentTerm : '1')).trim();
+            const curY = String(window.adminViewingYear || (typeof currentYear !== 'undefined' ? currentYear : '2569')).trim();
+            const configKey = (curT === '1' && curY === '2569') ? 'SupervisionMaster' : `SupervisionMaster_${curT}_${curY}`;
+
+            const rounds = masterSwitches_Global[configKey].rounds;
+            const newId = "R" + (rounds.length + 1);
+            rounds.push({ id: newId, name: `รอบที่ ${rounds.length + 1}: (ตั้งชื่อใหม่)`, type: "self", start: "", end: "", formTemplate: "formA" });
+            window.initSupControlPanel();
         };
         // 📝 สมองกลอัปเดตข้อมูลรายจุด (Real-time update)
         window.updateRoundData = function(index, key, value) {
@@ -20499,39 +20582,7 @@ classStudents.sort((a,b) => parseInt(a.No) - parseInt(b.No)).forEach(s => {
                 customAlert("✨ AI สร้างประเด็นประเมินให้เรียบร้อยแล้ว!", "success");
             }, 1200);
         };
-        // 💾 สมองกลบันทึกข้อมูลแพ็คเกจใหญ่ขึ้น Google Sheets (อัปเดตระบบโควตา 4 กลุ่ม)
-        window.saveSupConfig = async function(e) {
-            const btn = e.currentTarget;
-            const origText = btn.innerHTML;
-            btn.innerHTML = '<div class="loader loader-white mr-2 border-2 inline-block"></div> กำลังบันทึก...'; 
-            btn.disabled = true;
-
-            try {
-                // รวบรวมค่า Settings นอกรอบการนิเทศ (แพ็คโควตาทั้ง 4 กลุ่มเป็น JSON)
-                masterSwitches_Global['SupervisionMaster'].settings.buddyRule = document.getElementById('supc_buddy_rule').value || 'none';
-                masterSwitches_Global['SupervisionMaster'].settings.mentorRule = document.getElementById('supc_mentor_rule').value || 'dept_senior';
-                masterSwitches_Global['SupervisionMaster'].settings.quota = {
-                    exec: document.getElementById('supc_q_exec').value || 5,
-                    acad: document.getElementById('supc_q_acad').value || 5,
-                    head: document.getElementById('supc_q_head').value || 3,
-                    teacher: document.getElementById('supc_q_teacher').value || 2
-                };
-                masterSwitches_Global['SupervisionMaster'].settings.blackout = document.getElementById('supc_blackout').value;
-                
-                const payload = { action: 'updateMasterSwitch', switches: masterSwitches_Global };
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
-                const result = await res.json();
-                
-                if(result.status === 'success') {
-                    customAlert("บันทึกกติกาและโควตากรรมการเรียบร้อยแล้วครับ!", "success");
-                } else throw new Error("บันทึกไม่สำเร็จ");
-            } catch(err) { 
-                customAlert("เกิดข้อผิดพลาด: " + err.message, "error"); 
-            } finally { 
-                btn.innerHTML = origText; btn.disabled = false; 
-            }
-        };
-
+        
         // 👁️ สมองกลวาดตารางโหมดเนตรวงแหวน (V.Security Filter)
         window.renderSupMatrixView = function() {
             const tbody = document.getElementById('supcMatrixBody');
@@ -23476,6 +23527,10 @@ ${scoreDataText}
             try { if (typeof initAdvExclusions === 'function') initAdvExclusions(); } catch (e) {}
             try { if (typeof renderSupMatrixView === 'function') renderSupMatrixView(); } catch (e) {}
             try { if (typeof renderSupSchedule === 'function') renderSupSchedule(); } catch (e) {}
+            
+            // 💡 เติม 2 บรรทัดนี้: บังคับให้โหลดการตั้งค่ากติกานิเทศ (Supervision Control) ให้ตรงกับเทอมที่กำลังดู
+            try { if (typeof initSupControlPanel === 'function') initSupControlPanel(); } catch (e) {}
+            try { if (typeof loadSupConfigToForm === 'function') loadSupConfigToForm(); } catch (e) {}
         };
 
         // 11. บันทึกตั้งค่าภาคเรียนปัจจุบัน + จำวันเปิด-ปิดแยกแต่ละภาคเรียนถาวร
